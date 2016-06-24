@@ -1,9 +1,9 @@
-import asyncio
-import os
 import logging
+import os
 
-import redis
+import asyncio
 import discord
+import redis
 from nepeatbot.model.connections import redis_pool
 
 # Logging
