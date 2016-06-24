@@ -4,6 +4,7 @@ import logging
 
 import redis
 import discord
+from nepeatbot.model.connections import redis_pool
 
 # Logging
 logging.basicConfig(level=logging.INFO)
@@ -17,7 +18,12 @@ class NepeatBot(discord.Client):
     def __init__(self):
         super().__init__()
 
-        self.redis = redis.StrictRedis(host="redis")
+    @property
+    def redis(self):
+        return redis.StrictRedis(
+            connection_pool=redis_pool,
+            decode_responses=True,
+        )
 
     async def handle_quote(self, message):
         content = message.content.lower()
