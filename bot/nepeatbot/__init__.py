@@ -123,7 +123,7 @@ class NepeatBot(discord.Client):
     async def log_member(self, member, joining):
         action = "join" if joining else "leave"
 
-        await self.push_event(action, memeber.server, None, {
+        await self.push_event(action, member.server, None, {
             "name": member.name
         })
 
