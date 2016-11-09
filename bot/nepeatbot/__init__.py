@@ -135,15 +135,10 @@ class NepeatBot(discord.Client):
         await self.log_member(member, False)
 
     async def on_member_update(self, before, after):
-        if not self.valid_server(before.server):
-            return
-
-        if before.nick != after.nick:
-            await self.log(":pencil: `{old}` is now known as `{new}` on **{server}**".format(
-                old=before.nick if before.nick else before.name,
-                new=after.nick if after.nick else after.name,
-                server=before.server.name
-            ))
+        await self.push_event("rename", before.server, None, {
+            "old": before.nick if before.nick else before.name,
+            "new": after.nick if after.nick else after.name
+        })
 
     async def on_voice_state_update(self, before, after):
         if not self.redis.exists("voicefuck"):
@@ -158,19 +153,7 @@ class NepeatBot(discord.Client):
         ) and (after.voice.deaf or after.voice.mute):
             await self.server_voice_state(after, mute=False, deafen=False)
 
-    def valid_server(self, server):
-        if server.id in (
-            "138747544162402305",  # Mainland
-            "204797909361885184"   # H E L L
-        ):
-            return True
-
-        return False
-
     async def on_message(self, message):
-        if not self.valid_server(message.server):
-            return
-
         # Ignore self messages.
         if message.author == self.user:
             return
@@ -185,7 +168,7 @@ class NepeatBot(discord.Client):
         message_content = message.content.strip()
         lower_content = message_content.lower()
 
-        if message.channel.id == "195245746612731904":
+        if message.channel.id == "195245746612731904":  # XXX quote-only legacy
             await self.handle_quote(message)
         elif lower_content.startswith("!") and message.author.id == "66153853824802816":
             await self.handle_command(message)
@@ -210,9 +193,6 @@ class NepeatBot(discord.Client):
         })
 
     async def on_message_delete(self, message):
-        if not self.valid_server(message.server):
-            return
-
         if message.author == self.user:
             return
 
