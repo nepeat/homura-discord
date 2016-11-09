@@ -2,14 +2,6 @@ import logging
 import os
 import json
 import traceback
-
-# Logging
-
-if "DEBUG" in os.environ:
-    logging.basicConfig(level=logging.DEBUG)
-else:
-    logging.basicConfig(level=logging.INFO)
-
 import aiohttp
 import asyncio
 import raven
@@ -18,6 +10,13 @@ import redis
 from nepeatbot.model.connections import redis_pool
 from nepeatbot.model.validators import url_regex, validate_url
 from itertools import zip_longest
+
+# Logging
+
+if "DEBUG" in os.environ:
+    logging.basicConfig(level=logging.DEBUG)
+else:
+    logging.basicConfig(level=logging.INFO)
 
 log = logging.getLogger(__name__)
 
