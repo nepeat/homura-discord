@@ -1,13 +1,28 @@
 version: '2'
 services:
   redis:
-    image: redis:3.2.0-alpine
+    image: redis:3.2.5-alpine
     volumes:
       - redis:/data
     restart: always
     command: "redis-server --appendonly yes"
-  nepeatbot:
-      build: .
+
+  bot:
+      build:
+          context: bot
+      restart: always
+      environment:
+        REDIS_HOST: redis
+        REDIS_PORT: 6379
+        BOT_WEB: http://backend:5000
+      env_file: .env
+      depends_on:
+        - redis
+        - backend
+
+  backend:
+      build:
+          context: backend
       restart: always
       environment:
         REDIS_HOST: redis

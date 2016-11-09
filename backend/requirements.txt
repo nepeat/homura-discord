@@ -1,0 +1,9 @@
+redis
+hiredis
+raven
+sqlalchemy
+psycopg2
+flask
+gunicorn
+gevent
+alembic
