@@ -7,3 +7,4 @@ flask
 gunicorn
 gevent
 alembic
+blinker

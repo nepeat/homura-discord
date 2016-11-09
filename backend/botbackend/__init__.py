@@ -108,10 +108,17 @@ def home():
 
 @app.route("/events/<type>", methods=["GET"])
 def event_get(type=None):
+    limit = request.args.get("limit", 5)
+    try:
+        limit = int(limit)
+        if limit < 0 or limit > 200:
+            raise ValueError()
+    except (ValueError, TypeError):
+        limit = 5
     if type not in EVENT_TYPES:
         return jsonify({"state": "badtype"})
 
-    query = g.db.query(Event).filter(Event.type == type).order_by(Event.posted)
+    query = g.db.query(Event).filter(Event.type == type)
 
     server, channel = get_server_channel(request.args.get("server"), request.args.get("channel"), create=False)
     if server:
@@ -121,7 +128,7 @@ def event_get(type=None):
         query = query.filter(Event.channel == channel.id)
 
     return jsonify({
-        "events": [_.to_dict() for _ in query.limit(10).all()]
+        "events": [_.to_dict() for _ in query.order_by(Event.posted.desc()).limit(limit).all()][::-1]
     })
 
 @app.route("/events/push", methods=["GET", "POST"])

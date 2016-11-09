@@ -1,6 +1,7 @@
 import logging
 import os
 import json
+import traceback
 
 # Logging
 
@@ -138,7 +139,11 @@ class NepeatBot(discord.Client):
         if message.channel.id == "195245746612731904":  # XXX quote-only legacy
             await self.handle_quote(message)
         elif lower_content.startswith("!") and message.author.id == "66153853824802816":
-            await self.handle_command(message)
+            try:
+                await self.handle_command(message)
+            except Exception:
+                traceback.print_exc()
+                self.sentry.captureException()
 
     async def on_message_edit(self, before, after):
         # Ignore self messages.
