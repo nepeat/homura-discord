@@ -115,6 +115,13 @@ def event_get(type=None):
             raise ValueError()
     except (ValueError, TypeError):
         limit = 5
+
+    before = request.args.get("before", None)
+    try:
+        before = int(before)
+    except (ValueError, TypeError):
+        before = None
+
     if type not in EVENT_TYPES:
         return jsonify({"state": "badtype"})
 
@@ -126,6 +133,9 @@ def event_get(type=None):
 
     if channel:
         query = query.filter(Event.channel == channel.id)
+
+    if before:
+        query = query.filter(Event.id < before)
 
     return jsonify({
         "events": [_.to_dict() for _ in query.order_by(Event.posted.desc()).limit(limit).all()][::-1]
