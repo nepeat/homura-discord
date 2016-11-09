@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="pure-g">
+    <div class="pure-u-1">
+        <h1>Events</h1>
+        <ul>
+        {% for event in events %}
+        <li>{{render_event(event)}}</li>
+        {% endfor %}
+        </ul>
+    </div>
+</div>
+{% endblock %}

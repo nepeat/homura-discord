@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="columns">
+    <div class="column">
+        <h1 class="title is-2">Servers</h1>
+        {% for server in user_servers if server["id"] in quoted_servers %}
+        <h2 class="is-2">{{server.name}}</h2>
+        <pre>{{server}}</pre>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

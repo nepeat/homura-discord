@@ -1,4 +1,4 @@
-from botbackend.model.types import EVENT_TYPES
+from disquotes.model.types import EVENT_TYPES
 
 def validate_push(form):
     try:

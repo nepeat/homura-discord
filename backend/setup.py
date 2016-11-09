@@ -1,7 +1,7 @@
 from setuptools import find_packages, setup
 
 setup(
-    name="botbackend",
+    name="disquotes",
     packages=find_packages(),
     zip_safe=False,
 )

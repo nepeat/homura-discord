@@ -1,9 +1,9 @@
 from flask import Blueprint, g, request, jsonify
 from sqlalchemy.orm.exc import NoResultFound
 
-from botbackend.model import Channel, Event, Server
-from botbackend.model.validators import validate_push
-from botbackend.model.types import EVENT_TYPES
+from disquotes.model import Channel, Event, Server
+from disquotes.model.validators import validate_push
+from disquotes.model.types import EVENT_TYPES
 
 blueprint = Blueprint("events", __name__)
 
@@ -12,7 +12,7 @@ def get_server_channel(server_id, channel_id=None, create=False):
         return None, None
 
     try:
-        server = g.db.query(Server).filter(Server.server == server_id).one()
+        server = g.db.query(Server).filter(Server.server_id == server_id).one()
     except NoResultFound:
         server = None
         if create:
@@ -27,9 +27,9 @@ def get_server_channel(server_id, channel_id=None, create=False):
 
     try:
         channel = g.db.query(Channel).filter(
-            Channel.server == server.id
+            Channel.server_id == server.id
         ).filter(
-            Channel.channel == channel_id
+            Channel.channel_id == channel_id
         ).one()
     except NoResultFound:
         channel = None
@@ -76,10 +76,10 @@ def event_get(type=None):
 
     server, channel = get_server_channel(request.args.get("server"), request.args.get("channel"), create=False)
     if server:
-        query = query.filter(Event.server == server.id)
+        query = query.filter(Event.server_id == server.id)
 
     if channel:
-        query = query.filter(Event.channel == channel.id)
+        query = query.filter(Event.channel_id == channel.id)
 
     if before:
         query = query.filter(Event.id < before)

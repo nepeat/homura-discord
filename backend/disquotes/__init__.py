@@ -5,19 +5,25 @@ import logging
 from flask import Flask
 from raven.contrib.flask import Sentry
 
-from botbackend.model.handlers import (before_request, connect_redis, connect_sql,
+from disquotes.model.auth import discord
+from disquotes.model.handlers import (before_request, connect_redis, connect_sql,
                                    disconnect_redis, disconnect_sql)
-from botbackend.views import events
+from disquotes.views import frontend, events
 
 app = Flask(__name__)
+app.secret_key = os.environ.get("APP_SECRET", os.environ.get("SECRET_KEY"))
+app.config["SESSION_COOKIE_NAME"] = "disquotes"
 
 # Debug
-app.config['PROPAGATE_EXCEPTIONS'] = True
+app.config["PROPAGATE_EXCEPTIONS"] = True
 
-if 'DEBUG' in os.environ:
-    app.config['DEBUG'] = True
+if "DEBUG" in os.environ:
+    app.config["DEBUG"] = True
 
-app.config["SENTRY_INCLUDE_PATHS"] = ["botbackend"]
+if app.debug:
+    app.config["TEMPLATES_AUTO_RELOAD"] = True
+
+app.config["SENTRY_INCLUDE_PATHS"] = ["disquotes"]
 sentry = Sentry(
     app,
     dsn=app.config.get("SENTRY_DSN", None),
@@ -35,8 +41,6 @@ app.teardown_request(disconnect_redis)
 
 # Routes
 
-@app.route("/")
-def home():
-    return "ok"
-
+app.register_blueprint(frontend.blueprint)
+app.register_blueprint(discord, url_prefix="/auth")
 app.register_blueprint(events.blueprint, url_prefix="/events")

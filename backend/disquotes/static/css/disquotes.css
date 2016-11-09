@@ -1,0 +1,35 @@
+body, button, input, select, textarea {
+    font-family: 'Helvetica';
+}
+
+.nav {
+    margin-bottom: 15px;
+}
+
+.container {
+    background-color: white;
+    border-radius: 2px;
+    padding: 15px 10px;
+    max-width: 768px;
+}
+
+.pure-menu {
+    background-color: #EEE;
+}
+
+#textlogo {
+    font-family: 'Atma';
+    font-weight: 600;
+    color: #707;
+}
+
+.center {
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.username {
+    background-color: #eee;
+    border-radius: 2px;
+    padding: 5px 12px;
+}

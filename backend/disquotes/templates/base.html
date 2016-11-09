@@ -1,0 +1,46 @@
+{% macro render_event(event) %}
+{% if event.type == "edit" %}
+<p class="edit"><span class="username">{{event.data.sender.display_name}}</span> has edited their message</p>
+<ul>
+    <li>{{event.data.edit.before}}</li>
+    <li>{{event.data.edit.after}}</li>
+</ul>
+{% elif event.type == "delete" %}
+<p class="delete"><span class="username">{{event.data.sender.display_name}}</span> has deleted their message.</p>
+<ul><li>{{event.data.message}}</li></ul>
+{% elif event.type == "rename" %}
+<p class="rename"><span class="username">{{event.data.old}}</span> is now known as <span class="username">{{event.data.new}}</span></p>
+{% elif event.type == "join" %}
+<p class="join"><span class="username">{{event.data.name}}</span> has joined the server. </p>
+{% else %}
+<h1 class="title is-1">UNKNOWN {{event.type}}</h1>
+<pre>{{event.data}}</pre>
+{% endif %}
+{% endmacro %}
+<!doctype html>
+<html>
+    <head>
+        <meta charset="ut®f-8">
+        <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <title>Disquotes{% block title %}{% endblock %}</title>
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+
+        <link rel="stylesheet" href="/static/css/normalize.css">
+        <link rel="stylesheet" href="http://yui.yahooapis.com/pure/0.6.0/pure-min.css">
+        <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.6.3/css/font-awesome.min.css">
+        <link href="https://fonts.googleapis.com/css?family=Atma:300,400,500,600,700" rel="stylesheet">
+        <link rel="stylesheet" href="/static/css/disquotes.css">
+        {% block styles %} {% endblock %}
+    </head>
+    <body>
+        <div class="pure-menu pure-menu-horizontal">
+            <a href="#" class="pure-menu-heading pure-menu-link"><p id="textlogo">Quotes <3</p></a>
+        </div>
+        <div class="container center">
+            {% block content %} {% endblock %}
+        </div>
+
+        {% block scripts %} {% endblock %}
+        <script src="https://code.jquery.com/jquery-3.1.0.min.js"></script>
+    </body>
+</html>

@@ -8,3 +8,5 @@ gunicorn
 gevent
 alembic
 blinker
+Flask-Dance
+dogpile.cache

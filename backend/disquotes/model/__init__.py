@@ -9,7 +9,7 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import scoped_session, sessionmaker, validates
 from sqlalchemy.schema import Index
 
-from botbackend.model.types import EVENT_TYPES
+from disquotes.model.types import EVENT_TYPES
 
 debug = os.environ.get('DEBUG', False)
 
@@ -33,23 +33,23 @@ def now():
 class Server(Base):
     __tablename__ = "servers"
     id = Column(Integer, primary_key=True)
-    server = Column(BigInteger, nullable=False)
+    server_id = Column(BigInteger, nullable=False)
 
     meta = Column(JSONB)
 
 class Channel(Base):
     __tablename__ = "channels"
     id = Column(Integer, primary_key=True)
-    server = Column(ForeignKey("servers.id"), nullable=False)
-    channel = Column(BigInteger, nullable=False)
+    channel_id = Column(BigInteger, nullable=False)
+    server_id = Column(ForeignKey("servers.id"), nullable=False)
 
     meta = Column(JSONB)
 
 class Event(Base):
     __tablename__ = 'events'
     id = Column(Integer, primary_key=True)
-    server = Column(ForeignKey("servers.id"), nullable=False)
-    channel = Column(ForeignKey("channels.id"))
+    server_id = Column(ForeignKey("servers.id"), nullable=False)
+    channel_id = Column(ForeignKey("channels.id"))
     posted = Column(DateTime(), nullable=False, default=now)
 
     type = Column(String(32), nullable=False)
