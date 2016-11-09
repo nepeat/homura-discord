@@ -52,13 +52,7 @@ class NepeatBot(discord.Client):
 
         command, *args = _command.split()
 
-        if command == "mute":
-            for user in message.mentions:
-                self.redis.sadd("mod:muted", user.id)
-        elif command == "unmute":
-            for user in message.mentions:
-                self.redis.srem("mod:muted", user.id)
-        elif command == "purge":
+        if command == "purge":
             purged = [x.id for x in message.mentions]
 
             if not purged:
@@ -106,19 +100,10 @@ class NepeatBot(discord.Client):
             ) for deleted in messages])
 
             await self.send_message(message.channel, output)
-        elif command == "metaserver":
-            self.redis.sadd("allowdeleted", message.server.id)
         elif command == "metaon":
             self.redis.sadd("allowdeleted", message.channel.id)
         elif command == "metaoff":
             self.redis.srem("allowdeleted", message.channel.id)
-
-            if "server" in args:
-                self.redis.srem("allowdeleted", message.server.id)
-
-    async def log(self, message: str):
-        log_channel = self.get_channel("204802833504010240")
-        await self.send_message(log_channel, message)
 
     async def log_member(self, member, joining):
         action = "join" if joining else "leave"
@@ -140,30 +125,10 @@ class NepeatBot(discord.Client):
             "new": after.nick if after.nick else after.name
         })
 
-    async def on_voice_state_update(self, before, after):
-        if not self.redis.exists("voicefuck"):
-            return
-
-        if after.id in (
-            "66153853824802816",
-            "173749502300258304",
-            "139053549911932929",
-            "139168649880535040",
-            "126916532428079104",
-        ) and (after.voice.deaf or after.voice.mute):
-            await self.server_voice_state(after, mute=False, deafen=False)
-
     async def on_message(self, message):
         # Ignore self messages.
         if message.author == self.user:
             return
-
-        # racist
-        if self.redis.sismember("mod:muted", message.author.id):
-            try:
-                await self.delete_message(message)
-            except discord.errors.Forbidden:
-                log.error("gg no perms")
 
         message_content = message.content.strip()
         lower_content = message_content.lower()
