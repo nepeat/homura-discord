@@ -2,8 +2,8 @@
 import os
 import traceback
 
-from botweb.lib.extensions import inject_extensions
-from botweb.model.handlers import (before_request, cache_breaker,
+from botbackend.lib.extensions import inject_extensions
+from botbackend.model.handlers import (before_request, cache_breaker,
                                   connect_redis,
                                    connect_sql, disconnect_redis,
                                    disconnect_sql, set_cookie)

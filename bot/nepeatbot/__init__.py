@@ -2,6 +2,13 @@ import logging
 import os
 import json
 
+# Logging
+
+if "DEBUG" in os.environ:
+    logging.basicConfig(level=logging.DEBUG)
+else:
+    logging.basicConfig(level=logging.INFO)
+
 import aiohttp
 import asyncio
 import raven
@@ -10,12 +17,6 @@ import redis
 from nepeatbot.model.connections import redis_pool
 from nepeatbot.model.validators import url_regex, validate_url
 from itertools import zip_longest
-
-# Logging
-logging.basicConfig(level=logging.INFO)
-
-if "DEBUG" in os.environ:
-    logging.basicConfig(level=logging.DEBUG)
 
 log = logging.getLogger(__name__)
 
@@ -85,18 +86,13 @@ class NepeatBot(discord.Client):
             message = await self.get_message(message.channel, args[0])
             await self.delete_message(message)
         elif command == "undelete":
-            messages = self.redis.lrange("deleted:" + message.channel.id, -5, -1)
+            messages = await self.get_events("delete", message.server, message.channel)
             if not messages:
                 return await self.send_message(message.channel, "None")
 
-            try:
-                messages = [json.loads(_) for _ in messages]
-            except:
-                pass
-
             output = "\n".join(["__{sender}__ - {message}".format(
-                sender=deleted["sender"],
-                message=deleted["message"]["clean"]
+                sender=deleted["sender"]["display_name"],
+                message=deleted["message"]
             ) for deleted in messages])
 
             await self.send_message(message.channel, output)
@@ -120,9 +116,15 @@ class NepeatBot(discord.Client):
         await self.log_member(member, False)
 
     async def on_member_update(self, before, after):
+        old = before.nick if before.nick else before.name
+        new = after.nick if after.nick else after.name
+
+        if old == new:
+            return
+
         await self.push_event("rename", before.server, None, {
-            "old": before.nick if before.nick else before.name,
-            "new": after.nick if after.nick else after.name
+            "old": old,
+            "new": new
         })
 
     async def on_message(self, message):
@@ -152,8 +154,8 @@ class NepeatBot(discord.Client):
                 "display_name": before.author.display_name,
             },
             "edit": {
-                "before": before.content,
-                "after": after.content,
+                "before": before.clean_content,
+                "after": after.clean_content,
             }
         })
 
@@ -166,27 +168,59 @@ class NepeatBot(discord.Client):
                 "id": message.author.id,
                 "display_name": message.author.display_name,
             },
-            "message": message.content
+            "message": message.clean_content
         })
 
-    async def push_event(self, event_type, server, channel, data):
+    async def push_event(self, event_type, server, channel=None, data=None):
         payload = {
             "type": event_type,
             "server": server.id,
-            "channel": channel.id,
-            "data": data
+            "channel": channel.id if channel else None,
+            "data": data if data else {}
         }
 
-        with aiohttp.Timeout(5):
-            try:
-                async with self.aiosession.post(
-                    url=self.bot_url + "/push/event",
-                    data=json.dumps(payload),
-                    headers={"Content-Type": "application/json"}
-                ) as response:
+        try:
+            async with self.aiosession.post(
+                url=self.bot_url + "/events/push",
+                data=json.dumps(payload),
+                headers={"Content-Type": "application/json"}
+            ) as response:
+                try:
                     reply = await response.json()
-                    if reply["status"] == "error":
+                    if reply.get("status") == "error":
                         log.error("Error pushing event to server.")
                         log.error(reply)
-            except aiohttp.errors.ClientError:
-                return False
+                except ValueError:
+                    log.error("Error parsing JSON.")
+                    log.error(await response.text())
+        except aiohttp.errors.ClientError:
+            return False
+
+    async def get_events(self, event_type, server, channel=None):
+        params = {
+            "server": server.id,
+        }
+
+        if channel:
+            params.update({"channel": channel.id})
+
+        try:
+            async with self.aiosession.get(
+                url=self.bot_url + "/events/" + event_type,
+                params=params
+            ) as response:
+                try:
+                    reply = await response.json()
+                    if reply.get("status") == "error":
+                        log.error("Error pushing event to server.")
+                        log.error(reply)
+                        return None
+                    return reply.get("events", None)
+                except ValueError:
+                    log.error("Error parsing JSON.")
+                    log.error(await response.text())
+                    pass
+        except aiohttp.errors.ClientError:
+            pass
+
+        return None

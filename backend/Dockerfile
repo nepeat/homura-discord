@@ -23,4 +23,4 @@ RUN python setup.py install
 EXPOSE 5000
 
 # Command
-CMD ["gunicorn", "-b", "0.0.0.0:5000", "-k", "gevent", "-w", "4", "botweb:app"]
+CMD ["gunicorn", "-b", "0.0.0.0:5000", "-k", "gevent", "-w", "4", "botbackend:app"]

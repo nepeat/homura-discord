@@ -3,7 +3,7 @@ import os
 
 from flask import g, request
 
-from botweb.model import sm
+from botbackend.model import sm
 from redis import ConnectionPool, StrictRedis
 
 redis_pool = ConnectionPool(
