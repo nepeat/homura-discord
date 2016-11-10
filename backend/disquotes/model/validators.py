@@ -6,6 +6,8 @@ def validate_push(form):
     except:
         msg_type = form["type"]
 
+    msg_type = msg_type.strip().lower()
+
     missing = [x for x in ["server", "channel", "data", "type"] if x not in form]
     if missing:
         return {"missing": missing}
