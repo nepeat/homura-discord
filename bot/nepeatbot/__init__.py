@@ -7,9 +7,11 @@ import asyncio
 import raven
 import discord
 import redis
+import inspect
+
 from nepeatbot.model.connections import redis_pool
 from nepeatbot.model.validators import url_regex, validate_url
-from itertools import zip_longest
+from nepeatbot.commands import all_commands
 
 # Logging
 
@@ -47,59 +49,6 @@ class NepeatBot(discord.Client):
                     return await self.delete_message(message)
         else:
             await self.delete_message(message)
-
-    async def handle_command(self, message):
-        _command = message.content.strip().split("!", 2)[1]
-
-        command, *args = _command.split()
-
-        if command == "purge":
-            purged = [x.id for x in message.mentions]
-
-            if not purged:
-                log.error("no purged")
-
-            for channel in message.server.channels:
-                removed = []
-                if str(channel.type) != "text":
-                    continue
-
-                async for msg in self.logs_from(channel, limit=200):
-                    if msg.author.id in purged:
-                        removed.append(msg)
-
-                if not removed:
-                    continue
-
-                for messages in zip_longest(*(iter(removed),) * 100):
-                    messages = [message for message in messages if message]
-                    await self.delete_messages(messages)
-        elif command == "purgechan":
-            removed = []
-            async for msg in self.logs_from(message.channel, limit=200):
-                removed.append(msg)
-
-            for messages in zip_longest(*(iter(removed),) * 100):
-                messages = [message for message in messages if message]
-                await self.delete_messages(messages)
-        elif command == "remove":
-            message = await self.get_message(message.channel, args[0])
-            await self.delete_message(message)
-        elif command == "undelete":
-            messages = await self.get_events("delete", message.server, message.channel)
-            if not messages:
-                return await self.send_message(message.channel, "None")
-
-            output = "\n".join(["__{sender}__ - {message}".format(
-                sender=deleted["sender"]["display_name"],
-                message=deleted["message"]
-            ) for deleted in messages])
-
-            await self.send_message(message.channel, output)
-        elif command == "metaon":
-            self.redis.sadd("allowdeleted", message.channel.id)
-        elif command == "metaoff":
-            self.redis.srem("allowdeleted", message.channel.id)
 
     async def log_member(self, member, joining):
         action = "join" if joining else "leave"
@@ -164,8 +113,62 @@ class NepeatBot(discord.Client):
         if message.channel.id == "195245746612731904":  # XXX quote-only legacy
             await self.handle_quote(message)
         elif lower_content.startswith("!") and message.author.id == "66153853824802816":
+            command, *args = message_content.split()
+            command = command[len("!"):].lower().strip()
+
+            handler = all_commands.get(command, None)["f"]
+            if not handler:
+                return
+
+            argspec = inspect.signature(handler)
+            params = argspec.parameters.copy()
+
+            handler_kwargs = {}
+
+            # Pop the self param to prevent docstrings on all commands..
+            if params.pop("self", None):
+                handler_kwargs['self'] = self
+
+            if params.pop("bot", None):
+                handler_kwargs['bot'] = self
+
+            if params.pop('message', None):
+                handler_kwargs['message'] = message
+
+            if params.pop('channel', None):
+                handler_kwargs['channel'] = message.channel
+
+            if params.pop('author', None):
+                handler_kwargs['author'] = message.author
+
+            if params.pop('server', None):
+                handler_kwargs['server'] = message.server
+
+            if params.pop('user_mentions', None):
+                handler_kwargs['user_mentions'] = list(map(message.server.get_member, message.raw_mentions))
+
+            if params.pop('channel_mentions', None):
+                handler_kwargs['channel_mentions'] = list(map(message.server.get_channel, message.raw_channel_mentions))
+
+            if params.pop('leftover_args', None):
+                handler_kwargs['leftover_args'] = args
+
+            args_expected = []
+            for key, param in list(params.items()):
+                doc_key = '[%s=%s]' % (key, param.default) if param.default is not inspect.Parameter.empty else key
+                args_expected.append(doc_key)
+
+                if not args and param.default is not inspect.Parameter.empty:
+                    params.pop(key)
+                    continue
+
+                if args:
+                    arg_value = args.pop(0)
+                    handler_kwargs[key] = arg_value
+                    params.pop(key)
+
             try:
-                await self.handle_command(message)
+                await handler(**handler_kwargs)
             except Exception:
                 traceback.print_exc()
                 self.sentry.captureException()

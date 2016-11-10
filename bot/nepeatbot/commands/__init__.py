@@ -12,3 +12,6 @@ def command(name, dev=False):
         }
         return f
     return decorate
+
+import nepeatbot.commands.moderation
+import nepeatbot.commands.quotes
