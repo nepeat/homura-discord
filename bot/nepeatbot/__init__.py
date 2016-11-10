@@ -129,7 +129,7 @@ class NepeatBot(discord.Client):
 
     async def on_channel_update(self, before, after):
         if before.topic != after.topic:
-            await self.push_event("topic", before.server, before.channel, {
+            await self.push_event("topic", before.server, before, {
                 "topic": {
                     "before": before.topic,
                     "after": after.topic,
@@ -137,7 +137,7 @@ class NepeatBot(discord.Client):
             })
 
         if before.name != after.name:
-            await self.push_event("rename_channel", before.server, before.channel, {
+            await self.push_event("rename_channel", before.server, before, {
                 "channel": {
                     "before": before.name,
                     "after": after.name,
@@ -146,7 +146,7 @@ class NepeatBot(discord.Client):
 
     async def on_server_update(self, before, after):
         if before.name != after.name:
-            await self.push_event("rename_server", before.server, before.channel, {
+            await self.push_event("rename_server", before, None, {
                 "server": {
                     "before": before.name,
                     "after": after.name,
