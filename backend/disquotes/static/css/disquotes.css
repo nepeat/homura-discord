@@ -28,8 +28,17 @@ body, button, input, select, textarea {
     margin-right: auto;
 }
 
-.username {
+span.username,
+span.channel,
+span.server {
     background-color: #eee;
     border-radius: 2px;
     padding: 5px 12px;
+}
+
+.emoji {
+    height: 32px;
+    width: 32px;
+    margin: 0 .05em 0 .1em!important;
+    vertical-align: -.4em;
 }
