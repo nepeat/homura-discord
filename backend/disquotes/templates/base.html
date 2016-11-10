@@ -1,21 +1,30 @@
-{% macro render_event(event) %}
-{% if event.type == "edit" %}
-<p class="edit"><span class="username">{{event.data.sender.display_name}}</span> has edited their message</p>
+{% macro render_event(_) %}
+{% set type = _.type %}
+{% set event = _.data %}
+
+<div class="event {{type}}">
+{% if type == "edit" %}
+<p class="edit"><span class="username">{{event.sender.display_name}}</span> has edited their message</p>
 <ul>
-    <li>{{event.data.edit.before}}</li>
-    <li>{{event.data.edit.after}}</li>
+    <li>{{event.edit.before}}</li>
+    <li>{{event.edit.after}}</li>
 </ul>
-{% elif event.type == "delete" %}
-<p class="delete"><span class="username">{{event.data.sender.display_name}}</span> has deleted their message.</p>
-<ul><li>{{event.data.message}}</li></ul>
-{% elif event.type == "rename" %}
-<p class="rename"><span class="username">{{event.data.old}}</span> is now known as <span class="username">{{event.data.new}}</span></p>
-{% elif event.type == "join" %}
-<p class="join"><span class="username">{{event.data.name}}</span> has joined the server. </p>
+{% elif type == "delete" %}
+<p><span class="username">{{event.sender.display_name}}</span> has deleted their message.</p>
+<ul><li>{{event.message}}</li></ul>
+{% elif type == "rename" %}
+<p><span class="username">{{event.old}}</span> is now known as <span class="username">{{event.new}}</span></p>
+{% elif type == "join" %}
+<p><span class="username">{{event.name}}</span> has joined the server. </p>
+{% elif type == "rename_server" %}
+<p><span class="server">{{event.server.before}}</span> has been renamed to <span class="server">{{event.server.after}}</span></p>
+{% elif type == "rename_channel" %}
+<p><span class="channel">{{event.channel.before}}</span> has been renamed to <span class="channel">{{event.channel.after}}</span></p>
 {% else %}
-<h1 class="title is-1">UNKNOWN {{event.type}}</h1>
-<pre>{{event.data}}</pre>
+<h1 class="title is-1">UNKNOWN {{type}}</h1>
+<pre>{{event}}</pre>
 {% endif %}
+</div>
 {% endmacro %}
 <!doctype html>
 <html>
