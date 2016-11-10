@@ -36,7 +36,7 @@ def server(serverid=None):
     except NoResultFound:
         return redirect(url_for("frontend.front"))
 
-    events = g.db.query(Event).filter(Event.server_id == server.id).order_by(Event.posted).limit(200).all()
+    events = g.db.query(Event).filter(Event.server_id == server.id).order_by(Event.posted.desc()).limit(200).all()
 
     return render_template(
         "events.html",
