@@ -17,7 +17,7 @@ def get_server_channel(server_id, channel_id=None, create=False):
         server = None
         if create:
             server = Server(
-                server=server_id
+                server_id=server_id
             )
             g.db.add(server)
             g.db.commit()
@@ -35,8 +35,8 @@ def get_server_channel(server_id, channel_id=None, create=False):
         channel = None
         if create:
             channel = Channel(
-                server=server.id,
-                channel=channel_id
+                server_id=server.id,
+                channel_id=channel_id
             )
             g.db.add(channel)
             g.db.commit()
@@ -46,8 +46,8 @@ def get_server_channel(server_id, channel_id=None, create=False):
 def create_event(event_type, server, channel=None, data={}):
     event = Event(
         type=event_type,
-        server=server.id,
-        channel=channel.id if channel else None,
+        server_id=server.id,
+        channel_id=channel.id if channel else None,
         data=data
     )
     g.db.add(event)
@@ -100,5 +100,10 @@ def event_post():
 
     server, channel = get_server_channel(request.json["server"], request.json["channel"], create=True)
     create_event(request.json["type"], server, channel, request.json["data"])
+
+    if request.json["type"] == "rename_channel" and channel:
+        channel.name = request.json["data"]["channel"]["after"]
+    elif request.json["type"] == "rename_server" and server:
+        server.name = request.json["data"]["server"]["after"]
 
     return jsonify({"status": "ok"})
