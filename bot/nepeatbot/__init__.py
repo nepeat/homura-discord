@@ -127,6 +127,32 @@ class NepeatBot(discord.Client):
             "new": new
         })
 
+    async def on_channel_update(self, before, after):
+        if before.topic != after.topic:
+            await self.push_event("topic", before.server, before.channel, {
+                "topic": {
+                    "before": before.topic,
+                    "after": after.topic,
+                }
+            })
+
+        if before.name != after.name:
+            await self.push_event("rename_channel", before.server, before.channel, {
+                "channel": {
+                    "before": before.name,
+                    "after": after.name,
+                }
+            })
+
+    async def on_server_update(self, before, after):
+        if before.name != after.name:
+            await self.push_event("rename_server", before.server, before.channel, {
+                "server": {
+                    "before": before.name,
+                    "after": after.name,
+                }
+            })
+
     async def on_message(self, message):
         # Ignore self messages.
         if message.author == self.user:

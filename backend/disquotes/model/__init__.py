@@ -6,7 +6,7 @@ from sqlalchemy import (BigInteger, Column, DateTime, ForeignKey, Integer,
                         String, Unicode, create_engine)
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import scoped_session, sessionmaker, validates
+from sqlalchemy.orm import scoped_session, sessionmaker, validates, relationship
 from sqlalchemy.schema import Index
 
 from disquotes.model.types import EVENT_TYPES
@@ -35,6 +35,8 @@ class Server(Base):
     id = Column(Integer, primary_key=True)
     server_id = Column(BigInteger, nullable=False)
 
+    name = Column(Unicode(100))
+
     meta = Column(JSONB)
 
 class Channel(Base):
@@ -42,6 +44,8 @@ class Channel(Base):
     id = Column(Integer, primary_key=True)
     channel_id = Column(BigInteger, nullable=False)
     server_id = Column(ForeignKey("servers.id"), nullable=False)
+    name = Column(Unicode(100))
+    server = relationship("Server")
 
     meta = Column(JSONB)
 
@@ -54,6 +58,9 @@ class Event(Base):
 
     type = Column(String(32), nullable=False)
     data = Column(JSONB, nullable=False)
+
+    server = relationship("Server")
+    channel = relationship("Channel")
 
     def to_dict(self):
         return self.data if self.data else {}

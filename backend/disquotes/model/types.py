@@ -5,4 +5,7 @@ EVENT_TYPES = [
     "leave"
     "edit",
     "rename",
+    "topic",
+    "rename_channel",
+    "rename_server",
 ]
