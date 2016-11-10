@@ -7,7 +7,7 @@ from raven.contrib.flask import Sentry
 
 from disquotes.model.auth import discord
 from disquotes.model.handlers import (before_request, connect_redis, connect_sql,
-                                   disconnect_redis, disconnect_sql)
+                                   commit_sql, disconnect_redis, disconnect_sql)
 from disquotes.views import frontend, events
 
 app = Flask(__name__)
@@ -36,6 +36,7 @@ sentry = Sentry(
 app.before_request(connect_sql)
 app.before_request(connect_redis)
 app.before_request(before_request)
+app.after_request(commit_sql)
 app.teardown_request(disconnect_sql)
 app.teardown_request(disconnect_redis)
 
