@@ -70,7 +70,7 @@ def event_get(type=None):
         before = None
 
     if type not in EVENT_TYPES:
-        return jsonify({"state": "badtype"})
+        return jsonify({"error": "badtype"})
 
     query = g.db.query(Event).filter(Event.type == type)
 
