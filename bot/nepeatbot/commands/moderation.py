@@ -26,7 +26,12 @@ async def cmd_purge(self, log, message):
 
 @command("purgechan")
 async def cmd_purge_chan(self, message, limit=100):
-    if limit > 600 or limit < 0:
+    try:
+        limit = int(limit)
+
+        if limit > 600 or limit < 0:
+            raise ValueError()
+    except (TypeError, ValueError):
         limit = 100
 
     removed = []
