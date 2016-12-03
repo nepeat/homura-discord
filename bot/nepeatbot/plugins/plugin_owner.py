@@ -18,7 +18,7 @@ class OwnerPlugin(PluginBase):
         await self.bot.send_message(message.channel, "Done!")
 
     async def on_ready(self):
-        status = await self.bot.redis.hget("nepeatbot:config", "game")
+        status = await self.redis.hget("nepeatbot:config", "game")
         await self.bot.change_status(
             game=Game(
                 name=status
