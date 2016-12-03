@@ -81,6 +81,14 @@ def event_get(type=None):
     if channel:
         query = query.filter(Event.channel_id == channel.id)
 
+    if (
+        "server" in request.args and not server or
+        "channel" in request.args and not channel
+    ):
+        return jsonify({
+            "events": []
+        })
+
     if before:
         query = query.filter(Event.id < before)
 
