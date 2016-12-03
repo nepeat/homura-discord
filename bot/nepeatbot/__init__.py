@@ -56,7 +56,7 @@ class NepeatBot(discord.Client):
                 poolsize=5
             )
 
-        return self.redis
+        return self._redis
 
     # Events
     async def get_plugins(self, server):
