@@ -42,22 +42,20 @@ class NepeatBot(discord.Client):
             self.influxdb = Dummy()
 
         super().__init__()
+
+        self.loop.create_task(self.create_redis())
         self.aiosession = aiohttp.ClientSession(loop=self.loop)
         self.plugin_manager = PluginManager(self)
         self.plugin_manager.load_all()
 
-    @property
-    async def redis(self):
-        if not hasattr(self, "_redis"):
-            self._redis = await asyncio_redis.Pool.create(
-                host=os.environ.get("REDIS_HOST", "localhost"),
-                port=int(os.environ.get("REDIS_PORT", 6379)),
-                db=int(os.environ.get("REDIS_DB", 0)),
-                loop=self.loop,
-                poolsize=5
-            )
-
-        return self._redis
+    async def create_redis(self):
+        self.redis = await asyncio_redis.Pool.create(
+            host=os.environ.get("REDIS_HOST", "localhost"),
+            port=int(os.environ.get("REDIS_PORT", 6379)),
+            db=int(os.environ.get("REDIS_DB", 0)),
+            loop=self.loop,
+            poolsize=5
+        )
 
     # Events
     async def get_plugins(self, server):
