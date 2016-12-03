@@ -20,7 +20,10 @@ class BotManagerPlugin(PluginBase):
         await self.update_plugin(message, args[0], False)
 
     async def update_plugin(self, message, plugin_name: str, enabled: bool):
-        plugin_name = plugin_name.lower()
+        plugin_name = plugin_name.strip().lower()
+        if not plugin_name.endswith("plugin"):
+            plugin_name = plugin_name = "plugin"
+
         plugin = self.bot.plugin_manager.get(plugin_name)
 
         if not plugin:
