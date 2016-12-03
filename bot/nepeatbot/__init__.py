@@ -37,16 +37,16 @@ class NepeatBot(discord.Client):
 
     @property
     async def redis(self):
-        if not hasattr(self, "redis"):
-            self.redis = await asyncio_redis.Pool.create(
+        if not hasattr(self, "_redis"):
+            self._redis = await asyncio_redis.Pool.create(
                 host=os.environ.get("REDIS_HOST", "localhost"),
                 port=int(os.environ.get("REDIS_PORT", 6379)),
                 db=int(os.environ.get("REDIS_DB", 0)),
                 loop=self.loop,
                 poolsize=5
             )
-        else:
-            return self.redis
+
+        return self.redis
 
     # Events
     async def get_plugins(self, server):
