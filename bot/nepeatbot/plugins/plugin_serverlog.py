@@ -27,6 +27,9 @@ class ServerLogPlugin(PluginBase):
 
         await bot.send_message(message.channel, output)
 
+    async def on_ready(self):
+        await self.add_all_servers()
+
     async def on_member_join(self, member):
         await self.log_member(member, True)
 
@@ -102,17 +105,17 @@ class ServerLogPlugin(PluginBase):
             "message": message.clean_content
         })
 
-    async def push_event(self, event_type, server, channel=None, data=None):
+    async def push_event(self, event_type, server=None, channel=None, data=None, endpoint="push"):
         payload = {
             "type": event_type,
-            "server": server.id,
+            "server": server.id if server else None,
             "channel": channel.id if channel else None,
             "data": data if data else {}
         }
 
         try:
             async with self.bot.aiosession.post(
-                url=self.events_url + "/events/push",
+                url=self.events_url + "/events/" + endpoint,
                 data=json.dumps(payload),
                 headers={"Content-Type": "application/json"}
             ) as response:
@@ -165,3 +168,11 @@ class ServerLogPlugin(PluginBase):
         await self.push_event(action, member.server, None, {
             "name": member.name
         })
+
+    async def add_all_servers(self):
+        payload = {}
+
+        for server in self.bot.servers:
+            payload[server.id] = server.name
+
+        await self.push_event("bulk_servers", data=payload, endpoint="bulk")

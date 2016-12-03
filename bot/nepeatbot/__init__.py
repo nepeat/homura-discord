@@ -5,8 +5,7 @@ import raven
 import discord
 import asyncio_redis
 import traceback
-
-from influxdb import InfluxDBClient
+import statsd
 
 from nepeatbot.plugins.manager import PluginManager
 
@@ -21,8 +20,11 @@ else:
 log = logging.getLogger(__name__)
 
 class Dummy(object):
+    def blank_fn(self, *args, **kwargs):
+        pass
+
     def __getattr__(self, attr):
-        return lambda a: "dummy"
+        return self.blank_fn
 
     def __setattr__(self, attr, val):
         pass
@@ -34,12 +36,10 @@ class NepeatBot(discord.Client):
             install_logging_hook=True
         )
 
-        if "INFLUXDB_DSN" in os.environ:
-            self.influxdb = InfluxDBClient.from_DSN(os.environ.get("INFLUXDB_DSN"))
-            if self.influxdb.database not in [x["name"] for x in self.influxdb.get_list_database()]:
-                self.influxdb.create_database(self.influxdb.database)
+        if "STATSD_HOST" in os.environ:
+            self.stats = statsd.StatsClient(os.environ.get("STATSD_HOST"), os.environ.get("STATSD_PORT", 8125))
         else:
-            self.influxdb = Dummy()
+            self.stats = Dummy()
 
         super().__init__()
 
@@ -62,12 +62,18 @@ class NepeatBot(discord.Client):
         plugins = await self.plugin_manager.get_all(server)
         return plugins
 
+    async def send_message(self, *args, **kwargs):
+        self.stats.incr("nepeatbot.message,type=send")
+        return await super().send_message(*args, **kwargs)
+
     async def on_error(self, event_method, *args, **kwargs):
+        self.stats.incr("nepeatbot.error")
         log.error("Exception in {}", event_method)
         traceback.print_exc()
-        self.bot.sentry.captureException()
+        self.sentry.captureException()
 
     async def on_ready(self):
+        self.stats.incr("nepeatbot.ready")
         log.info("Bot ready!")
 
         if hasattr(self, "shard_id") and self.shard_id:
@@ -80,8 +86,6 @@ class NepeatBot(discord.Client):
 
         log.info(msg)
         log.info("Server count: {}".format(len(self.servers)))
-        for server in self.servers:
-            log.info(server.name)
 
         for plugin in self.plugins:
             self.loop.create_task(plugin.on_ready())
@@ -92,6 +96,7 @@ class NepeatBot(discord.Client):
                 self.loop.create_task(plugin.on_server_join(server))
 
     async def on_message(self, message):
+        self.stats.incr("nepeatbot.message,type=receive", rate=0.1)
         if message.channel.is_private:
             return
 

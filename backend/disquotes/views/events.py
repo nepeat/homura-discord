@@ -115,3 +115,11 @@ def event_post():
         server.name = request.json["data"]["server"]["after"]
 
     return jsonify({"status": "ok"})
+
+@blueprint.route("/bulk", methods=["GET", "POST"])
+def event_bulk():
+    for server, name in request.json["data"].items():
+        server, channel = get_server_channel(server)
+        server.name = name
+
+    return jsonify({"status": "ok"})
