@@ -20,7 +20,7 @@ class PluginManager:
             self.load(plugin)
 
     async def get_all(self, server):
-        enabled_plugins = self.bot.redis.smembers('plugins:{}'.format(server.id))
+        enabled_plugins = await self.bot.redis.smembers('plugins:{}'.format(server.id))
         plugins = []
 
         for plugin in self.bot.plugins:

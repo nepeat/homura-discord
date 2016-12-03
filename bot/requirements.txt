@@ -3,3 +3,5 @@ redis
 hiredis
 raven
 blinker
+asyncio_redis
+influxdb==3.0.0

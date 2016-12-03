@@ -36,4 +36,4 @@ class BotManagerPlugin(PluginBase):
             return
 
         action = self.bot.redis.sadd if enabled else self.bot.redis.srem
-        action("plugins:{}".format(message.server.id), plugin)
+        await action("plugins:{}".format(message.server.id), plugin)

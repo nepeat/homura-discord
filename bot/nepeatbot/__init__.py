@@ -3,9 +3,10 @@ import os
 import aiohttp
 import raven
 import discord
-import redis
+import asyncio_redis
 
-from nepeatbot.model.connections import redis_pool
+from influxdb import InfluxDBClient
+
 from nepeatbot.plugins.manager import PluginManager
 
 # Logging
@@ -25,17 +26,27 @@ class NepeatBot(discord.Client):
             install_logging_hook=True
         )
 
+        self.influxdb = InfluxDBClient.from_DSN(os.environ.get("INFLUXDB_DSN", None))
+        if self.influxdb.database not in [x["name"] for x in self.influxdb.get_list_database()]:
+            self.influxdb.create_database(self.influxdb.database)
+
         super().__init__()
         self.aiosession = aiohttp.ClientSession(loop=self.loop)
         self.plugin_manager = PluginManager(self)
         self.plugin_manager.load_all()
 
     @property
-    def redis(self):
-        return redis.StrictRedis(
-            connection_pool=redis_pool,
-            decode_responses=True,
-        )
+    async def redis(self):
+        if not hasattr(self, "redis"):
+            self.redis = await asyncio_redis.Pool.create(
+                host=os.environ.get("REDIS_HOST", "localhost"),
+                port=int(os.environ.get("REDIS_PORT", 6379)),
+                db=int(os.environ.get("REDIS_DB", 0)),
+                loop=self.loop,
+                poolsize=5
+            )
+        else:
+            return self.redis
 
     # Events
     async def get_plugins(self, server):

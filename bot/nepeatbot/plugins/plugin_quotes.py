@@ -9,7 +9,7 @@ class QuotesPlugin(PluginBase):
 
     @command("quote status")
     async def plugin_status(self, channel):
-        status = self.bot.redis.sismember("quotes:channels", channel.id)
+        status = await self.bot.redis.sismember("quotes:channels", channel.id)
         await self.bot.send_message(channel, "Quotes is {status}".format(
             status="enabled \N{CHECK MARK}" if status else "disabled \N{CROSS MARK}"
         ))
@@ -21,11 +21,11 @@ class QuotesPlugin(PluginBase):
         else:
             action = self.bot.redis.srem
 
-        action("quotes:channels", channel.id)
+        await action("quotes:channels", channel.id)
         await self.bot.send_message(channel, "\N{WHITE HEAVY CHECK MARK}")
 
     async def on_message(self, message):
-        if self.bot.redis.sismember("quotes:channels", message.channel.id):
+        if await self.bot.redis.sismember("quotes:channels", message.channel.id):
             await self.handle_quote(message)
 
     async def validate_url(self, url):
