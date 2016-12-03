@@ -27,7 +27,15 @@ class PluginManager:
             if plugin.is_global:
                 plugins.append(plugin)
 
-            if plugin.__class__.__name__ in enabled_plugins:
+            if plugin.__class__.__name__.lower() in enabled_plugins:
                 plugins.append(plugin)
 
         return plugins
+
+    def get(self, name):
+        name = name.lower()
+        for plugin in self.bot.plugins:
+            if plugin.__class__.__name__.lower() == name:
+                return plugin
+
+        return None
