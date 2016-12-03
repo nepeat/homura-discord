@@ -1,0 +1,3 @@
+from nepeatbot.plugins.plugin_moderation import ModerationPlugin
+from nepeatbot.plugins.plugin_quotes import QuotesPlugin
+from nepeatbot.plugins.plugin_serverlog import ServerLogPlugin
