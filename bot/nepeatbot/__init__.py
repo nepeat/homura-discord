@@ -163,15 +163,17 @@ class NepeatBot(discord.Client):
         for plugin in enabled_plugins:
             self.loop.create_task(plugin.on_server_update(before, after))
 
-    async def on_server_role_create(self, server, role):
+    async def on_server_role_create(self, role):
+        server = role.server
         enabled_plugins = await self.get_plugins(server)
         for plugin in enabled_plugins:
-            self.loop.create_task(plugin.on_server_role_create(server, role))
+            self.loop.create_task(plugin.on_server_role_create(role))
 
-    async def on_server_role_delete(self, server, role):
+    async def on_server_role_delete(self, role):
+        server = role.server
         enabled_plugins = await self.get_plugins(server)
         for plugin in enabled_plugins:
-            self.loop.create_task(plugin.on_server_role_delete(server, role))
+            self.loop.create_task(plugin.on_server_role_delete(role))
 
     async def on_server_role_update(self, before, after):
         server = None

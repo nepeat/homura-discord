@@ -142,10 +142,10 @@ class PluginBase(object):
     async def on_server_update(self, before, after):
         pass
 
-    async def on_server_role_create(self, server, role):
+    async def on_server_role_create(self, role):
         pass
 
-    async def on_server_role_delete(self, server, role):
+    async def on_server_role_delete(self, role):
         pass
 
     async def on_server_role_update(self, server, role):
