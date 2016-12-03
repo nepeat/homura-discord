@@ -1,7 +1,6 @@
 import re
 import inspect
 import logging
-import traceback
 
 from functools import wraps
 
@@ -102,11 +101,7 @@ class PluginBase(object):
     async def _on_message(self, message):
         if message.author.id != self.bot.user.id:
             for command_name, func in self.commands.items():
-                try:
-                    await func(message)
-                except Exception:
-                    traceback.print_exc()
-                    self.bot.sentry.captureException()
+                await func(message)
         await self.on_message(message)
 
     async def on_message(self, message):

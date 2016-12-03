@@ -4,6 +4,7 @@ import aiohttp
 import raven
 import discord
 import asyncio_redis
+import traceback
 
 from influxdb import InfluxDBClient
 
@@ -62,6 +63,11 @@ class NepeatBot(discord.Client):
     async def get_plugins(self, server):
         plugins = await self.plugin_manager.get_all(server)
         return plugins
+
+    async def on_error(self, event_method, *args, **kwargs):
+        log.error("Exception in {}", event_method)
+        traceback.print_exc()
+        self.bot.sentry.captureException()
 
     async def on_ready(self):
         log.info("Bot ready!")
