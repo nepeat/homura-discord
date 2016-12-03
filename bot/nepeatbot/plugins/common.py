@@ -6,7 +6,7 @@ from functools import wraps
 
 log = logging.getLogger(__name__)
 
-def command(pattern=None, description="", usage=None, requires_admin=False):
+def command(pattern=None, description="", usage=None, requires_admin=False, owner_only=False):
     if not pattern.startswith("^!"):
         pattern = "^!" + pattern
 
@@ -30,6 +30,9 @@ def command(pattern=None, description="", usage=None, requires_admin=False):
 
             # Checking roles
             if requires_admin and not is_admin:
+                return
+
+            if owner_only and author.id != "66153853824802816":
                 return
 
             log.info("{}#{}@{} >> {}".format(message.author.name,
