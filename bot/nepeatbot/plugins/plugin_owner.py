@@ -9,7 +9,7 @@ class OwnerPlugin(PluginBase):
     @command("game (.+)", owner_only=True)
     async def set_game(self, message, args):
         await self.redis.hset("nepeatbot:config", "game", args[0])
-        await self.bot.change_status(
+        await self.bot.change_presence(
             game=Game(
                 name=args[0]
             )
@@ -19,7 +19,11 @@ class OwnerPlugin(PluginBase):
 
     async def on_ready(self):
         status = await self.redis.hget("nepeatbot:config", "game")
-        await self.bot.change_status(
+
+        if not status:
+            return
+
+        await self.bot.change_presence(
             game=Game(
                 name=status
             )
