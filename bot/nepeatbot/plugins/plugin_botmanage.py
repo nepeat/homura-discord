@@ -7,7 +7,7 @@ class BotManagerPlugin(PluginBase):
     @command("plugin(?:\s(?:help|list)|$)")
     async def list_plugins(self, message):
         result = "**__Plugins__**\n"
-        result = result + "\n".join([plugin.__class__.__name__ for plugin in self.bot.plugins if not plugin.is_global])
+        result = result + "\n".join([plugin.__class__.__name__.rstrip("Plugin") for plugin in self.bot.plugins if not plugin.is_global])
 
         await self.bot.send_message(message.channel, result)
 
