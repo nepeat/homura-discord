@@ -95,6 +95,10 @@ class PluginBase(object):
             commands=len(self.commands)
         ))
 
+    @property
+    def redis(self):
+        return self.bot.redis
+
     async def on_ready(self):
         pass
 
