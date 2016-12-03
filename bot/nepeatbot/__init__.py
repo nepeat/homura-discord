@@ -45,7 +45,7 @@ class NepeatBot(discord.Client):
     async def on_ready(self):
         log.info("Bot ready!")
 
-        if hasattr(self, "shard_id"):
+        if hasattr(self, "shard_id") and self.shard_id:
             msg = "Shard {}/{} restarted".format(
                 self.shard_id,
                 self.shard_count
