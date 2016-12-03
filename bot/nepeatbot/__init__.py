@@ -19,6 +19,13 @@ else:
 
 log = logging.getLogger(__name__)
 
+class Dummy(object):
+    def __getattr__(self, attr):
+        return lambda a: "dummy"
+
+    def __setattr__(self, attr, val):
+        pass
+
 class NepeatBot(discord.Client):
     def __init__(self):
         self.sentry = raven.Client(
@@ -26,9 +33,12 @@ class NepeatBot(discord.Client):
             install_logging_hook=True
         )
 
-        self.influxdb = InfluxDBClient.from_DSN(os.environ.get("INFLUXDB_DSN", None))
-        if self.influxdb.database not in [x["name"] for x in self.influxdb.get_list_database()]:
-            self.influxdb.create_database(self.influxdb.database)
+        if "INFLUXDB_DSN" in os.environ:
+            self.influxdb = InfluxDBClient.from_DSN(os.environ.get("INFLUXDB_DSN"))
+            if self.influxdb.database not in [x["name"] for x in self.influxdb.get_list_database()]:
+                self.influxdb.create_database(self.influxdb.database)
+        else:
+            self.influxdb = Dummy()
 
         super().__init__()
         self.aiosession = aiohttp.ClientSession(loop=self.loop)
