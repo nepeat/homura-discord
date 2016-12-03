@@ -2,3 +2,4 @@ from nepeatbot.plugins.plugin_moderation import ModerationPlugin
 from nepeatbot.plugins.plugin_quotes import QuotesPlugin
 from nepeatbot.plugins.plugin_serverlog import ServerLogPlugin
 from nepeatbot.plugins.plugin_botmanage import BotManagerPlugin
+from nepeatbot.plugins.plugin_owner import OwnerPlugin
