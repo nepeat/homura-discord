@@ -97,7 +97,7 @@ class NepeatBot(discord.Client):
 
     async def on_message(self, message):
         # Why. http://i.imgur.com/iQSuVnV.png
-        if message.author.id == self.bot.user.id:
+        if message.author.id == self.user.id:
             return
 
         self.stats.incr("nepeatbot.message,type=receive", rate=0.1)
