@@ -88,12 +88,12 @@ class NepeatBot(discord.Client):
         log.info("Server count: {}".format(len(self.servers)))
 
         for plugin in self.plugins:
-            self.loop.create_task(plugin.on_ready())
+            await plugin.on_ready()
 
     async def on_server_join(self, server):
         for plugin in self.plugins:
             if plugin.is_global:
-                self.loop.create_task(plugin.on_server_join(server))
+                await plugin.on_server_join(server)
 
     async def on_message(self, message):
         self.stats.incr("nepeatbot.message,type=receive", rate=0.1)
@@ -111,7 +111,7 @@ class NepeatBot(discord.Client):
 
         enabled_plugins = await self.get_plugins(server)
         for plugin in enabled_plugins:
-            self.loop.create_task(plugin._on_message(message))
+            await plugin._on_message(message)
 
     async def on_message_edit(self, before, after):
         if before.channel.is_private:
@@ -120,7 +120,7 @@ class NepeatBot(discord.Client):
         server = after.server
         enabled_plugins = await self.get_plugins(server)
         for plugin in enabled_plugins:
-            self.loop.create_task(plugin.on_message_edit(before, after))
+            await plugin.on_message_edit(before, after)
 
     async def on_message_delete(self, message):
         if message.channel.is_private:
@@ -129,7 +129,7 @@ class NepeatBot(discord.Client):
         server = message.server
         enabled_plugins = await self.get_plugins(server)
         for plugin in enabled_plugins:
-            self.loop.create_task(plugin.on_message_delete(message))
+            await plugin.on_message_delete(message)
 
     async def on_channel_create(self, channel):
         if channel.is_private:
@@ -138,7 +138,7 @@ class NepeatBot(discord.Client):
         server = channel.server
         enabled_plugins = await self.get_plugins(server)
         for plugin in enabled_plugins:
-            self.loop.create_task(plugin.on_channel_create(channel))
+            await plugin.on_channel_create(channel)
 
     async def on_channel_update(self, before, after):
         if before.is_private:
@@ -147,7 +147,7 @@ class NepeatBot(discord.Client):
         server = after.server
         enabled_plugins = await self.get_plugins(server)
         for plugin in enabled_plugins:
-            self.loop.create_task(plugin.on_channel_update(before, after))
+            await plugin.on_channel_update(before, after)
 
     async def on_channel_delete(self, channel):
         if channel.is_private:
@@ -156,43 +156,43 @@ class NepeatBot(discord.Client):
         server = channel.server
         enabled_plugins = await self.get_plugins(server)
         for plugin in enabled_plugins:
-            self.loop.create_task(plugin.on_channel_delete(channel))
+            await plugin.on_channel_delete(channel)
 
     async def on_member_join(self, member):
         server = member.server
         enabled_plugins = await self.get_plugins(server)
         for plugin in enabled_plugins:
-            self.loop.create_task(plugin.on_member_join(member))
+            await plugin.on_member_join(member)
 
     async def on_member_remove(self, member):
         server = member.server
         enabled_plugins = await self.get_plugins(server)
         for plugin in enabled_plugins:
-            self.loop.create_task(plugin.on_member_remove(member))
+            await plugin.on_member_remove(member)
 
     async def on_member_update(self, before, after):
         server = after.server
         enabled_plugins = await self.get_plugins(server)
         for plugin in enabled_plugins:
-            self.loop.create_task(plugin.on_member_update(before, after))
+            await plugin.on_member_update(before, after)
 
     async def on_server_update(self, before, after):
         server = after
         enabled_plugins = await self.get_plugins(server)
         for plugin in enabled_plugins:
-            self.loop.create_task(plugin.on_server_update(before, after))
+            await plugin.on_server_update(before, after)
 
     async def on_server_role_create(self, role):
         server = role.server
         enabled_plugins = await self.get_plugins(server)
         for plugin in enabled_plugins:
-            self.loop.create_task(plugin.on_server_role_create(role))
+            await plugin.on_server_role_create(role)
 
     async def on_server_role_delete(self, role):
         server = role.server
         enabled_plugins = await self.get_plugins(server)
         for plugin in enabled_plugins:
-            self.loop.create_task(plugin.on_server_role_delete(role))
+            await plugin.on_server_role_delete(role)
 
     async def on_server_role_update(self, before, after):
         server = None
@@ -206,7 +206,7 @@ class NepeatBot(discord.Client):
 
         enabled_plugins = await self.get_plugins(server)
         for plugin in enabled_plugins:
-            self.loop.create_task(plugin.on_server_role_update(before, after))
+            await plugin.on_server_role_update(before, after)
 
     async def on_voice_state_update(self, before, after):
         if after is None and before is None:
@@ -220,19 +220,19 @@ class NepeatBot(discord.Client):
 
         enabled_plugins = await self.get_plugins(server)
         for plugin in enabled_plugins:
-            self.loop.create_task(plugin.on_voice_state_update(before, after))
+            await plugin.on_voice_state_update(before, after)
 
     async def on_member_ban(self, member):
         server = member.server
         enabled_plugins = await self.get_plugins(server)
         for plugin in enabled_plugins:
-            self.loop.create_task(plugin.on_member_ban(member))
+            await plugin.on_member_ban(member)
 
     async def on_member_unban(self, member):
         server = member.server
         enabled_plugins = await self.get_plugins(server)
         for plugin in enabled_plugins:
-            self.loop.create_task(plugin.on_member_unban(member))
+            await plugin.on_member_unban(member)
 
     async def on_typing(self, channel, user, when):
         if channel.is_private:
@@ -241,4 +241,4 @@ class NepeatBot(discord.Client):
         server = channel.server
         enabled_plugins = await self.get_plugins(server)
         for plugin in enabled_plugins:
-            self.loop.create_task(plugin.on_typing(channel, user, when))
+            await plugin.on_typing(channel, user, when)
