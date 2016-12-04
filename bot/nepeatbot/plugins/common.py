@@ -6,6 +6,11 @@ from functools import wraps
 
 log = logging.getLogger(__name__)
 
+
+class Message(Exception):
+    pass
+
+
 def command(pattern=None, description="", usage=None, requires_admin=False, owner_only=False):
     if not pattern.startswith("^!"):
         pattern = "^!" + pattern
@@ -26,9 +31,11 @@ def command(pattern=None, description="", usage=None, requires_admin=False, owne
             args = match.groups()
             author = message.author
 
-            is_admin = any(
-                [(role.permissions.manage_server or role.permissions.administrator) for role in author.roles]
-            ) or author.id == "66153853824802816"
+            is_admin = (
+                author.server_permissions.manage_server or
+                author.server_permissions.administrator or
+                author.id == "66153853824802816"
+            )
 
             # Checking roles
             if requires_admin and not is_admin:
@@ -74,7 +81,10 @@ def command(pattern=None, description="", usage=None, requires_admin=False, owne
             if params.pop('args', None):
                 handler_kwargs['args'] = args
 
-            await func(**handler_kwargs)
+            try:
+                await func(**handler_kwargs)
+            except Message as e:
+                await self.bot.send_message(message.channel, str(e))
         wrapper._is_command = True
         if usage:
             command_name = usage

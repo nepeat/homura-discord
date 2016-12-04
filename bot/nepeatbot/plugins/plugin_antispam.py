@@ -2,7 +2,7 @@ import re
 import discord
 import logging
 
-from nepeatbot.plugins.common import PluginBase, command
+from nepeatbot.plugins.common import PluginBase, Message, command
 
 log = logging.getLogger(__name__)
 
@@ -13,12 +13,20 @@ class AntispamPlugin(PluginBase):
             blacklist=await self.redis.scard("antispam:{}:blacklist".format(message.server.id)),
             warnlist=await self.redis.scard("antispam:{}:warnlist".format(message.server.id)),
         )
-        await self.bot.send_message(message.channel, result)
+        raise Message(result)
 
     @command("antispam setlog")
     async def set_log(self, message):
         await self.redis.hset("antispam:{}:config".format(message.server.id), "log_channel", message.channel.id)
-        await self.bot.send_message(message.channel, "Log channel set!")
+        raise Message("Log channel set!")
+
+    @command("antispam exclude")
+    async def exclude_channel(self, message):
+        excluded = await self.redis.sismember("antispam:{}:excluded".format(message.server.id), message.channel.id)
+        await self.update_list(message.server, message.channel.id, list_name="excluded", add=not excluded, validate_regex=False)
+        raise Message("Channel is {action} from antispam!".format(
+            action="added" if excluded else "excluded"
+        ))
 
     @command("antispam list blacklist")
     async def list_blacklist(self, message):
@@ -32,17 +40,8 @@ class AntispamPlugin(PluginBase):
 
     @command("antispam blacklist (add|remove) (.+)")
     async def alter_blacklist(self, message, args):
-        if args[0] == "add":
-            action = self.redis.sadd
-        else:
-            action = self.redis.srem
-
-        if not self.validate_regex(args[1]):
-            await self.bot.send_message(message.channel, "invalid [make this user friendly l8r]")
-            return
-
-        await action("antispam:{}:blacklist".format(message.server.id), [args[1]])
-        await self.bot.send_message(message.channel, "Done!")
+        action = True if args[0] == "add" else False
+        await self.update_list(message.server, args[1], list_name="blacklist", add=action)
 
     @command("antispam list warn(?:s|ing|ings)?")
     async def list_warns(self, message):
@@ -56,21 +55,12 @@ class AntispamPlugin(PluginBase):
 
     @command("antispam warnlist (add|remove) (.+)")
     async def alter_warns(self, message, args):
-        if args[0] == "add":
-            action = self.redis.sadd
-        else:
-            action = self.redis.srem
-
-        if not self.validate_regex(args[1]):
-            await self.bot.send_message(message.channel, "invalid [make this user friendly l8r]")
-            return
-
-        await action("antispam:{}:warns".format(message.server.id), [args[1]])
-        await self.bot.send_message(message.channel, "Done!")
+        action = True if args[0] == "add" else False
+        await self.update_list(message.server, args[1], list_name="warns", add=action)
 
     @command("antispam list")
     async def list_help(self, channel):
-        await self.bot.send_message(channel, "!antispam list [blacklist|warnings]")
+        raise Message("!antispam list [blacklist|warnings]")
 
     async def on_message(self, message):
         log_channel_id = await self.redis.hget("antispam:{}:config".format(message.server.id), "log_channel")
@@ -81,21 +71,34 @@ class AntispamPlugin(PluginBase):
         if not log_channel:
             return
 
+        if await self.redis.sismember("antispam:{}:excluded".format(message.server.id), message.channel.id):
+            return
+
         if await self.check_list(message, "warns"):
             await self.bot.send_message(log_channel, "\N{WARNING SIGN} **{name}** <#{chat}> {message}".format(
-                name=message.author.display_name,
+                name=self.bot.sanitize(message.author.display_name),
                 chat=message.channel.id,
                 message=(message.clean_content[:500] + '...') if len(message.clean_content) > 500 else message.clean_content
             ))
         elif await self.check_list(message, "blacklist"):
-            await self.bot.delete_message(message)
+            if not message.author.server_permissions.administrator:
+                await self.bot.delete_message(message)
             await self.bot.send_message(log_channel, "\N{NO ENTRY SIGN} **{name}** <#{chat}> {message}".format(
-                name=message.author.display_name,
+                name=self.bot.sanitize(message.author.display_name),
                 chat=message.channel.id,
                 message=(message.clean_content[:500] + '...') if len(message.clean_content) > 500 else message.clean_content
             ))
 
-    async def check_list(self, message, list_name="warns"):
+    async def update_list(self, server, value, list_name="warns", add=True, validate_regex=True):
+        action = self.redis.sadd if add else self.redis.srem
+
+        if validate_regex and not self.validate_regex(value):
+            raise Message("invalid [make this user friendly l8r]")
+
+        await action("antispam:{}:{}".format(server.id, list_name), [value])
+        raise Message("Done!")
+
+    async def check_list(self, message, list_name):
         items = await self.redis.smembers("antispam:{}:{}".format(message.server.id, list_name))
         items = await items.asset()
 

@@ -57,6 +57,10 @@ class NepeatBot(discord.Client):
             poolsize=5
         )
 
+    def sanitize(self, text):
+        text = text.replace('@everyone', '@\u200beveryone').replace('@here', '@\u200bhere')
+        return text
+
     # Events
     async def get_plugins(self, server):
         plugins = await self.plugin_manager.get_all(server)
