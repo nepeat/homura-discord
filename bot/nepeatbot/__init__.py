@@ -96,6 +96,10 @@ class NepeatBot(discord.Client):
                 await plugin.on_server_join(server)
 
     async def on_message(self, message):
+        # Why. http://i.imgur.com/iQSuVnV.png
+        if message.author.id == self.bot.user.id:
+            return
+
         self.stats.incr("nepeatbot.message,type=receive", rate=0.1)
         if message.channel.is_private:
             return
