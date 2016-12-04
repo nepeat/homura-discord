@@ -68,7 +68,7 @@ class NepeatBot(discord.Client):
 
     async def on_error(self, event_method, *args, **kwargs):
         self.stats.incr("nepeatbot.error")
-        log.error("Exception in {}", event_method)
+        log.error("Exception in %s", event_method)
         traceback.print_exc()
         self.sentry.captureException()
 

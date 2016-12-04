@@ -20,10 +20,6 @@ class BotManagerPlugin(PluginBase):
         await self.update_plugin(message, args[0], False)
 
     async def update_plugin(self, message, plugin_name: str, enabled: bool):
-        plugin_name = plugin_name.strip().lower()
-        if not plugin_name.endswith("plugin"):
-            plugin_name = plugin_name + "plugin"
-
         plugin = self.bot.plugin_manager.get(plugin_name)
 
         if not plugin:
@@ -41,7 +37,6 @@ class BotManagerPlugin(PluginBase):
         action = self.bot.redis.sadd if enabled else self.bot.redis.srem
         await action("plugins:{}".format(message.server.id), [plugin.__class__.__name__])
 
-        await self.bot.send_message(message.channel, "Plugin `{plugin}` {status}!".format(
-            plugin=plugin_name,
-            status="enabled" if enabled else "disabled"
+        await self.bot.send_message(message.channel, "Plugin {status}!".format(
+            status="enabled \N{CHECK MARK}" if enabled else "disabled \N{CROSS MARK}"
         ))
