@@ -21,6 +21,8 @@ def command(pattern=None, description="", usage=None, requires_admin=False, owne
             if not match:
                 return
 
+            self.bot.stats.incr("nepeatbot.command,function=" + func.__name__)
+
             args = match.groups()
             author = message.author
 
