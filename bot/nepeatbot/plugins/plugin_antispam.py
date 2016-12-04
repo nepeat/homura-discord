@@ -9,7 +9,11 @@ log = logging.getLogger(__name__)
 class AntispamPlugin(PluginBase):
     @command("antispam status")
     async def antispam_status(self, message):
-        await self.bot.send_message(message.channel, "not implemented")
+        result = "Blacklist {blacklist} entries.\nWarnlist {warnlist} entries.".format(
+            blacklist=await self.redis.scard("antispam:{}:blacklist".format(message.server.id)),
+            warnlist=await self.redis.scard("antispam:{}:warnlist".format(message.server.id)),
+        )
+        await self.bot.send_message(message.channel, result)
 
     @command("antispam setlog")
     async def set_log(self, message):
@@ -18,11 +22,27 @@ class AntispamPlugin(PluginBase):
 
     @command("antispam list blacklist")
     async def list_blacklist(self, message):
-        await self.bot.send_message(message.channel, "not implemented")
+        warns = await self.redis.smembers("antispam:{}:blacklist".format(message.server.id))
+        warns = await warns.asset()
+
+        result = "**__Blacklist__**\n"
+        result += "\n".join(warns if warns else {"None"})
+
+        await self.bot.send_message(message.channel, result)
 
     @command("antispam blacklist (add|remove) (.+)")
     async def alter_blacklist(self, message, args):
-        await self.bot.send_message(message.channel, "not implemented")
+        if args[0] == "add":
+            action = self.redis.sadd
+        else:
+            action = self.redis.srem
+
+        if not self.validate_regex(args[1]):
+            await self.bot.send_message(message.channel, "invalid [make this user friendly l8r]")
+            return
+
+        await action("antispam:{}:blacklist".format(message.server.id), [args[1]])
+        await self.bot.send_message(message.channel, "Done!")
 
     @command("antispam list warn(?:s|ing|ings)?")
     async def list_warns(self, message):
@@ -42,7 +62,8 @@ class AntispamPlugin(PluginBase):
             action = self.redis.srem
 
         if not self.validate_regex(args[1]):
-            self.bot.send_message(message.channel, "invalid warn [make this user friendly l8r]")
+            await self.bot.send_message(message.channel, "invalid [make this user friendly l8r]")
+            return
 
         await action("antispam:{}:warns".format(message.server.id), [args[1]])
         await self.bot.send_message(message.channel, "Done!")
@@ -60,19 +81,26 @@ class AntispamPlugin(PluginBase):
         if not log_channel:
             return
 
-        if await self.check_warns(message):
+        if await self.check_list(message, "warns"):
             await self.bot.send_message(log_channel, "\N{WARNING SIGN} **{name}** <#{chat}> {message}".format(
                 name=message.author.display_name,
                 chat=message.channel.id,
                 message=(message.clean_content[:500] + '...') if len(message.clean_content) > 500 else message.clean_content
             ))
+        elif await self.check_list(message, "blacklist"):
+            await self.bot.delete_message(message)
+            await self.bot.send_message(log_channel, "\N{NO ENTRY SIGN} **{name}** <#{chat}> {message}".format(
+                name=message.author.display_name,
+                chat=message.channel.id,
+                message=(message.clean_content[:500] + '...') if len(message.clean_content) > 500 else message.clean_content
+            ))
 
-    async def check_warns(self, message):
-        warns = await self.redis.smembers("antispam:{}:warns".format(message.server.id))
-        warns = await warns.asset()
+    async def check_list(self, message, list_name="warns"):
+        items = await self.redis.smembers("antispam:{}:{}".format(message.server.id, list_name))
+        items = await items.asset()
 
-        for warn in warns:
-            if re.search(warn, message.clean_content, (re.I | re.M)):
+        for item in items:
+            if re.search(item, message.clean_content, (re.I | re.M)):
                 return True
 
         return False
