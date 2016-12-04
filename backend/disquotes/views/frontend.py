@@ -1,22 +1,23 @@
-from flask import Blueprint, g, request, jsonify, render_template, redirect, url_for
+from flask import Blueprint, g, request, jsonify, render_template, redirect, url_for, session
 from sqlalchemy.orm.exc import NoResultFound
 
 from disquotes.lib.permissions import Permissions
-from disquotes.model.auth import discord, require_login
+from disquotes.model.auth import discord, require_login, get_servers, get_user_managed_servers
 from disquotes.lib.cache import redis_cache
 from disquotes.model import Channel, Event, Server
 from disquotes.model.types import EVENT_TYPES
 
 blueprint = Blueprint("frontend", __name__)
 
-@redis_cache.cache_on_arguments("access_token")
-def get_servers(session, access_token):
-    return session.get("users/@me/guilds").json()
+@blueprint.before_request
+def before_app():
+    g.session_token = session["oauth-discord_oauth_token"]["access_token"]
+    g.servers = get_servers(g.session_token)
 
 @blueprint.route("/")
 @require_login
 def front():
-    user_servers = get_servers(discord.session, discord.session.access_token)
+    user_servers = get_user_managed_servers(g.servers)
     quoted_servers = [str(x[0]) for x in g.db.query(Server.server_id).all()]
 
     return render_template(
@@ -25,9 +26,9 @@ def front():
         quoted_servers=quoted_servers
     )
 
-@blueprint.route("/server/<serverid>")
+@blueprint.route("/server/<serverid>/deleted")
 @require_login
-def server(serverid=None):
+def deleted_messages(serverid=None):
     if not serverid:
         return redirect(url_for("frontend.front"))
 

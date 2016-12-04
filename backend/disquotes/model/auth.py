@@ -3,6 +3,8 @@ from functools import wraps
 from flask_dance.consumer import OAuth2ConsumerBlueprint
 from flask import redirect, url_for
 
+from disquotes.lib.cache import redis_cache
+
 def require_login(f):
     @wraps(f)
     def inner(*args, **kwargs):
@@ -10,6 +12,20 @@ def require_login(f):
             return redirect(url_for("oauth-discord.login"))
         return f(*args, **kwargs)
     return inner
+
+@redis_cache.cache_on_arguments("access_token")
+def get_servers(access_token):
+    return discord.session.get("users/@me/guilds").json()
+
+def get_user_managed_servers(guilds):
+    return list(
+        filter(
+            lambda g: (g['owner'] is True) or
+            bool((int(g['permissions']) >> 3) & 1) or  # Manage Server
+            bool((int(g['permissions']) >> 5) & 1),    # Administrator
+            guilds
+        )
+    )
 
 discord = OAuth2ConsumerBlueprint(
     "oauth-discord", __name__,

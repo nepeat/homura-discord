@@ -5,8 +5,11 @@
     <div class="column">
         <h1> Servers </h1>
         {% for server in user_servers if server["id"] in quoted_servers %}
-        <h2 class="server"><a href="{{url_for("frontend.server", serverid=server.id)}}">{{server.name}}</a></h2>
-        <!--{{server|tojson}}-->
+        <h2 class="server">{{server.name}}</h2>
+        <ul>
+            <li><a href="{{url_for("frontend.deleted_messages", serverid=server.id)}}">Deleted</a></li>
+            <li><a href="{{url_for("frontend.deleted_messages", serverid=server.id)}}">Deleted</a></li>
+        </ul>
         {% endfor %}
     </div>
 </div>
