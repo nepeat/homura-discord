@@ -21,7 +21,7 @@ class QuotesPlugin(PluginBase):
         else:
             action = self.bot.redis.srem
 
-        await action("quotes:channels", channel.id)
+        await action("quotes:channels", [channel.id])
         await self.bot.send_message(channel, "\N{WHITE HEAVY CHECK MARK}")
 
     async def on_message(self, message):
