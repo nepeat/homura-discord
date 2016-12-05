@@ -50,7 +50,7 @@ class EventLogPlugin(PluginBase):
             await self.log("\N{MEMO} Server has been renamed from **{before}** to **{after}**".format(
                 before=self.bot.sanitize(before.name),
                 after=self.bot.sanitize(after.name)
-            ), before.server, "server_rename")
+            ), before, "server_rename")
 
     async def on_member_update(self, before, after):
         old = before.nick if before.nick else before.name
