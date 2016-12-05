@@ -34,6 +34,10 @@ class ModerationPlugin(PluginBase):
             deleted = deleted + len(removed)
 
             for messages in zip_longest(*(iter(removed),) * 100):
+            if len(removed) == 1:
+                await self.bot.delete_message(removed[0])
+                continue
+
                 messages = [message for message in messages if message]
                 await self.bot.delete_messages(messages)
 
