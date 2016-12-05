@@ -5,3 +5,4 @@ from nepeatbot.plugins.plugin_botmanage import BotManagerPlugin
 from nepeatbot.plugins.plugin_owner import OwnerPlugin
 from nepeatbot.plugins.plugin_fun import FunPlugin
 from nepeatbot.plugins.plugin_antispam import AntispamPlugin
+from nepeatbot.plugins.plugin_eventlog import EventLogPlugin
