@@ -41,7 +41,7 @@ class AntispamPlugin(PluginBase):
     @command("antispam blacklist (add|remove) (.+)")
     async def alter_blacklist(self, message, args):
         action = True if args[0] == "add" else False
-        await self.update_list(message.server, args[1], list_name="blacklist", add=action)
+        return await self.update_list(message.server, args[1], list_name="blacklist", add=action)
 
     @command("antispam list warn(?:s|ing|ings)?")
     async def list_warns(self, message):
@@ -56,7 +56,7 @@ class AntispamPlugin(PluginBase):
     @command("antispam warnlist (add|remove) (.+)")
     async def alter_warns(self, message, args):
         action = True if args[0] == "add" else False
-        await self.update_list(message.server, args[1], list_name="warns", add=action)
+        return await self.update_list(message.server, args[1], list_name="warns", add=action)
 
     @command("antispam list")
     async def list_help(self, channel):
@@ -96,7 +96,7 @@ class AntispamPlugin(PluginBase):
             return Message("invalid [make this user friendly l8r]")
 
         await action("antispam:{}:{}".format(server.id, list_name), [value])
-        return Message("Done!")
+        return Message("List updated!")
 
     async def check_list(self, message, list_name):
         items = await self.redis.smembers("antispam:{}:{}".format(message.server.id, list_name))
