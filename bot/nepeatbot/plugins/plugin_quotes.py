@@ -11,7 +11,7 @@ class QuotesPlugin(PluginBase):
     async def plugin_status(self, channel):
         status = await self.bot.redis.sismember("quotes:channels", channel.id)
         await self.bot.send_message(channel, "Quotes is {status}".format(
-            status="enabled \N{CHECK MARK}" if status else "disabled \N{CROSS MARK}"
+            status="enabled \N{WHITE HEAVY CHECK MARK}" if status else "disabled \N{CROSS MARK}"
         ))
 
     @command("quote (enable|on|disable|off)")

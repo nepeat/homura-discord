@@ -38,5 +38,5 @@ class BotManagerPlugin(PluginBase):
         await action("plugins:{}".format(message.server.id), [plugin.__class__.__name__])
 
         await self.bot.send_message(message.channel, "Plugin {status}!".format(
-            status="enabled \N{CHECK MARK}" if enabled else "disabled \N{CROSS MARK}"
+            status="enabled \N{WHITE HEAVY CHECK MARK}" if enabled else "disabled \N{CROSS MARK}"
         ))
