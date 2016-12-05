@@ -1,3 +1,4 @@
+import asyncio
 import re
 import inspect
 import logging
@@ -7,8 +8,12 @@ from functools import wraps
 log = logging.getLogger(__name__)
 
 
-class Message(Exception):
-    pass
+class Message(object):
+    def __init__(self, content, reply=False, delete_after=0, delete_invoking=False):
+        self.content = content
+        self.reply = reply
+        self.delete_after = delete_after
+        self.delete_invoking = delete_invoking
 
 
 def command(pattern=None, description="", usage=None, requires_admin=False, owner_only=False):
@@ -81,10 +86,24 @@ def command(pattern=None, description="", usage=None, requires_admin=False, owne
             if params.pop('args', None):
                 handler_kwargs['args'] = args
 
-            try:
-                await func(**handler_kwargs)
-            except Message as e:
-                await self.bot.send_message(message.channel, str(e))
+            response = await func(**handler_kwargs)
+            if response and isinstance(response, Message):
+                content = response.content
+                if response.reply:
+                    content = '{}, {}'.format(message.author.mention, content)
+
+                sentmsg = await self.bot.send_message(
+                    message.channel, content
+                )
+
+                if response.delete_after:
+                    await asyncio.sleep(response.delete_after)
+                    await self.bot.delete_message(sentmsg)
+
+                if response.delete_invoking:
+                    await asyncio.sleep(5)
+                    self.bot.delete_message(message)
+
         wrapper._is_command = True
         if usage:
             command_name = usage

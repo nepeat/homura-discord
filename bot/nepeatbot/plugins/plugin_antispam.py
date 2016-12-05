@@ -13,18 +13,18 @@ class AntispamPlugin(PluginBase):
             blacklist=await self.redis.scard("antispam:{}:blacklist".format(message.server.id)),
             warnlist=await self.redis.scard("antispam:{}:warnlist".format(message.server.id)),
         )
-        raise Message(result)
+        return Message(result)
 
     @command("antispam setlog")
     async def set_log(self, message):
         await self.redis.hset("antispam:{}:config".format(message.server.id), "log_channel", message.channel.id)
-        raise Message("Log channel set!")
+        return Message("Log channel set!")
 
     @command("antispam exclude")
     async def exclude_channel(self, message):
         excluded = await self.redis.sismember("antispam:{}:excluded".format(message.server.id), message.channel.id)
         await self.update_list(message.server, message.channel.id, list_name="excluded", add=not excluded, validate_regex=False)
-        raise Message("Channel is {action} from antispam!".format(
+        return Message("Channel is {action} from antispam!".format(
             action="added" if excluded else "excluded"
         ))
 
@@ -60,7 +60,7 @@ class AntispamPlugin(PluginBase):
 
     @command("antispam list")
     async def list_help(self, channel):
-        raise Message("!antispam list [blacklist|warnings]")
+        return Message("!antispam list [blacklist|warnings]")
 
     async def on_message(self, message):
         log_channel_id = await self.redis.hget("antispam:{}:config".format(message.server.id), "log_channel")
@@ -93,10 +93,10 @@ class AntispamPlugin(PluginBase):
         action = self.redis.sadd if add else self.redis.srem
 
         if validate_regex and not self.validate_regex(value):
-            raise Message("invalid [make this user friendly l8r]")
+            return Message("invalid [make this user friendly l8r]")
 
         await action("antispam:{}:{}".format(server.id, list_name), [value])
-        raise Message("Done!")
+        return Message("Done!")
 
     async def check_list(self, message, list_name):
         items = await self.redis.smembers("antispam:{}:{}".format(message.server.id, list_name))
