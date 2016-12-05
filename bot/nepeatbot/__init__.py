@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import os
 import aiohttp
@@ -61,6 +62,39 @@ class NepeatBot(discord.Client):
         text = text.replace('@everyone', '@\u200beveryone').replace('@here', '@\u200bhere')
         return text
 
+    async def _plugin_run_event(self, method, *args, **kwargs):
+        try:
+            await method(*args, **kwargs)
+        except asyncio.CancelledError:
+            pass
+        except Exception:
+            try:
+                await self.on_error(method.__name__, *args, **kwargs)
+            except asyncio.CancelledError:
+                pass
+
+    async def plugin_dispatch(self, event, *args, **kwargs):
+        method = "on_" + event
+        server = None
+        plugins = {plugin for plugin in self.plugins if plugin.is_global}
+
+        for arg in args:
+            if hasattr(arg, "server"):
+                server = arg.server
+                break
+
+        if server:
+            plugins |= set(await self.get_plugins(server))
+
+        for plugin in plugins:
+            func = getattr(plugin, method)
+
+            if event == "message":
+                func = getattr(plugin, "_on_message")
+
+            if hasattr(self, method):
+                asyncio.ensure_future(self._plugin_run_event(func, *args, **kwargs), loop=self.loop)
+
     # Events
     async def get_plugins(self, server):
         plugins = await self.plugin_manager.get_all(server)
@@ -91,13 +125,10 @@ class NepeatBot(discord.Client):
         log.info(msg)
         log.info("Server count: {}".format(len(self.servers)))
 
-        for plugin in self.plugins:
-            await plugin.on_ready()
+        await self.plugin_dispatch("ready")
 
     async def on_server_join(self, server):
-        for plugin in self.plugins:
-            if plugin.is_global:
-                await plugin.on_server_join(server)
+        await self.plugin_dispatch("server_join", server)
 
     async def on_message(self, message):
         # Why. http://i.imgur.com/iQSuVnV.png
@@ -108,8 +139,6 @@ class NepeatBot(discord.Client):
         if message.channel.is_private:
             return
 
-        server = message.server
-
         if message.content == "!shard?":
             if hasattr(self, 'shard_id'):
                 await self.send_message(
@@ -117,136 +146,70 @@ class NepeatBot(discord.Client):
                     "shard {}/{}".format(self.shard_id + 1, self.shard_count)
                 )
 
-        enabled_plugins = await self.get_plugins(server)
-        for plugin in enabled_plugins:
-            await plugin._on_message(message)
+        await self.plugin_dispatch("message", message)
 
     async def on_message_edit(self, before, after):
         if before.channel.is_private:
             return
 
-        server = after.server
-        enabled_plugins = await self.get_plugins(server)
-        for plugin in enabled_plugins:
-            await plugin.on_message_edit(before, after)
+        await self.plugin_dispatch("message_edit", before, after)
 
     async def on_message_delete(self, message):
         if message.channel.is_private:
             return
 
-        server = message.server
-        enabled_plugins = await self.get_plugins(server)
-        for plugin in enabled_plugins:
-            await plugin.on_message_delete(message)
+        await self.plugin_dispatch("message_delete", message)
 
     async def on_channel_create(self, channel):
         if channel.is_private:
             return
 
-        server = channel.server
-        enabled_plugins = await self.get_plugins(server)
-        for plugin in enabled_plugins:
-            await plugin.on_channel_create(channel)
+        await self.plugin_dispatch("channel_create", channel)
 
     async def on_channel_update(self, before, after):
         if before.is_private:
             return
 
-        server = after.server
-        enabled_plugins = await self.get_plugins(server)
-        for plugin in enabled_plugins:
-            await plugin.on_channel_update(before, after)
+        await self.plugin_dispatch("channel_update", before, after)
 
     async def on_channel_delete(self, channel):
         if channel.is_private:
             return
 
-        server = channel.server
-        enabled_plugins = await self.get_plugins(server)
-        for plugin in enabled_plugins:
-            await plugin.on_channel_delete(channel)
+        await self.plugin_dispatch("channel_delete", channel)
 
     async def on_member_join(self, member):
-        server = member.server
-        enabled_plugins = await self.get_plugins(server)
-        for plugin in enabled_plugins:
-            await plugin.on_member_join(member)
+        await self.plugin_dispatch("member_join", member)
 
     async def on_member_remove(self, member):
-        server = member.server
-        enabled_plugins = await self.get_plugins(server)
-        for plugin in enabled_plugins:
-            await plugin.on_member_remove(member)
+        await self.plugin_dispatch("member_remove", member)
 
     async def on_member_update(self, before, after):
-        server = after.server
-        enabled_plugins = await self.get_plugins(server)
-        for plugin in enabled_plugins:
-            await plugin.on_member_update(before, after)
+        await self.plugin_dispatch("member_update", before, after)
 
     async def on_server_update(self, before, after):
-        server = after
-        enabled_plugins = await self.get_plugins(server)
-        for plugin in enabled_plugins:
-            await plugin.on_server_update(before, after)
+        await self.plugin_dispatch("server_update", before, after)
 
     async def on_server_role_create(self, role):
-        server = role.server
-        enabled_plugins = await self.get_plugins(server)
-        for plugin in enabled_plugins:
-            await plugin.on_server_role_create(role)
+        await self.plugin_dispatch("server_role_create", role)
 
     async def on_server_role_delete(self, role):
-        server = role.server
-        enabled_plugins = await self.get_plugins(server)
-        for plugin in enabled_plugins:
-            await plugin.on_server_role_delete(role)
+        await self.plugin_dispatch("server_role_delete", role)
 
     async def on_server_role_update(self, before, after):
-        server = None
-        for s in self.servers:
-            if after.id in map(lambda r: r.id, s.roles):
-                server = s
-                break
-
-        if server is None:
-            return
-
-        enabled_plugins = await self.get_plugins(server)
-        for plugin in enabled_plugins:
-            await plugin.on_server_role_update(before, after)
+        await self.plugin_dispatch("server_role_update", before, after)
 
     async def on_voice_state_update(self, before, after):
-        if after is None and before is None:
-            return
-        elif after is None:
-            server = before.server
-        elif before is None:
-            server = after.server
-        else:
-            server = after.server
-
-        enabled_plugins = await self.get_plugins(server)
-        for plugin in enabled_plugins:
-            await plugin.on_voice_state_update(before, after)
+        await self.plugin_dispatch("voice_state_update", before, after)
 
     async def on_member_ban(self, member):
-        server = member.server
-        enabled_plugins = await self.get_plugins(server)
-        for plugin in enabled_plugins:
-            await plugin.on_member_ban(member)
+        await self.plugin_dispatch("member_ban", member)
 
     async def on_member_unban(self, member):
-        server = member.server
-        enabled_plugins = await self.get_plugins(server)
-        for plugin in enabled_plugins:
-            await plugin.on_member_unban(member)
+        await self.plugin_dispatch("member_unban", member)
 
     async def on_typing(self, channel, user, when):
         if channel.is_private:
             return
 
-        server = channel.server
-        enabled_plugins = await self.get_plugins(server)
-        for plugin in enabled_plugins:
-            await plugin.on_typing(channel, user, when)
+        await self.plugin_dispatch("typing", channel, user, when)
