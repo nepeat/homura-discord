@@ -9,8 +9,9 @@ log = logging.getLogger(__name__)
 
 
 class Message(object):
-    def __init__(self, content, reply=False, delete_after=0, delete_invoking=False):
+    def __init__(self, content=None, embed=None, reply=False, delete_after=0, delete_invoking=False):
         self.content = content
+        self.embed = embed
         self.reply = reply
         self.delete_after = delete_after
         self.delete_invoking = delete_invoking
@@ -93,7 +94,9 @@ def command(pattern=None, description="", usage=None, requires_admin=False, owne
                     content = '{}, {}'.format(message.author.mention, content)
 
                 sentmsg = await self.bot.send_message(
-                    message.channel, content
+                    message.channel,
+                    content,
+                    embed=response.embed
                 )
 
                 if response.delete_after:
