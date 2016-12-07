@@ -8,6 +8,7 @@ from nepeatbot.plugins.common import PluginBase, Message, command
 log = logging.getLogger(__name__)
 
 class EventLogPlugin(PluginBase):
+    requires_admin = True
     EVENTS = ["join", "leave", "server_rename", "member_rename", "message_edit", "message_delete"]
 
     @command("eventlog setchannel")

@@ -44,7 +44,7 @@ def command(pattern=None, description="", usage=None, requires_admin=False, owne
             )
 
             # Checking roles
-            if requires_admin and not is_admin:
+            if (requires_admin or func.__class__.requires_admin) and not is_admin:
                 return
 
             if owner_only and author.id != "66153853824802816":
@@ -119,6 +119,7 @@ def command(pattern=None, description="", usage=None, requires_admin=False, owne
 
 class PluginBase(object):
     is_global = False
+    requires_admin = False
 
     def __init__(self, bot):
         self.bot = bot

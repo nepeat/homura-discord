@@ -7,6 +7,8 @@ from nepeatbot.plugins.common import PluginBase, Message, command
 log = logging.getLogger(__name__)
 
 class AntispamPlugin(PluginBase):
+    requires_admin = True
+
     @command("antispam status")
     async def antispam_status(self, message):
         result = "Blacklist {blacklist} entries.\nWarnlist {warnlist} entries.".format(
