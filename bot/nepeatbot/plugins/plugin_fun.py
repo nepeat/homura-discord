@@ -1,11 +1,34 @@
+import datetime
 import discord
-from nepeatbot.plugins.common import PluginBase, command
+import logging
+import aiohttp
+import xml.etree.ElementTree as ET
+from nepeatbot.plugins.common import PluginBase, command, Message
+
+log = logging.getLogger(__name__)
 
 class FunPlugin(PluginBase):
     @command("fart")
     async def fart(self, channel):
-        print("FARTED")
-        await self.bot.send_message(channel, "\N{DASH SYMBOL}")
+        return Message("\N{DASH SYMBOL}")
+
+    @command("cat")
+    async def cat(self, channel):
+        start = datetime.datetime.now()
+        try:
+            cat_url = await self.get_cat()
+        except Exception as e:
+            await self.bot.on_error("cat")
+            return Message("Could not fetch a cat. :(")
+
+        embed = discord.Embed(color=discord.Colour.gold())
+        embed.set_author(name="Cat!", url=cat_url)
+        embed.set_image(url=cat_url)
+        end = datetime.datetime.now()
+        delta = end - start
+        embed.set_footer(text="rendered in {}ms".format(int(delta.total_seconds() * 1000)))
+
+        return Message(embed=embed)
 
     @command("egg")
     async def egg(self, message):
@@ -16,3 +39,21 @@ class FunPlugin(PluginBase):
         em.add_field(name="ROLL", value="EGG")
         em.set_image(url="https://i.imgur.com/YFeZaoM.jpg")
         await self.bot.send_message(message.channel, embed=em)
+
+    async def get_cat(self):
+        params = {
+            "format": "xml",
+            "results_per_page": "1",
+            "api_key": "MTQwODc0"
+        }
+
+        async with self.bot.aiosession.get(
+            url="http://thecatapi.com/api/images/get",
+            params=params
+        ) as response:
+            reply = await response.text()
+
+        root = ET.fromstring(reply)
+        image = root.find("./data/images/image/url").text
+
+        return image.replace("http:", "https:")
