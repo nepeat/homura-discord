@@ -13,6 +13,6 @@ def validate_push(form):
         return {"missing": missing}
 
     if msg_type not in EVENT_TYPES:
-        return {"type": "invalid:%s" % (form["type"])}
+        return {"type": "invalid:%s" % (msg_type)}
 
     return None
