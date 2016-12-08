@@ -17,18 +17,32 @@ class Message(object):
         self.delete_invoking = delete_invoking
 
 
-def command(pattern=None, description="", usage=None, requires_admin=False, owner_only=False):
-    if not pattern.startswith("^!"):
+def command(
+    pattern=None,
+    description="",
+    usage=None,
+    requires_admin=False,
+    owner_only=False,
+    patterns=[]
+):
+    if pattern and not pattern.startswith("^!"):
         pattern = "^!" + pattern
 
     def actual_decorator(func):
-        prog = re.compile(pattern)
+        if patterns:
+            progs = [re.compile(p) for p in patterns]
+        else:
+            progs = [re.compile(pattern)]
 
         @wraps(func)
         async def wrapper(self, message):
 
             # Is it matching?
-            match = prog.match(message.content)
+            for prog in progs:
+                match = prog.match(message.content)
+                if match:
+                    break
+
             if not match:
                 return
 
@@ -48,6 +62,11 @@ def command(pattern=None, description="", usage=None, requires_admin=False, owne
                 return
 
             if owner_only and author.id != "66153853824802816":
+                log.warn("%s#%s [%s] has attempted to run owner command `func.__name__`.",
+                    author.name,
+                    author.discriminator,
+                    author.id
+                )
                 return
 
             log.info("{}#{}@{} >> {}".format(message.author.name,
