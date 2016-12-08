@@ -1,6 +1,11 @@
+import traceback
+import logging
+
 from discord import Game
 
-from nepeatbot.plugins.common import PluginBase, command
+from nepeatbot.plugins.common import PluginBase, command, Message
+
+log = logging.getLogger(__name__)
 
 class OwnerPlugin(PluginBase):
     is_global = True
@@ -16,6 +21,20 @@ class OwnerPlugin(PluginBase):
         )
 
         await self.bot.send_message(message.channel, "Done!")
+
+    @command(patterns=[
+        r"eval ```[\n]?[py\n](.+)```"
+        r"eval (.+)"
+    ], owner_only=True)
+    async def eval_code(self, args):
+        try:
+            results = eval(args[0])
+        except Exception as e:
+            return Message("```%s```" % (traceback.format_exception()))
+
+        log.warn("Successful eval '%s'", args[0])
+        log.warn(results)
+        return Message("```%s```" % str(results))
 
     async def on_ready(self):
         status = await self.redis.hget("nepeatbot:config", "game")
