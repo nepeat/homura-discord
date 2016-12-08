@@ -25,44 +25,51 @@ class AntispamPlugin(PluginBase):
     @command("antispam exclude")
     async def exclude_channel(self, message):
         excluded = await self.redis.sismember("antispam:{}:excluded".format(message.server.id), message.channel.id)
-        await self.update_list(message.server, message.channel.id, list_name="excluded", add=not excluded, validate_regex=False)
+        await self._alter_list(message.server, message.channel.id, list_name="excluded", add=not excluded, validate_regex=False)
         return Message("Channel is {action} from antispam!".format(
             action="added" if excluded else "excluded"
         ))
 
-    @command("antispam list blacklist")
-    async def list_blacklist(self, message):
-        warns = await self.redis.smembers("antispam:{}:blacklist".format(message.server.id))
-        warns = await warns.asset()
+    @command(patterns=[
+        "antispam (add|remove) (blacklist, warnlist) (.+)",
+        "antispam (blacklist, warnlist) (add|remove) (.+)"
+    ])
+    async def alter_list(self, message, args):
+        action = True if args[1] == "add" else False
+        return await self._alter_list(message.server, args[1], list_name=args[0], add=action)
 
-        result = "**__Blacklist__**\n"
-        result += "\n".join(warns if warns else {"None"})
+    async def _alter_list(self, server, value, list_name="warns", add=True, validate_regex=True):
+        action = self.redis.sadd if add else self.redis.srem
 
-        await self.bot.send_message(message.channel, result)
+        if validate_regex and not self.validate_regex(value):
+            return Message("invalid [make this user friendly l8r]")
 
-    @command("antispam blacklist (add|remove) (.+)")
-    async def alter_blacklist(self, message, args):
-        action = True if args[0] == "add" else False
-        return await self.update_list(message.server, args[1], list_name="blacklist", add=action)
+        await action("antispam:{}:{}".format(server.id, list_name), [value])
+        return Message("List updated!")
 
-    @command("antispam list warn(?:s|ing|ings)?")
-    async def list_warns(self, message):
-        warns = await self.redis.smembers("antispam:{}:warns".format(message.server.id))
-        warns = await warns.asset()
+    @command(patterns=[
+        "antispam list (blacklist, warnlist, warnings, warns)",
+        "antispam (blacklist, warnlist, warnings, warns) list"
+    ])
+    async def list_list(self, message, args):
+        return await self._list_list(message.server, args[0])
 
-        result = "**__Warns__**\n"
-        result += "\n".join(warns if warns else {"None"})
+    async def _list_list(self, server, list_name):
+        list_key = "antispam:{}:{}".format(server.id, list_name)
 
-        await self.bot.send_message(message.channel, result)
+        contents = await self.redis.smembers(list_key)
+        contents = await contents.asset()
 
-    @command("antispam warnlist (add|remove) (.+)")
-    async def alter_warns(self, message, args):
-        action = True if args[0] == "add" else False
-        return await self.update_list(message.server, args[1], list_name="warns", add=action)
+        result = "**__{}__**\n".format(
+            list_key.capitalize()
+        )
+        result += "\n".join(contents if contents else {"No entries exist in the {}!".format(list_name)})
+
+        return Message(result)
 
     @command("antispam list")
     async def list_help(self, channel):
-        return Message("!antispam list [blacklist|warnings]")
+        return Message("!antispam list [blacklist|warnlist]")
 
     async def on_message(self, message):
         log_channel_id = await self.redis.hget("antispam:{}:config".format(message.server.id), "log_channel")
@@ -90,15 +97,6 @@ class AntispamPlugin(PluginBase):
                 chat=message.channel.id,
                 message=(message.clean_content[:500] + '...') if len(message.clean_content) > 500 else message.clean_content
             ))
-
-    async def update_list(self, server, value, list_name="warns", add=True, validate_regex=True):
-        action = self.redis.sadd if add else self.redis.srem
-
-        if validate_regex and not self.validate_regex(value):
-            return Message("invalid [make this user friendly l8r]")
-
-        await action("antispam:{}:{}".format(server.id, list_name), [value])
-        return Message("List updated!")
 
     async def check_list(self, message, list_name):
         items = await self.redis.smembers("antispam:{}:{}".format(message.server.id, list_name))
