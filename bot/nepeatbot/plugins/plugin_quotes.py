@@ -1,7 +1,7 @@
 import aiohttp
 import re
 
-from nepeatbot.plugins.common import PluginBase, command
+from nepeatbot.plugins.common import PluginBase, command, Message
 
 class QuotesPlugin(PluginBase):
     is_global = True
@@ -10,7 +10,7 @@ class QuotesPlugin(PluginBase):
     @command("quote status")
     async def plugin_status(self, channel):
         status = await self.bot.redis.sismember("quotes:channels", channel.id)
-        await self.bot.send_message(channel, "Quotes is {status}".format(
+        return Message("Quotes is {status}".format(
             status="enabled \N{WHITE HEAVY CHECK MARK}" if status else "disabled \N{CROSS MARK}"
         ))
 
@@ -22,7 +22,7 @@ class QuotesPlugin(PluginBase):
             action = self.bot.redis.srem
 
         await action("quotes:channels", [channel.id])
-        await self.bot.send_message(channel, "\N{WHITE HEAVY CHECK MARK}")
+        return Message("\N{WHITE HEAVY CHECK MARK}")
 
     async def on_message(self, message):
         if await self.bot.redis.sismember("quotes:channels", message.channel.id):

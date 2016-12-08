@@ -1,6 +1,6 @@
 import logging
 
-from nepeatbot.plugins.common import PluginBase, command
+from nepeatbot.plugins.common import PluginBase, command, Message
 from itertools import zip_longest
 
 log = logging.getLogger(__name__)
@@ -14,8 +14,7 @@ class ModerationPlugin(PluginBase):
         mentions = [x.id for x in message.mentions]
 
         if not mentions:
-            self.bot.send_message(message.channel, "User mention is missing!")
-            return
+            return Message("User mention is missing!")
 
         deleted = 0
 
@@ -41,7 +40,7 @@ class ModerationPlugin(PluginBase):
                 messages = [message for message in messages if message]
                 await self.bot.delete_messages(messages)
 
-        await self.bot.send_message(message.channel, "{} messages removed!".format(deleted))
+        return Message("{} messages removed!".format(deleted))
 
     @command("purgechan(?:\s(\d+))?")
     async def cmd_purge_chan(self, message, args):
@@ -61,7 +60,7 @@ class ModerationPlugin(PluginBase):
             messages = [message for message in messages if message]
             await self.bot.delete_messages(messages)
 
-        await self.bot.send_message(message.channel, "{} messages removed!".format(len(removed)))
+        return Message("{} messages removed!".format(len(removed)))
 
     @command("remove (\d+)")
     async def cmd_remove(self, message, args):

@@ -1,4 +1,4 @@
-from nepeatbot.plugins.common import PluginBase, command
+from nepeatbot.plugins.common import PluginBase, command, Message
 
 class BotManagerPlugin(PluginBase):
     is_global = True
@@ -9,7 +9,7 @@ class BotManagerPlugin(PluginBase):
         result = "**__Plugins__**\n"
         result = result + "\n".join([plugin.__class__.__name__.replace("Plugin", "") for plugin in self.bot.plugins if not plugin.is_global])
 
-        await self.bot.send_message(message.channel, result)
+        return Message(result)
 
     @command("plugin (?:on|enable) (.+)")
     async def enable_plugin(self, message, args):
@@ -23,20 +23,18 @@ class BotManagerPlugin(PluginBase):
         plugin = self.bot.plugin_manager.get(plugin_name)
 
         if not plugin:
-            await self.bot.send_message(message.channel, "Plugin `{plugin}` is not valid!".format(
+            return Message("Plugin `{plugin}` is not valid!".format(
                 plugin=plugin_name
             ))
-            return
 
         if plugin.is_global:
-            await self.bot.send_message(message.channel, "Plugin `{plugin}` is a global plugin!".format(
+            return Message("Plugin `{plugin}` is a global plugin!".format(
                 plugin=plugin_name
             ))
-            return
 
         action = self.bot.redis.sadd if enabled else self.bot.redis.srem
         await action("plugins:{}".format(message.server.id), [plugin.__class__.__name__])
 
-        await self.bot.send_message(message.channel, "Plugin {status}!".format(
+        return Message("Plugin {status}!".format(
             status="enabled \N{WHITE HEAVY CHECK MARK}" if enabled else "disabled \N{CROSS MARK}"
         ))

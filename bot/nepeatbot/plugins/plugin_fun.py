@@ -38,7 +38,7 @@ class FunPlugin(PluginBase):
         em.add_field(name="EGG", value="ROLLS")
         em.add_field(name="ROLL", value="EGG")
         em.set_image(url="https://i.imgur.com/YFeZaoM.jpg")
-        await self.bot.send_message(message.channel, embed=em)
+        return Message(embed=em)
 
     async def get_cat(self):
         params = {
