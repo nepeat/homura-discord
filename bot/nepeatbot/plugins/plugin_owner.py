@@ -23,14 +23,14 @@ class OwnerPlugin(PluginBase):
         await self.bot.send_message(message.channel, "Done!")
 
     @command(patterns=[
-        r"eval ```[\n]?[py\n](.+)```"
+        r"eval ```[\n]?[py\n](.+)```",
         r"eval (.+)"
     ], owner_only=True)
     async def eval_code(self, args):
         try:
             results = eval(args[0])
         except Exception as e:
-            return Message("```%s```" % (traceback.format_exception()))
+            return Message("```%s```" % (traceback.format_exc()))
 
         log.warn("Successful eval '%s'", args[0])
         log.warn(results)

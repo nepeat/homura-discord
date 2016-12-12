@@ -90,6 +90,9 @@ class EventLogPlugin(PluginBase):
         if message.author == self.bot.user:
             return
 
+        if await self.redis.sismember("ignored:{}".format(message.server.id), message.id):
+            return
+
         await self.log("\N{PUT LITTER IN ITS PLACE SYMBOL} __{chat}__ `{user}` - {message}".format(
             chat=message.channel.name,
             user=message.author.display_name,
