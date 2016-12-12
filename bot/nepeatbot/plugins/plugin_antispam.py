@@ -34,9 +34,9 @@ class AntispamPlugin(PluginBase):
         r"antispam (?P<action>add|remove) (?P<list>blacklist|warnlist) (?P<filter>.+)",
         r"antispam (?P<list>blacklist|warnlist) (?P<action>add|remove) (?P<filter>.+)"
     ])
-    async def alter_list(self, message, matchobj):
-        action = True if matchobj.group("action") == "add" else False
-        return await self._alter_list(message.server, matchobj.group("filter"), list_name=matchobj.group("list"), add=action)
+    async def alter_list(self, message, match):
+        action = True if match.group("action") == "add" else False
+        return await self._alter_list(message.server, match.group("filter"), list_name=match.group("list"), add=action)
 
     async def _alter_list(self, server, value, list_name="warns", add=True, validate_regex=True):
         action = self.redis.sadd if add else self.redis.srem

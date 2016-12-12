@@ -104,8 +104,8 @@ def command(
             if params.pop('channel_mentions', None):
                 handler_kwargs['channel_mentions'] = list(map(message.server.get_channel, message.raw_channel_mentions))
 
-            if params.pop('matchobj', None):
-                handler_kwargs['matchobj'] = match
+            if params.pop('match', None):
+                handler_kwargs['match'] = match
 
             if params.pop('args', None):
                 handler_kwargs['args'] = args
