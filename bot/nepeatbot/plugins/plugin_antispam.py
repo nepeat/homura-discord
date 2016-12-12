@@ -31,12 +31,12 @@ class AntispamPlugin(PluginBase):
         ))
 
     @command(patterns=[
-        "antispam (add|remove) (blacklist, warnlist) (.+)",
-        "antispam (blacklist, warnlist) (add|remove) (.+)"
+        r"antispam (?P<action>add|remove) (?P<list>blacklist|warnlist) (?P<filter>.+)",
+        r"antispam (?P<list>blacklist|warnlist) (?P<action>add|remove) (?P<filter>.+)"
     ])
-    async def alter_list(self, message, args):
-        action = True if args[1] == "add" else False
-        return await self._alter_list(message.server, args[1], list_name=args[0], add=action)
+    async def alter_list(self, message, matchobj):
+        action = True if matchobj.group("action") == "add" else False
+        return await self._alter_list(message.server, matchobj.group("filter"), list_name=matchobj.group("list"), add=action)
 
     async def _alter_list(self, server, value, list_name="warns", add=True, validate_regex=True):
         action = self.redis.sadd if add else self.redis.srem
@@ -48,11 +48,16 @@ class AntispamPlugin(PluginBase):
         return Message("List updated!")
 
     @command(patterns=[
-        "antispam list (blacklist, warnlist, warnings, warns)",
-        "antispam (blacklist, warnlist, warnings, warns) list"
+        r"antispam list (blacklist|warnlist|warnings|warns)",
+        r"antispam (blacklist|warnlist|warnings|warns) list"
     ])
     async def list_list(self, message, args):
-        return await self._list_list(message.server, args[0])
+        if "black" in args[0].lower():
+            list_name = "blacklist"
+        elif "warn" in args[0].lower():
+            list_name = "warnlist"
+
+        return await self._list_list(message.server, list_name)
 
     async def _list_list(self, server, list_name):
         list_key = "antispam:{}:{}".format(server.id, list_name)
@@ -61,15 +66,11 @@ class AntispamPlugin(PluginBase):
         contents = await contents.asset()
 
         result = "**__{}__**\n".format(
-            list_key.capitalize()
+            list_key.split(":")[-1].capitalize()
         )
         result += "\n".join(contents if contents else {"No entries exist in the {}!".format(list_name)})
 
         return Message(result)
-
-    @command("antispam list")
-    async def list_help(self, channel):
-        return Message("!antispam list [blacklist|warnlist]")
 
     async def on_message(self, message):
         log_channel_id = await self.redis.hget("antispam:{}:config".format(message.server.id), "log_channel")
