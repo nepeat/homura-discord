@@ -26,20 +26,21 @@ def command(
     patterns=[]
 ):
     if pattern and not pattern.startswith("^!"):
-        pattern = "^!" + pattern
+        _patterns = ["^!" + pattern]
+    elif patterns:
+        _patterns = [("^!" + x) if x else x for x in patterns]
 
     def actual_decorator(func):
-        if patterns:
-            progs = [re.compile(p) for p in patterns]
-        else:
-            progs = [re.compile(pattern)]
+        progs = [re.compile(p) for p in _patterns]
 
         @wraps(func)
         async def wrapper(self, message):
 
             # Is it matching?
             for prog in progs:
+                log.debug("prog %s" % (prog))
                 match = prog.match(message.content)
+                log.debug("matching %s" % (match))
                 if match:
                     break
 
