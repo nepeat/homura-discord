@@ -26,7 +26,7 @@ class OwnerPlugin(PluginBase):
         r"eval ```[\n]?[py\n](.+)```",
         r"eval (.+)"
     ], owner_only=True)
-    async def eval_code(self, args):
+    async def eval_code(self, args, message):
         try:
             results = eval(args[0])
         except Exception as e:
