@@ -5,7 +5,7 @@ from nepeatbot.plugins.common import PluginBase, command, Message
 
 class QuotesPlugin(PluginBase):
     is_global = True
-    url_regex = re.compile(r"(https?:\/\/\S+)")
+    url_regex = re.compile(r"(https?://\S+)")
 
     @command("quote status")
     async def plugin_status(self, channel):

@@ -9,7 +9,7 @@ log = logging.getLogger(__name__)
 
 class AntiNSFWPlugin(PluginBase):
     requires_admin = True
-    url_regex = re.compile(r"(https?:\/\/\S+)")
+    url_regex = re.compile(r"(https?://\S+)")
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
