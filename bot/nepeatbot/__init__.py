@@ -88,7 +88,7 @@ class NepeatBot(discord.Client):
                 asyncio.ensure_future(self._plugin_run_event(func, *args, **kwargs), loop=self.loop)
 
     # Events
-    async def get_plugins(self, server) -> List[Plugin]
+    async def get_plugins(self, server) -> List[Plugin]:
         plugins = await self.plugin_manager.get_all(server)
         return plugins
 
