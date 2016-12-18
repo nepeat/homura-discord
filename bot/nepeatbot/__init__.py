@@ -1,16 +1,18 @@
 import asyncio
 import logging
 import os
-import aiohttp
-import raven
-import discord
-import asyncio_redis
 import traceback
+
+from typing import List
+
+import aiohttp
+import asyncio_redis
+import discord
+import raven
 import statsd
 
 from nepeatbot.plugins.manager import PluginManager
-
-# Logging
+from nepeatbot.util import Dummy
 
 if "DEBUG" in os.environ:
     logging.basicConfig(level=logging.DEBUG)
@@ -19,16 +21,6 @@ else:
     logging.getLogger("asyncio").setLevel(logging.DEBUG)
 
 log = logging.getLogger(__name__)
-
-class Dummy(object):
-    def blank_fn(self, *args, **kwargs):
-        pass
-
-    def __getattr__(self, attr):
-        return self.blank_fn
-
-    def __setattr__(self, attr, val):
-        pass
 
 class NepeatBot(discord.Client):
     def __init__(self):
@@ -58,7 +50,7 @@ class NepeatBot(discord.Client):
             poolsize=5
         )
 
-    def sanitize(self, text):
+    def sanitize(self, text: str) -> str:
         text = text.replace('@everyone', '@\u200beveryone').replace('@here', '@\u200bhere')
         return text
 
@@ -96,7 +88,7 @@ class NepeatBot(discord.Client):
                 asyncio.ensure_future(self._plugin_run_event(func, *args, **kwargs), loop=self.loop)
 
     # Events
-    async def get_plugins(self, server):
+    async def get_plugins(self, server) -> List[Plugin]
         plugins = await self.plugin_manager.get_all(server)
         return plugins
 
