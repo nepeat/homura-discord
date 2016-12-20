@@ -3,9 +3,13 @@ import json
 import logging
 import aiohttp
 
+import discord
+from typing import Optional
+
 from nepeatbot.plugins.common import PluginBase, command
 
 log = logging.getLogger(__name__)
+
 
 class ServerLogPlugin(PluginBase):
     is_global = True
@@ -105,7 +109,14 @@ class ServerLogPlugin(PluginBase):
             "message": message.clean_content
         })
 
-    async def push_event(self, event_type, server=None, channel=None, data=None, endpoint="push"):
+    async def push_event(
+        self,
+        event_type: str,
+        server: Optional[discord.Server]=None,
+        channel: Optional[discord.Channel]=None,
+        data: dict=None,
+        endpoint: str="push"
+    ):
         payload = {
             "type": event_type,
             "server": server.id if server else None,
