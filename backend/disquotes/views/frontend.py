@@ -11,8 +11,9 @@ blueprint = Blueprint("frontend", __name__)
 
 @blueprint.before_request
 def before_app():
-    g.session_token = session["oauth-discord_oauth_token"]["access_token"]
-    g.servers = get_servers(g.session_token)
+    if "oauth-discord_oauth_token" in session:
+        g.session_token = session["oauth-discord_oauth_token"]["access_token"]
+        g.servers = get_servers(g.session_token)
 
 @blueprint.route("/")
 @require_login
