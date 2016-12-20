@@ -32,8 +32,8 @@ class OwnerPlugin(PluginBase):
         except Exception as e:
             return Message("```%s```" % (traceback.format_exc()))
 
-        log.warn("Successful eval '%s'", args[0])
-        log.warn(results)
+        log.warning("Successful eval '%s'", args[0])
+        log.warning(results)
         return Message("```%s```" % str(results))
 
     async def on_ready(self):

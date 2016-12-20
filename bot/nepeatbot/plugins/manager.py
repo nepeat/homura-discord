@@ -38,7 +38,7 @@ class PluginManager:
         name = name.strip().lower()
 
         if not name.endswith("plugin"):
-            name = name + "plugin"
+            name += "plugin"
 
         for plugin in self.bot.plugins:
             if plugin.__class__.__name__.lower() == name:

@@ -37,6 +37,7 @@ def command(
         async def wrapper(self, message):
 
             # Is it matching?
+            match = None
             for prog in progs:
                 log.debug("prog %s" % (prog))
                 match = prog.match(message.content)
@@ -63,7 +64,7 @@ def command(
                 return
 
             if owner_only and author.id != "66153853824802816":
-                log.warn("%s#%s [%s] has attempted to run owner command `func.__name__`.",
+                log.warning("%s#%s [%s] has attempted to run owner command `func.__name__`.",
                     author.name,
                     author.discriminator,
                     author.id
