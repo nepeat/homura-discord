@@ -7,6 +7,7 @@ import discord
 from typing import Optional
 
 from nepeatbot.plugins.common import PluginBase, command
+from nepeatbot.util import sanitize
 
 log = logging.getLogger(__name__)
 
@@ -25,8 +26,8 @@ class ServerLogPlugin(PluginBase):
             return await bot.send_message(message.channel, "None")
 
         output = "\n".join(["__{sender}__ - {message}".format(
-            sender=bot.sanitize(deleted["sender"]["display_name"]),
-            message=bot.sanitize(deleted["message"])
+            sender=sanitize(deleted["sender"]["display_name"]),
+            message=sanitize(deleted["message"])
         ) for deleted in messages])
 
         await bot.send_message(message.channel, output)

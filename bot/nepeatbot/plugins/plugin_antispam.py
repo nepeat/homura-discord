@@ -3,6 +3,7 @@ import discord
 import logging
 
 from nepeatbot.plugins.common import PluginBase, Message, command
+from nepeatbot.util import sanitize
 
 log = logging.getLogger(__name__)
 
@@ -86,7 +87,7 @@ class AntispamPlugin(PluginBase):
 
         if await self.check_list(message, "warns"):
             await self.bot.send_message(log_channel, "\N{WARNING SIGN} **{name}** <#{chat}> {message}".format(
-                name=self.bot.sanitize(message.author.display_name),
+                name=sanitize(message.author.display_name),
                 chat=message.channel.id,
                 message=(message.clean_content[:500] + '...') if len(message.clean_content) > 500 else message.clean_content
             ))
@@ -94,7 +95,7 @@ class AntispamPlugin(PluginBase):
             if not message.author.server_permissions.administrator:
                 await self.bot.delete_message(message)
             await self.bot.send_message(log_channel, "\N{NO ENTRY SIGN} **{name}** <#{chat}> {message}".format(
-                name=self.bot.sanitize(message.author.display_name),
+                name=sanitize(message.author.display_name),
                 chat=message.channel.id,
                 message=(message.clean_content[:500] + '...') if len(message.clean_content) > 500 else message.clean_content
             ))

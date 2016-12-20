@@ -4,6 +4,7 @@ import logging
 import aiohttp
 
 from nepeatbot.plugins.common import PluginBase, Message, command
+from nepeatbot.util import sanitize
 
 log = logging.getLogger(__name__)
 
@@ -49,8 +50,8 @@ class EventLogPlugin(PluginBase):
     async def on_server_update(self, before, after):
         if before.name != after.name:
             await self.log("\N{MEMO} Server has been renamed from **{before}** to **{after}**".format(
-                before=self.bot.sanitize(before.name),
-                after=self.bot.sanitize(after.name)
+                before=sanitize(before.name),
+                after=sanitize(after.name)
             ), before, "server_rename")
 
     async def on_member_update(self, before, after):
@@ -61,8 +62,8 @@ class EventLogPlugin(PluginBase):
             return
 
         await self.log("\N{MEMO} **{before}** is now known as **{after}**".format(
-            before=self.bot.sanitize(old),
-            after=self.bot.sanitize(new)
+            before=sanitize(old),
+            after=sanitize(new)
         ), before.server, "member_rename")
 
     async def on_message_edit(self, before, after):

@@ -10,3 +10,8 @@ class Dummy(object):
 
     def __setattr__(self, attr, val):
         pass
+
+
+def sanitize(text: str) -> str:
+    text = text.replace('@everyone', '@\u200beveryone').replace('@here', '@\u200bhere')
+    return text
