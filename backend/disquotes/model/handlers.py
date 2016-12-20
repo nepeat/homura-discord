@@ -35,6 +35,7 @@ def before_request():
 def commit_sql(response=None):
     # Don't commit on 4xx and 5xx.
     if response is not None and response.status[0] not in {"2", "3"}:
+        g.db.rollback()
         return response
     if hasattr(g, "db"):
         g.db.commit()

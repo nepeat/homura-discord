@@ -27,8 +27,10 @@ base_session = scoped_session(sm)
 Base = declarative_base()
 Base.query = base_session.query_property()
 
+
 def now():
     return datetime.datetime.now()
+
 
 class Server(Base):
     __tablename__ = "servers"
@@ -39,6 +41,7 @@ class Server(Base):
 
     meta = Column(JSONB)
 
+
 class Channel(Base):
     __tablename__ = "channels"
     id = Column(Integer, primary_key=True)
@@ -48,6 +51,7 @@ class Channel(Base):
     server = relationship("Server")
 
     meta = Column(JSONB)
+
 
 class Event(Base):
     __tablename__ = 'events'
@@ -69,3 +73,14 @@ class Event(Base):
     def validate_type(self, key, type):
         assert type in EVENT_TYPES
         return type
+
+
+class Permission(Base):
+    __tablename__ = "permissions"
+    id = Column(Integer, primary_key=True)
+    server_id = Column(ForeignKey("servers.id"), nullable=False)
+    channel_id = Column(ForeignKey("channels.id"))
+    permission = Column(String, nullable=False)
+
+
+Index("permission_server", Permission.server_id)
