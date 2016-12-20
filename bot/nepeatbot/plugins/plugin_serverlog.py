@@ -21,8 +21,8 @@ class ServerLogPlugin(PluginBase):
             return await bot.send_message(message.channel, "None")
 
         output = "\n".join(["__{sender}__ - {message}".format(
-            sender=deleted["sender"]["display_name"],
-            message=deleted["message"]
+            sender=bot.sanitize(deleted["sender"]["display_name"]),
+            message=bot.sanitize(deleted["message"])
         ) for deleted in messages])
 
         await bot.send_message(message.channel, output)
