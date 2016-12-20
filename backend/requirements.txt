@@ -10,3 +10,4 @@ alembic
 blinker
 Flask-Dance
 dogpile.cache
+flask_restplus

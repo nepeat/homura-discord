@@ -8,7 +8,7 @@ from raven.contrib.flask import Sentry
 from disquotes.model.auth import discord
 from disquotes.model.handlers import (before_request, connect_redis, connect_sql,
                                    commit_sql, disconnect_redis, disconnect_sql)
-from disquotes.views import frontend, events
+from disquotes.views import api, frontend, events
 
 app = Flask(__name__)
 app.secret_key = os.environ.get("APP_SECRET", os.environ.get("SECRET_KEY"))
@@ -44,4 +44,5 @@ app.teardown_request(disconnect_redis)
 
 app.register_blueprint(frontend.blueprint)
 app.register_blueprint(discord, url_prefix="/auth")
+app.register_blueprint(api.blueprint, url_prefix="/api")
 app.register_blueprint(events.blueprint, url_prefix="/events")

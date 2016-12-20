@@ -1,3 +1,6 @@
+import aiohttp
+from urllib.parse import urlencode
+
 class Dummy(object):
     def blank_fn(self, *args, **kwargs):
         pass
