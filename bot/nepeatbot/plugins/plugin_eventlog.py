@@ -1,4 +1,3 @@
-import os
 import json
 import logging
 import aiohttp
@@ -99,63 +98,6 @@ class EventLogPlugin(PluginBase):
             user=message.author.display_name,
             message=message.clean_content
         ), message.server, "message_delete")
-
-    async def push_event(self, event_type, server=None, channel=None, data=None, endpoint="push"):
-        payload = {
-            "type": event_type,
-            "server": server.id if server else None,
-            "channel": channel.id if channel else None,
-            "data": data if data else {}
-        }
-
-        try:
-            async with self.bot.aiosession.post(
-                url=self.events_url + "/events/" + endpoint,
-                data=json.dumps(payload),
-                headers={"Content-Type": "application/json"}
-            ) as response:
-                try:
-                    reply = await response.json()
-                    if reply.get("status") == "error":
-                        log.error("Error pushing event to server.")
-                        log.error(reply)
-                except ValueError:
-                    log.error("Error parsing JSON.")
-                    log.error(await response.text())
-        except aiohttp.errors.ClientError:
-            return False
-
-    async def get_events(self, event_type, server, channel=None):
-        params = {
-            "server": server.id,
-        }
-
-        if channel:
-            params.update({"channel": channel.id})
-
-        log.debug(event_type)
-        log.debug(params)
-
-        try:
-            async with self.bot.aiosession.get(
-                url=self.events_url + "/events/" + event_type,
-                params=params
-            ) as response:
-                try:
-                    reply = await response.json()
-                    if reply.get("status") == "error":
-                        log.error("Error pushing event to server.")
-                        log.error(reply)
-                        return None
-                    return reply.get("events", None)
-                except ValueError:
-                    log.error("Error parsing JSON.")
-                    log.error(await response.text())
-                    pass
-        except aiohttp.errors.ClientError:
-            pass
-
-        return None
 
     async def log(self, message, server, event_type):
         log_channel_id = await self.redis.get("channellog:{}:channel".format(server.id))

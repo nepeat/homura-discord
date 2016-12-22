@@ -26,9 +26,9 @@ class ServerLogPlugin(PluginBase):
             return await bot.send_message(message.channel, "None")
 
         output = "\n".join(["__{sender}__ - {message}".format(
-            sender=sanitize(deleted["sender"]["display_name"]),
-            message=sanitize(deleted["message"])
-        ) for deleted in messages])
+            sender=sanitize(event["data"]["sender"]["display_name"]),
+            message=sanitize(event["data"]["message"])
+        ) for event in messages])
 
         await bot.send_message(message.channel, output)
 
@@ -115,25 +115,23 @@ class ServerLogPlugin(PluginBase):
         event_type: str,
         server: Optional[discord.Server]=None,
         channel: Optional[discord.Channel]=None,
-        data: dict=None,
-        endpoint: str="push"
+        data: dict=None
     ):
         payload = {
-            "type": event_type,
             "server": server.id if server else None,
             "channel": channel.id if channel else None,
             "data": data if data else {}
         }
 
         try:
-            async with self.bot.aiosession.post(
-                url=self.events_url + "/events/" + endpoint,
+            async with self.bot.aiosession.put(
+                url=self.events_url + "/api/events/" + event_type,
                 data=json.dumps(payload),
                 headers={"Content-Type": "application/json"}
             ) as response:
                 try:
                     reply = await response.json()
-                    if reply.get("status") == "error":
+                    if response.status in (400, 500):
                         log.error("Error pushing event to server.")
                         log.error(reply)
                 except ValueError:
@@ -155,12 +153,12 @@ class ServerLogPlugin(PluginBase):
 
         try:
             async with self.bot.aiosession.get(
-                url=self.events_url + "/events/" + event_type,
+                url=self.events_url + "/api/events/" + event_type,
                 params=params
             ) as response:
                 try:
                     reply = await response.json()
-                    if reply.get("status") == "error":
+                    if response.status in (400, 500):
                         log.error("Error pushing event to server.")
                         log.error(reply)
                         return None
@@ -187,4 +185,4 @@ class ServerLogPlugin(PluginBase):
         for server in self.bot.servers:
             payload[server.id] = server.name
 
-        await self.push_event("bulk_servers", data=payload, endpoint="bulk")
+        await self.push_event("bulk", data=payload)
