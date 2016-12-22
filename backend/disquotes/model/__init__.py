@@ -70,9 +70,9 @@ class Event(Base):
         return self.data if self.data else {}
 
     @validates("type")
-    def validate_type(self, key, type):
-        assert type in EVENT_TYPES
-        return type
+    def validate_type(self, key, event_type):
+        assert event_type in EVENT_TYPES
+        return event_type
 
 
 class Permission(Base):
