@@ -1,8 +1,8 @@
-FROM gliderlabs/alpine:edge
+FROM python:3.6.0rc2-alpine
 
 # Update packages and install setup requirements.
 RUN apk --no-cache upgrade && \
-	apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing python python-dev py2-pip gcc musl-dev postgresql-dev ca-certificates && \
+	apk add --no-cache -X http://dl-cdn.alpinelinux.org/alpine/edge/testing gcc musl-dev postgresql-dev ca-certificates && \
 	update-ca-certificates && \
 	rm -rf /var/cache/apk/*
 
@@ -11,13 +11,13 @@ WORKDIR /src
 
 # Add and install Python modules
 COPY requirements.txt /src/requirements.txt
-RUN pip install -r requirements.txt
+RUN pip3 install -r requirements.txt
 
 # Bundle app source
 COPY . /src
 
 # Install main module
-RUN python setup.py install
+RUN python3 setup.py install
 
 # Expose web port
 EXPOSE 5000
