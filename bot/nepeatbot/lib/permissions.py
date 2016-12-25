@@ -1,8 +1,10 @@
-import discord
 import os
 import logging
 
 from typing import Optional
+
+import aiohttp
+import discord
 
 log = logging.getLogger(__name__)
 
@@ -43,7 +45,7 @@ class Permissions(object):
 
         try:
             async with action(
-                url=self.events_url + "/api/permissions",
+                url=self.backend_url + "/api/permissions",
                 data=json.dumps(payload),
                 headers={"Content-Type": "application/json"}
             ) as response:
@@ -68,7 +70,7 @@ class Permissions(object):
 
         try:
             async with self.bot.aiosession.get(
-                url=self.events_url + "/perms",
+                url=self.backend_url + "/perms",
                 params=params
             ) as response:
                 try:

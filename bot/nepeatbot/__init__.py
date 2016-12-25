@@ -85,7 +85,7 @@ class NepeatBot(discord.Client):
             if hasattr(self, method):
                 asyncio.ensure_future(self._plugin_run_event(func, *args, **kwargs), loop=self.loop)
 
-    async def send_message_object(self, message: Message, author: discord.Author=None):
+    async def send_message_object(self, message: Message, author: discord.User=None):
         content = message.content
         if message.reply and author:
             content = '{}, {}'.format(author.mention, content)
