@@ -69,6 +69,12 @@ def command(
                     author.id,
                     func.__name__
                 )
+                self.bot.send_message_object(Message(
+                    content="ಠ_ಠ",
+                    reply=True,
+                    delete_after=True,
+                    delete_invoking=True
+                ))
                 return
 
             # Admin check
@@ -79,10 +85,22 @@ def command(
             )
 
             if (requires_admin or self.requires_admin) and not is_admin:
+                self.bot.send_message_object(Message(
+                    content="You need administrator role permissions to use this command.",
+                    reply=True,
+                    delete_after=True,
+                    delete_invoking=True
+                ))
                 return
 
             # Permissions check
             if not permissions.can(permission_name):
+                self.bot.send_message_object(Message(
+                    content="You are not allowed to use this command in this server or channel.",
+                    reply=True,
+                    delete_after=True,
+                    delete_invoking=True
+                ))
                 return
 
             log.info("{}#{}@{} >> {}".format(message.author.name,
