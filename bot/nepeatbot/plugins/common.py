@@ -113,23 +113,7 @@ def command(
 
             response = await func(**handler_kwargs)
             if response and isinstance(response, Message):
-                content = response.content
-                if response.reply:
-                    content = '{}, {}'.format(message.author.mention, content)
-
-                sentmsg = await self.bot.send_message(
-                    message.channel,
-                    content,
-                    embed=response.embed
-                )
-
-                if response.delete_after:
-                    await asyncio.sleep(response.delete_after)
-                    await self.bot.delete_message(sentmsg)
-
-                if response.delete_invoking:
-                    await asyncio.sleep(5)
-                    self.bot.delete_message(message)
+                self.bot.send_message_object(response, message.author)
 
         wrapper._is_command = True
         if usage:
