@@ -2,6 +2,7 @@ from flask import g, request
 from flask_restplus import Namespace, fields, Resource, abort
 
 from disquotes.model import Server, Channel, Permission
+from disquotes.views.api.base import ResourceBase
 
 ns = Namespace("permissions", "Permissions storage.")
 
@@ -12,23 +13,7 @@ permission_model = ns.model("Permission", {
 @ns.route("/")
 @ns.param("server", "Discord Server ID", type=int, required=True)
 @ns.param("channel", "Discord Channel ID", type=int)
-class PermissionResource(Resource):
-    def get_server_channel(self) -> (Server, Channel):
-        server_id = int(request.args.get("server", 0))
-        channel_id = int(request.args.get("channel", 0))
-
-        try:
-            server = g.db.query(Server).filter(Server.server_id == server_id).one()
-        except (NoResultFound, DataError):
-            abort(400, "A server object could not be found.")
-
-        try:
-            channel = g.db.query(Channel).filter(Channel.channel_id == channel_id).one()
-        except (NoResultFound, DataError):
-            return server, None
-
-        return server, channel
-
+class PermissionResource(ResourceBase):
     def get(self):
         server, channel = self.get_server_channel()
 

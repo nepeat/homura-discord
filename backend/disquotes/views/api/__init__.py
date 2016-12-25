@@ -24,5 +24,6 @@ def default_error_handler(error):
         'message': str(error)
     }, getattr(error, 'code', 500)
 
+
 api.add_namespace(permissions.ns)
 api.add_namespace(events.ns)
