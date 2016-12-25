@@ -1,11 +1,10 @@
-FROM alpine:edge
+FROM python:3.6.0rc2-alpine
 
 # Requirements
 COPY requirements.txt /app/requirements.txt
-RUN apk add --update build-base python3 python3-dev libffi libffi-dev ca-certificates pkgconf && \
+RUN apk add --no-cache build-base libffi libffi-dev ca-certificates pkgconf && \
 	SODIUM_INSTALL=system pip3 install -r /app/requirements.txt && \
-	apk del build-base opus-dev libffi-dev libsodium-dev && \
-	rm -rf /var/cache/apk/*
+	apk --no-cache del build-base opus-dev libffi-dev libsodium-dev
 
 # Workdir
 WORKDIR /app
