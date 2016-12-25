@@ -18,7 +18,6 @@ class Message(object):
         self.delete_after = delete_after
         self.delete_invoking = delete_invoking
 
-
 def command(
     pattern=None,
     description="",
@@ -39,7 +38,8 @@ def command(
         @wraps(func)
         async def wrapper(self, message):
 
-            # Is it matching?
+            # Command match
+
             match = None
             for prog in progs:
                 log.debug("prog %s" % (prog))
@@ -51,17 +51,19 @@ def command(
             if not match:
                 return
 
+            # Analytics and setup
+
             self.bot.stats.incr("nepeatbot.command,function=" + func.__name__)
 
             permissions = Permissions(
                 self.bot,
                 message
             )
-
             args = match.groups()
             author = message.author
 
             # Bot owner check
+
             if owner_only and author.id != "66153853824802816":
                 log.warning("%s#%s [%s] has attempted to run owner command `%s`.",
                     author.name,
@@ -69,15 +71,21 @@ def command(
                     author.id,
                     func.__name__
                 )
-                self.bot.send_message_object(Message(
-                    content="ಠ_ಠ",
-                    reply=True,
-                    delete_after=True,
-                    delete_invoking=True
-                ))
+                await self.bot.send_message_object(
+                    Message(
+                        content="ಠ_ಠ",
+                        reply=True,
+                        delete_after=5,
+                        delete_invoking=True
+                    ),
+                    message.channel,
+                    message.author,
+                    message
+                )
                 return
 
             # Admin check
+
             is_admin = (
                 author.server_permissions.manage_server or
                 author.server_permissions.administrator or
@@ -85,28 +93,41 @@ def command(
             )
 
             if (requires_admin or self.requires_admin) and not is_admin:
-                self.bot.send_message_object(Message(
-                    content="You need administrator role permissions to use this command.",
-                    reply=True,
-                    delete_after=True,
-                    delete_invoking=True
-                ))
+                await self.bot.send_message_object(
+                    Message(
+                        content="You need administrator role permissions to use this command.",
+                        reply=True,
+                        delete_after=5,
+                        delete_invoking=True
+                    ),
+                    message.channel,
+                    message.author,
+                    message
+                )
                 return
 
             # Permissions check
+
             if not permissions.can(permission_name):
-                self.bot.send_message_object(Message(
-                    content="You are not allowed to use this command in this server or channel.",
-                    reply=True,
-                    delete_after=True,
-                    delete_invoking=True
-                ))
+                await self.bot.send_message_object(
+                    Message(
+                        content="You are not allowed to use this command in this server or channel.",
+                        reply=True,
+                        delete_after=5,
+                        delete_invoking=True
+                    ),
+                    message.channel,
+                    message.author,
+                    message
+                )
                 return
 
             log.info("{}#{}@{} >> {}".format(message.author.name,
                                              message.author.discriminator,
                                              message.server.name,
                                              message.clean_content))
+
+            # Parameters for the command function.
 
             handler_kwargs = {}
 
@@ -146,9 +167,11 @@ def command(
             if params.pop('permissions', None):
                 handler_kwargs['permissions'] = permissions
 
+            # Command caller
+
             response = await func(**handler_kwargs)
             if response and isinstance(response, Message):
-                self.bot.send_message_object(response, message.author)
+                await self.bot.send_message_object(response, message.channel, message.author, message)
 
         wrapper._is_command = True
         if usage:

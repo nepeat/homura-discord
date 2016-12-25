@@ -3,7 +3,7 @@ import logging
 import os
 import traceback
 
-from typing import List
+from typing import List, Optional
 
 import aiohttp
 import asyncio_redis
@@ -85,24 +85,30 @@ class NepeatBot(discord.Client):
             if hasattr(self, method):
                 asyncio.ensure_future(self._plugin_run_event(func, *args, **kwargs), loop=self.loop)
 
-    async def send_message_object(self, message: Message, author: discord.User=None):
+    async def send_message_object(
+        self,
+        message: Message,
+        channel: discord.Channel,
+        author: Optional[discord.User]=None,
+        invoking: Optional[discord.Message]=None
+    ):
         content = message.content
         if message.reply and author:
             content = '{}, {}'.format(author.mention, content)
 
         sentmsg = await self.send_message(
-            message.channel,
+            channel,
             content,
             embed=message.embed
         )
 
+        if message.delete_invoking and invoking:
+            await asyncio.sleep(2)
+            await self.delete_message(invoking)
+
         if message.delete_after:
             await asyncio.sleep(message.delete_after)
             await self.delete_message(sentmsg)
-
-        if message.delete_invoking:
-            await asyncio.sleep(5)
-            self.delete_message(message)
 
     # Events
     async def get_plugins(self, server):

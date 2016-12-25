@@ -12,8 +12,8 @@ log = logging.getLogger(__name__)
 class Permissions(object):
     def __init__(
         self,
-        bot: discord.Client,
-        message: discord.Message
+        bot: Optional[discord.Client],
+        message: Optional[discord.Message]
     ):
         self.backend_url = os.environ.get("BOT_WEB", "http://localhost:5000")
 
@@ -70,7 +70,7 @@ class Permissions(object):
 
         try:
             async with self.bot.aiosession.get(
-                url=self.backend_url + "/perms",
+                url=self.backend_url + "/api/permissions",
                 params=params
             ) as response:
                 try:
@@ -85,7 +85,10 @@ class Permissions(object):
         except aiohttp.errors.ClientError:
             pass
 
-    def can(self, perm: str) -> bool:
+    def can(self, perm: Optional[str]) -> bool:
+        if not perm:
+            return True
+
         perm = perm.strip().lower()
 
         if "*" in self.perms:
