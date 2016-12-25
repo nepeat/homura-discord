@@ -5,6 +5,8 @@ import logging
 
 from functools import wraps
 
+from nepeatbot.lib.permissions import Permissions
+
 log = logging.getLogger(__name__)
 
 
@@ -49,6 +51,11 @@ def command(
                 return
 
             self.bot.stats.incr("nepeatbot.command,function=" + func.__name__)
+
+            permissions = Permissions(
+                self.bot,
+                message
+            )
 
             args = match.groups()
             author = message.author
@@ -110,6 +117,9 @@ def command(
 
             if params.pop('args', None):
                 handler_kwargs['args'] = args
+
+            if params.pop('permissions', None):
+                handler_kwargs['permissions'] = permissions
 
             response = await func(**handler_kwargs)
             if response and isinstance(response, Message):
