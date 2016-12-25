@@ -25,7 +25,8 @@ def command(
     usage=None,
     requires_admin=False,
     owner_only=False,
-    patterns=[]
+    patterns=[],
+    permission_name=None
 ):
     if pattern and not pattern.startswith("^!"):
         _patterns = ["^!" + pattern]
@@ -60,22 +61,28 @@ def command(
             args = match.groups()
             author = message.author
 
+            # Bot owner check
+            if owner_only and author.id != "66153853824802816":
+                log.warning("%s#%s [%s] has attempted to run owner command `%s`.",
+                    author.name,
+                    author.discriminator,
+                    author.id,
+                    func.__name__
+                )
+                return
+
+            # Admin check
             is_admin = (
                 author.server_permissions.manage_server or
                 author.server_permissions.administrator or
                 author.id == "66153853824802816"
             )
 
-            # Checking roles
             if (requires_admin or self.requires_admin) and not is_admin:
                 return
 
-            if owner_only and author.id != "66153853824802816":
-                log.warning("%s#%s [%s] has attempted to run owner command `func.__name__`.",
-                    author.name,
-                    author.discriminator,
-                    author.id
-                )
+            # Permissions check
+            if not permissions.can(permission_name):
                 return
 
             log.info("{}#{}@{} >> {}".format(message.author.name,

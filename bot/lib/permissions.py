@@ -1,7 +1,11 @@
 import discord
 import os
+import logging
 
 from typing import Optional
+
+log = logging.getLogger(__name__)
+
 
 class Permissions(object):
     def __init__(
@@ -79,11 +83,8 @@ class Permissions(object):
         except aiohttp.errors.ClientError:
             pass
 
-    def can(self, perm, owner_only=False) -> bool:
+    def can(self, perm: str) -> bool:
         perm = perm.strip().lower()
-
-        if owner_only and self.member.id != "66153853824802816":
-            return False
 
         if "*" in self.perms:
             return True
