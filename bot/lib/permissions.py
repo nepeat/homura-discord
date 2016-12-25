@@ -6,18 +6,15 @@ from typing import Optional
 class Permissions(object):
     def __init__(
         self,
-        bot: discord.Client=None,
-        server: Optional[discord.Server]=None,
-        member: Optional[discord.Member]=None
+        bot: discord.Client,
+        message: discord.Message
     ):
         self.backend_url = os.environ.get("BOT_WEB", "http://localhost:5000")
 
         self.bot = bot
-        self.server = server
-        self.member = member
-
-        if not self.server and self.member:
-            self.server = self.member.server
+        self.message = message
+        self.server = message.server
+        self.channel = message.channel
 
         self.perms = []
         self.bot.loop.create_task(self.load_perms())
@@ -25,6 +22,39 @@ class Permissions(object):
     @property
     def redis(self):
         return self.bot.redis
+
+    async def alter(self, permission, remove):
+        permission = permission.strip().lower()
+
+        if remove:
+            action = self.bot.aiosession.delete
+        else:
+            action = self.bot.aiosession.put
+
+        payload = {
+            "server": self.server.id,
+            "channel": self.channel.id if self.channel else None,
+            "perm": permission
+        }
+
+        try:
+            async with action(
+                url=self.events_url + "/api/permissions",
+                data=json.dumps(payload),
+                headers={"Content-Type": "application/json"}
+            ) as response:
+                if response.status in (400, 500):
+                    raise Exception("Failed to update permissions. {}".format(
+                        await response.text()
+                    ))
+        except aiohttp.errors.ClientError:
+            pass
+
+    async def add(self, permission):
+        await self.alter(permission, True)
+
+    async def remove(self, permission):
+        await self.alter(permission, False)
 
     async def load_perms(self) -> None:
         params = {
@@ -39,8 +69,8 @@ class Permissions(object):
             ) as response:
                 try:
                     reply = await response.json()
-                    if reply.get("status") == "error":
-                        log.error("Error pushing event to server.")
+                    if response.status in (400, 500):
+                        log.error("Error fetching permissions.")
                         log.error(reply)
                     self.perms = reply.get("permissions", [])
                 except ValueError:
@@ -49,20 +79,22 @@ class Permissions(object):
         except aiohttp.errors.ClientError:
             pass
 
-    async def can(self, perm, owner=False):
-        if owner and self.member.id != "66153853824802816":
+    def can(self, perm, owner_only=False) -> bool:
+        perm = perm.strip().lower()
+
+        if owner_only and self.member.id != "66153853824802816":
             return False
 
         if "*" in self.perms:
             return True
 
-        # Implied wildcard checks
-        for x in perm.split("."):
-            if x in self.perms:
-                return True
-
         # Permission check
-        if perm in self.perms:
-            return True
+        if "-" + perm in self.perms:
+            return False
 
-        return False
+        while "." in perm:
+            perm = perm.rsplit(".", 1)[0]
+            if "-" + perm in self.perms:
+                return False
+
+        return True
