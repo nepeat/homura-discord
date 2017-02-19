@@ -6,7 +6,6 @@ from itertools import zip_longest
 log = logging.getLogger(__name__)
 
 class ModerationPlugin(PluginBase):
-    is_global = True
     requires_admin = True
 
     @command("purgeuser")

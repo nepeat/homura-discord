@@ -184,8 +184,8 @@ def command(
     return actual_decorator
 
 class PluginBase(object):
-    is_global = False
     requires_admin = False
+    owner_only = False
 
     def __init__(self, bot):
         self.bot = bot

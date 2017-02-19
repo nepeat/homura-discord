@@ -8,10 +8,10 @@ from nepeatbot.plugins.common import PluginBase, command, Message
 log = logging.getLogger(__name__)
 
 class OwnerPlugin(PluginBase):
-    is_global = True
+    owner_only = True
     requires_admin = True
 
-    @command("game (.+)", owner_only=True)
+    @command("game (.+)")
     async def set_game(self, message, args):
         await self.redis.hset("nepeatbot:config", "game", args[0])
         await self.bot.change_presence(
@@ -25,7 +25,7 @@ class OwnerPlugin(PluginBase):
     @command(patterns=[
         r"eval ```[\n]?[py\n](.+)```",
         r"eval (.+)"
-    ], owner_only=True)
+    ])
     async def eval_code(self, args, message):
         try:
             results = eval(args[0])

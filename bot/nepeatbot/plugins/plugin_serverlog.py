@@ -13,8 +13,6 @@ log = logging.getLogger(__name__)
 
 
 class ServerLogPlugin(PluginBase):
-    is_global = True
-
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.events_url = os.environ.get("BOT_WEB", "http://localhost:5000")
