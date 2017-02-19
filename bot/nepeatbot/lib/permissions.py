@@ -128,22 +128,23 @@ class Permissions(object):
         # Negation checks
 
         negated_perm = "-" + perm
+
+        while "." in negated_perm:
+            if negated_perm in self.perms:
+                return False
+            negated_perm = negated_perm.rsplit(".", 1)[0]
+
         if negated_perm in self.perms:
             return False
 
-        while "." in negated_perm:
-            negated_perm = negated_perm.rsplit(".", 1)[0]
-            if negated_perm in self.perms:
-                return False
-
         # Positive checks
+
+        while "." in perm:
+            if perm in self.perms:
+                return True
+            perm = perm.rsplit(".", 1)[0]
 
         if perm in self.perms:
             return True
-
-        while "." in perm:
-            perm = perm.rsplit(".", 1)[0]
-            if perm in self.perms:
-                return True
 
         return False
