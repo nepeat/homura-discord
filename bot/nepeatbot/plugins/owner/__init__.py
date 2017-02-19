@@ -1,6 +1,7 @@
 import logging
 import traceback
 
+import aiohttp
 from discord import Game
 
 from nepeatbot.plugins.common import Message, PluginBase, command
@@ -20,12 +21,33 @@ class OwnerPlugin(PluginBase):
             )
         )
 
-        await self.bot.send_message(message.channel, "\N{OK HAND SIGN}")
+        return Message("\N{OK HAND SIGN}")
 
     @command("owner setname (.+)")
     async def set_name(self, message, args):
         await self.bot.edit_profile(username=args[0])
-        await self.bot.send_message(message.channel, "\N{OK HAND SIGN}")
+        return Message("\N{OK HAND SIGN}")
+
+    @command(patterns=[
+        "owner setavatar (.+)",
+        "owner setavatar"
+    ])
+    async def set_avatar(self, message, args):
+        if message.attachments:
+            thing = message.attachments[0]["url"]
+        else:
+            if not args:
+                return
+            thing = url.strip("<>")
+
+        try:
+            with aiohttp.Timeout(10):
+                async with self.bot.aiosession.get(thing) as res:
+                    await self.bot.edit_profile(avatar=await res.read())
+        except Exception as e:
+            return Message("Unable to change avatar: {}".format(e))
+
+        return Message("\N{OK HAND SIGN}")
 
     @command(patterns=[
         r"eval ```[\n]?[py\n](.+)```",
