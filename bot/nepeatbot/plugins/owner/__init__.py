@@ -11,7 +11,7 @@ class OwnerPlugin(PluginBase):
     owner_only = True
     requires_admin = True
 
-    @command("game (.+)")
+    @command("owner setgame (.+)")
     async def set_game(self, message, args):
         await self.redis.hset("nepeatbot:config", "game", args[0])
         await self.bot.change_presence(
@@ -20,7 +20,12 @@ class OwnerPlugin(PluginBase):
             )
         )
 
-        await self.bot.send_message(message.channel, "Done!")
+        await self.bot.send_message(message.channel, "\N{OK HAND SIGN}")
+
+    @command("owner setname (.+)")
+    async def set_name(self, message, args):
+        await self.bot.edit_profile(username=args[0])
+        await self.bot.send_message(message.channel, "\N{OK HAND SIGN}")
 
     @command(patterns=[
         r"eval ```[\n]?[py\n](.+)```",
