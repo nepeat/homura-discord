@@ -98,11 +98,14 @@ def command(
 
             # Admin check
 
-            is_admin = (
-                author.server_permissions.manage_server or
-                author.server_permissions.administrator or
-                author.id == "66153853824802816"
-            )
+            try:
+                is_admin = (
+                    author.server_permissions.manage_server or
+                    author.server_permissions.administrator or
+                    author.id in OWNER_IDS
+                )
+            except AttributeError:
+                is_admin = author.id in OWNER_IDS
 
             if (requires_admin or self.requires_admin) and not is_admin:
                 await self.bot.send_message_object(
@@ -136,7 +139,7 @@ def command(
 
             log.info("{}#{}@{} >> {}".format(message.author.name,
                                              message.author.discriminator,
-                                             message.server.name,
+                                             message.server.name if message.server else "PM",
                                              message.clean_content))
 
             # Parameters for the command function.
@@ -239,6 +242,10 @@ class PluginBase(object):
 
     async def _on_message(self, message):
         if message.author.id != self.bot.user.id:
+            if message.channel.is_private and message.author.id not in OWNER_IDS:
+                self.send_message(message.channel, "This bot cannot be used in private messages.")
+                return
+
             for command_name, func in self.commands.items():
                 await func(message)
         await self.on_message(message)

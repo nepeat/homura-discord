@@ -144,8 +144,6 @@ class NepeatBot(discord.Client):
             return
 
         self.stats.incr("nepeatbot.message,type=receive", rate=0.1)
-        if message.channel.is_private:
-            return
 
         if message.content == "!shard?":
             if hasattr(self, 'shard_id'):

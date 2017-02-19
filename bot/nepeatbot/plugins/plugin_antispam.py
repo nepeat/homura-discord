@@ -75,6 +75,11 @@ class AntispamPlugin(PluginBase):
         return Message(result)
 
     async def on_message(self, message):
+        # We cannot run in PMs :(
+
+        if not message.server:
+            return
+
         log_channel_id = await self.redis.hget("antispam:{}:config".format(message.server.id), "log_channel")
         if not log_channel_id:
             return

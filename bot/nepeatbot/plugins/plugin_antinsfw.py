@@ -33,6 +33,11 @@ class AntiNSFWPlugin(PluginBase):
         return Message("implement me lol")
 
     async def on_message(self, message):
+        # We cannot run in PMs :(
+
+        if not message.server:
+            return
+
         enabled = await self.redis.sismember("antinsfw:enabled", message.server.id)
         if not enabled:
             return

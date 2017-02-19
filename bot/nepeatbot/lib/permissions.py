@@ -79,6 +79,9 @@ class Permissions(object):
         }
 
     async def load_perms(self) -> None:
+        if self.channel.is_private:
+            return None
+
         self.perms = await self.get_perms()
 
     async def get_perms(self, serveronly=False) -> Optional[str]:
@@ -111,8 +114,11 @@ class Permissions(object):
         if not perm:
             return True
 
-        if author and author.server_permissions.administrator:
-            return True
+        try:
+            if author and author.server_permissions.administrator:
+                return True
+        except AttributeError:
+            pass
 
         perm = perm.strip().lower()
 
