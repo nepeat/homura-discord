@@ -1,9 +1,11 @@
 import os
 from functools import wraps
-from flask_dance.consumer import OAuth2ConsumerBlueprint
+
 from flask import redirect, url_for
+from flask_dance.consumer import OAuth2ConsumerBlueprint
 
 from disquotes.lib.cache import redis_cache
+
 
 def require_login(f):
     @wraps(f)

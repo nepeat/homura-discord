@@ -1,7 +1,7 @@
 import logging
-
-from nepeatbot.plugins.common import PluginBase, command, Message
 from itertools import zip_longest
+
+from nepeatbot.plugins.common import Message, PluginBase, command
 
 log = logging.getLogger(__name__)
 
@@ -76,4 +76,3 @@ class ModerationPlugin(PluginBase):
         if message:
             await self.redis.sadd("ignored:{}".format(message.server.id), [message.id])
             await self.bot.delete_message(message)
-

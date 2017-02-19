@@ -1,10 +1,10 @@
-import os
 import logging
-
-from typing import Optional
+import os
 
 import aiohttp
 import discord
+
+from typing import Optional
 
 log = logging.getLogger(__name__)
 

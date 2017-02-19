@@ -1,7 +1,9 @@
-import aiohttp
 import re
 
-from nepeatbot.plugins.common import PluginBase, command, Message
+import aiohttp
+
+from nepeatbot.plugins.common import Message, PluginBase, command
+
 
 class QuotesPlugin(PluginBase):
     url_regex = re.compile(r"(https?://\S+)")

@@ -1,9 +1,9 @@
-import traceback
 import logging
+import traceback
 
 from discord import Game
 
-from nepeatbot.plugins.common import PluginBase, command, Message
+from nepeatbot.plugins.common import Message, PluginBase, command
 
 log = logging.getLogger(__name__)
 

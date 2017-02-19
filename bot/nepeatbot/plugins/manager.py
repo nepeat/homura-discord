@@ -1,4 +1,5 @@
 import logging
+
 from nepeatbot.plugins import ALL_PLUGINS
 
 log = logging.getLogger(__name__)

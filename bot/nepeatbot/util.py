@@ -1,5 +1,7 @@
-import aiohttp
 from urllib.parse import urlencode
+
+import aiohttp
+
 
 class Dummy(object):
     def blank_fn(self, *args, **kwargs):

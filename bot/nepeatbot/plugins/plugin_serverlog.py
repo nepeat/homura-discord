@@ -1,13 +1,13 @@
-import os
 import json
 import logging
-import aiohttp
+import os
 
+import aiohttp
 import discord
-from typing import Optional
 
 from nepeatbot.plugins.common import PluginBase, command
 from nepeatbot.util import sanitize
+from typing import Optional
 
 log = logging.getLogger(__name__)
 

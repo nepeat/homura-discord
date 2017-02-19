@@ -1,13 +1,13 @@
-from flask import Blueprint, g, request, jsonify, request
-from flask_restplus import Resource, Api, abort, fields
-from sqlalchemy.orm.exc import NoResultFound
-from sqlalchemy.exc import DataError
-
+from flask import Blueprint, g, jsonify, request
+from flask_restplus import Api, Resource, abort, fields
 from sqlalchemy import or_
-from disquotes.model import Channel, Event, Server, Channel, Permission
-from disquotes.model.validators import validate_push
+from sqlalchemy.exc import DataError
+from sqlalchemy.orm.exc import NoResultFound
+
+from disquotes.model import Channel, Event, Permission, Server
 from disquotes.model.types import EVENT_TYPES
-from disquotes.views.api import permissions, events
+from disquotes.model.validators import validate_push
+from disquotes.views.api import events, permissions
 
 blueprint = Blueprint("api", __name__)
 api = Api(

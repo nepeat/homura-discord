@@ -1,5 +1,6 @@
 from disquotes.model.types import EVENT_TYPES
 
+
 def validate_push(form, msg_type):
     msg_type = msg_type.strip().lower()
 

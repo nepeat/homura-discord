@@ -2,11 +2,10 @@
 import datetime
 import os
 
-from sqlalchemy import (BigInteger, Column, DateTime, ForeignKey, Integer,
-                        String, Unicode, create_engine)
+from sqlalchemy import BigInteger, Column, DateTime, ForeignKey, Integer, String, Unicode, create_engine
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import scoped_session, sessionmaker, validates, relationship
+from sqlalchemy.orm import relationship, scoped_session, sessionmaker, validates
 from sqlalchemy.schema import Index
 
 from disquotes.model.types import EVENT_TYPES

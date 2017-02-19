@@ -1,8 +1,9 @@
 import json
 import logging
+
 import aiohttp
 
-from nepeatbot.plugins.common import PluginBase, Message, command
+from nepeatbot.plugins.common import Message, PluginBase, command
 from nepeatbot.util import sanitize
 
 log = logging.getLogger(__name__)

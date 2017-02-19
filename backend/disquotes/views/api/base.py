@@ -1,11 +1,11 @@
 import json
 
+from flask import g, request
 from flask_restplus import Resource, abort
-from flask import request, g
-
 from sqlalchemy.orm.exc import NoResultFound
 
-from disquotes.model import Server, Channel
+from disquotes.model import Channel, Server
+
 
 class ResourceBase(Resource):
     def get_field(self, field: str, default=None, asjson: bool=False):

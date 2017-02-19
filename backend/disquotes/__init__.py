@@ -1,13 +1,13 @@
 # This Python file uses the following encoding: utf-8
-import os
 import logging
+import os
 
 from flask import Flask
 from raven.contrib.flask import Sentry
 
 from disquotes.model.auth import discord
-from disquotes.model.handlers import (before_request, connect_redis, connect_sql,
-                                   commit_sql, disconnect_redis, disconnect_sql)
+from disquotes.model.handlers import (before_request, commit_sql, connect_redis, connect_sql, disconnect_redis,
+                                      disconnect_sql)
 from disquotes.views import api, frontend
 
 app = Flask(__name__)

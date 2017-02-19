@@ -2,9 +2,9 @@
 import os
 
 from flask import g, request
+from redis import ConnectionPool, StrictRedis
 
 from disquotes.model import sm
-from redis import ConnectionPool, StrictRedis
 
 redis_pool = ConnectionPool(
     host=os.environ.get('REDIS_PORT_6379_TCP_ADDR', os.environ.get('REDIS_HOST', '127.0.0.1')),

@@ -1,9 +1,6 @@
-import asyncio
 import logging
 import os
 import traceback
-
-from typing import List, Optional
 
 import aiohttp
 import asyncio_redis
@@ -11,9 +8,11 @@ import discord
 import raven
 import statsd
 
+import asyncio
 from nepeatbot.plugins.common import Message
 from nepeatbot.plugins.manager import PluginManager
 from nepeatbot.util import Dummy
+from typing import List, Optional
 
 if "DEBUG" in os.environ:
     logging.basicConfig(level=logging.DEBUG)

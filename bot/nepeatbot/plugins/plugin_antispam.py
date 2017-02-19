@@ -1,8 +1,9 @@
-import re
-import discord
 import logging
+import re
 
-from nepeatbot.plugins.common import PluginBase, Message, command
+import discord
+
+from nepeatbot.plugins.common import Message, PluginBase, command
 from nepeatbot.util import sanitize
 
 log = logging.getLogger(__name__)

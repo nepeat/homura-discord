@@ -1,8 +1,8 @@
 from flask import g, request
-from flask_restplus import Namespace, fields, Resource, abort
+from flask_restplus import Namespace, Resource, abort, fields
 from sqlalchemy import or_
 
-from disquotes.model import Server, Channel, Permission
+from disquotes.model import Channel, Permission, Server
 from disquotes.views.api.base import ResourceBase
 
 ns = Namespace("permissions", "Permissions storage.")
@@ -34,7 +34,7 @@ class PermissionResource(ResourceBase):
 
     @ns.param("perm", "Permission node", required=True)
     def put(self):
-        server, channel = self.get_server_channel()
+        server, channel = self.get_server_channel(create=True)
 
         new_perm = Permission(
             server_id=server.id,

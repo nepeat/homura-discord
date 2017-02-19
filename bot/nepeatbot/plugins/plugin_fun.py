@@ -1,9 +1,11 @@
 import datetime
-import discord
 import logging
-import aiohttp
 import xml.etree.ElementTree as ET
-from nepeatbot.plugins.common import PluginBase, command, Message
+
+import aiohttp
+import discord
+
+from nepeatbot.plugins.common import Message, PluginBase, command
 
 log = logging.getLogger(__name__)
 

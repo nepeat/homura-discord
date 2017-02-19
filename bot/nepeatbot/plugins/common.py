@@ -1,10 +1,11 @@
-import asyncio
-import re
 import inspect
 import logging
-
+import re
 from functools import wraps
 
+import discord
+
+import asyncio
 from nepeatbot.lib.permissions import Permissions
 
 log = logging.getLogger(__name__)
