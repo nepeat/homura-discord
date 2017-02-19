@@ -64,7 +64,7 @@ def command(
 
             # Bot owner check
 
-            if owner_only and author.id != "66153853824802816":
+            if (owner_only or self.owner_only) and author.id != "66153853824802816":
                 log.warning("%s#%s [%s] has attempted to run owner command `%s`.",
                     author.name,
                     author.discriminator,
@@ -108,7 +108,7 @@ def command(
 
             # Permissions check
 
-            if not permissions.can(permission_name):
+            if not permissions.can(permission_name, author):
                 await self.bot.send_message_object(
                     Message(
                         content="You are not allowed to use this command in this server or channel.",

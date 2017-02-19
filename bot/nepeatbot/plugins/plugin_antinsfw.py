@@ -15,11 +15,27 @@ class AntiNSFWPlugin(PluginBase):
         super().__init__(*args, **kwargs)
         self.nsfw_url = os.environ.get("NSFWAPI_URL", "http://localhost:5001")
 
+    @command("antinsfw")
+    async def antinsfw_status(self):
+        return Message("implement me lol")
+
+    @command("antinsfw (enable|disable)")
+    async def toggle_event(self, message, args):
+        action = self.bot.redis.sadd if args[0] == "enable" else self.bot.redis.srem
+
+        await action("antinsfw:enabled", message.server.id)
+
+        return Message("Updated!")
+
     @command("antinsfw status")
     async def antinsfw_status(self):
         return Message("implement me lol")
 
     async def on_message(self, message):
+        enabled = await self.redis.sismember("antinsfw:enabled", message.server.id)
+        if not enabled:
+            return
+
         for embed in message.embeds:
             if "thumbnail" not in embed:
                 continue

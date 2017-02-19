@@ -19,21 +19,6 @@ class PluginManager:
         for plugin in ALL_PLUGINS:
             self.load(plugin)
 
-    async def get_all(self, server):
-        enabled_plugins = await self.bot.redis.smembers('plugins:{}'.format(server.id))
-        enabled_plugins = await enabled_plugins.asset()
-
-        plugins = []
-
-        for plugin in self.bot.plugins:
-            if plugin.is_global:
-                plugins.append(plugin)
-
-            if plugin.__class__.__name__ in enabled_plugins:
-                plugins.append(plugin)
-
-        return plugins
-
     def get(self, name):
         name = name.strip().lower()
 

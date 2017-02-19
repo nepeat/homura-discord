@@ -26,6 +26,7 @@ log = logging.getLogger(__name__)
 
 class NepeatBot(discord.Client):
     def __init__(self):
+        self.plugins = []
         self.sentry = raven.Client(
             dsn=os.environ.get("SENTRY_DSN", None),
             install_logging_hook=True
@@ -66,17 +67,13 @@ class NepeatBot(discord.Client):
     async def plugin_dispatch(self, event, *args, **kwargs):
         method = "on_" + event
         server = None
-        plugins = {plugin for plugin in self.plugins if plugin.is_global}
 
         for arg in args:
             if hasattr(arg, "server"):
                 server = arg.server
                 break
 
-        if server:
-            plugins |= set(await self.get_plugins(server))
-
-        for plugin in plugins:
+        for plugin in self.plugins:
             func = getattr(plugin, method)
 
             if event == "message":
@@ -111,9 +108,6 @@ class NepeatBot(discord.Client):
             await self.delete_message(sentmsg)
 
     # Events
-    async def get_plugins(self, server):
-        plugins = await self.plugin_manager.get_all(server)
-        return plugins
 
     async def send_message(self, *args, **kwargs):
         self.stats.incr("nepeatbot.message,type=send")
@@ -220,8 +214,8 @@ class NepeatBot(discord.Client):
     async def on_member_ban(self, member):
         await self.plugin_dispatch("member_ban", member)
 
-    async def on_member_unban(self, member):
-        await self.plugin_dispatch("member_unban", member)
+    async def on_member_unban(self, server, member):
+        await self.plugin_dispatch("member_unban", server, member)
 
     async def on_typing(self, channel, user, when):
         if channel.is_private:

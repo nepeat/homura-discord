@@ -85,8 +85,11 @@ class Permissions(object):
         except aiohttp.errors.ClientError:
             pass
 
-    def can(self, perm: Optional[str]) -> bool:
+    def can(self, perm: str, author: Optional[discord.Member]=None) -> bool:
         if not perm:
+            return True
+
+        if author.server_permissions.administrator:
             return True
 
         perm = perm.strip().lower()
