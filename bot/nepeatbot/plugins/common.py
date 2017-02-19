@@ -10,6 +10,9 @@ from nepeatbot.lib.permissions import Permissions
 
 log = logging.getLogger(__name__)
 
+OWNER_IDS = [
+    "66153853824802816"
+]
 
 class Message(object):
     def __init__(self, content=None, embed=None, reply=False, delete_after=0, delete_invoking=False):
@@ -66,7 +69,7 @@ def command(
 
             # Bot owner check
 
-            if (owner_only or self.owner_only) and author.id != "66153853824802816":
+            if (owner_only or self.owner_only) and author.id not in OWNER_IDS:
                 log.warning("%s#%s [%s] has attempted to run owner command `%s`.",
                     author.name,
                     author.discriminator,
@@ -110,7 +113,7 @@ def command(
 
             # Permissions check
 
-            if not permissions.can(permission_name, author):
+            if not permissions.can(permission_name, author) and author.id not in OWNER_IDS:
                 await self.bot.send_message_object(
                     Message(
                         content="You are not allowed to use this command in this server or channel.",
