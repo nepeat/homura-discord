@@ -203,6 +203,35 @@ def command(
     return actual_decorator
 
 class PluginBase(object):
+    """
+        .. function:: on_ready()
+        .. function:: on_resumed()
+        .. function:: on_error(event, \*args, \*\*kwargs)
+        .. function:: on_message(message)
+        .. function:: on_socket_raw_receive(msg)
+        .. function:: on_socket_raw_send(payload)
+        .. function:: on_message_delete(message)
+        .. function:: on_message_edit(before, after)
+        .. function:: on_reaction_add(reaction, user)
+        .. function:: on_reaction_remove(reaction, user)
+        .. function:: on_reaction_clear(message, reactions)
+        .. function:: on_channel_delete(channel)
+        .. function:: on_channel_update(before, after)
+        .. function:: on_member_join(member)
+        .. function:: on_member_update(before, after)
+        .. function:: on_server_join(server)
+        .. function:: on_server_remove(server)
+        .. function:: on_server_update(before, after)
+        .. function:: on_server_role_create(role)
+        .. function:: on_server_role_update(before, after)
+        .. function:: on_server_emojis_update(before, after)
+        .. function:: on_server_available(server)
+        .. function:: on_voice_state_update(before, after)
+        .. function:: on_member_ban(member)
+        .. function:: on_member_unban(server, user)
+        .. function:: on_typing(channel, user, when)
+        .. function:: on_group_join(channel, user)
+    """
     requires_admin = False
     owner_only = False
 
