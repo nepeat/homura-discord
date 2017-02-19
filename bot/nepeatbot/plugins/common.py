@@ -56,7 +56,7 @@ def command(
 
             if not match:
                 # Fallback with the bot's mention tag
-                match = re.match("[<!@]{{0,1}}{userid}> {pattern}".format(
+                match = re.match("<[!@]{{1,2}}{userid}> {pattern}".format(
                     userid=self.bot.user.id,
                     pattern=pattern
                 ), message.content)
