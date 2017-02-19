@@ -222,11 +222,11 @@ class PluginBase(object):
     def redis(self):
         return self.bot.redis
 
-    def create_image_embed(self, url, top_text: str=None, bottom_text: str=None):
+    def create_image_embed(self, url, top_text: str=None, bottom_text: str=None, top_url: str=None,):
         embed = discord.Embed(color=discord.Colour.gold())
 
         if top_text:
-            embed.set_author(name=top_text, url=url)
+            embed.set_author(name=top_text, url=top_url or url)
 
         embed.set_image(url=url)
 
