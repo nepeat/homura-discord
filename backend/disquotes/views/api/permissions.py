@@ -1,4 +1,4 @@
-from flask import g, request
+from flask import g
 from flask_restplus import Namespace, Resource, abort, fields
 from sqlalchemy import or_
 
@@ -36,9 +36,22 @@ class PermissionResource(ResourceBase):
     def put(self):
         server, channel = self.get_server_channel(create=True)
 
+        if channel:
+            query = g.db.query(Permission.permission).filter(or_(
+                Permission.server_id == server.id,
+                Permission.channel_id == channel.id
+            ))
+        else:
+            query = g.db.query(Permission.permission).filter(
+                Permission.server_id == server.id
+            )
+
+        if query.filter(Permission.permission == self.get_field("perm")).scalar():
+            abort(400, "Permission already exists for this channel/server.")
+
         new_perm = Permission(
             server_id=server.id,
-            permission=request.args.get("perm")
+            permission=self.get_field("perm")
         )
 
         if channel:
@@ -55,4 +68,4 @@ class PermissionResource(ResourceBase):
         if channel:
             deleted_perm = deleted_perm.filter(Permission.channel_id == channel.id)
 
-        deleted_perm = deleted_perm.filter(Permission.permission == request.args.get("perm")).delete()
+        deleted_perm = deleted_perm.filter(Permission.permission == self.get_field("perm")).delete()

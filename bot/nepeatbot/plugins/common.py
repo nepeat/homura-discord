@@ -26,8 +26,9 @@ def command(
     requires_admin=False,
     owner_only=False,
     patterns=[],
-    permission_name=None
+    permission_name=""
 ):
+
     if pattern and not pattern.startswith("^!"):
         _patterns = ["^!" + pattern]
     elif patterns:

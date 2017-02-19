@@ -1,9 +1,11 @@
+import json
 import logging
 import os
 
 import aiohttp
 import discord
 
+from nepeatbot.lib.signals import BackendError
 from typing import Optional
 
 log = logging.getLogger(__name__)
@@ -29,7 +31,7 @@ class Permissions(object):
     def redis(self):
         return self.bot.redis
 
-    async def alter(self, permission, remove):
+    async def alter(self, permission, remove, serverwide=False):
         permission = permission.strip().lower()
 
         if remove:
@@ -39,33 +41,50 @@ class Permissions(object):
 
         payload = {
             "server": self.server.id,
-            "channel": self.channel.id if self.channel else None,
+            "channel": self.channel.id if (self.channel and not serverwide) else None,
             "perm": permission
         }
 
         try:
             async with action(
-                url=self.backend_url + "/api/permissions",
+                url=self.backend_url + "/api/permissions/",
                 data=json.dumps(payload),
                 headers={"Content-Type": "application/json"}
             ) as response:
                 if response.status in (400, 500):
-                    raise Exception("Failed to update permissions. {}".format(
-                        await response.text()
-                    ))
+                    try:
+                        reply = await response.json()
+                        raise BackendError(reply["message"])
+                    except ValueError:
+                        log.error("Failed to update permissions. {}".format(
+                            await response.text()
+                        ))
+                        raise BackendError("Unknown error updating permissions")
         except aiohttp.errors.ClientError:
             pass
 
-    async def add(self, permission):
-        await self.alter(permission, True)
+    async def add(self, permission, serverwide=False):
+        await self.alter(permission, False, serverwide)
 
-    async def remove(self, permission):
-        await self.alter(permission, False)
+    async def remove(self, permission, serverwide=False):
+        await self.alter(permission, True, serverwide)
+
+    async def get_all(self):
+        channel_perms = await self.get_perms()
+        server_perms = await self.get_perms(serveronly=True)
+
+        return {
+            "server": server_perms,
+            "channel": channel_perms
+        }
 
     async def load_perms(self) -> None:
+        self.perms = await self.get_perms()
+
+    async def get_perms(self, serveronly=False) -> Optional[str]:
         params = {
             "server": self.server.id,
-            "channel": self.channel.id
+            "channel": self.channel.id if not serveronly else None
         }
 
         try:
@@ -78,18 +97,21 @@ class Permissions(object):
                     if response.status in (400, 500):
                         log.error("Error fetching permissions.")
                         log.error(reply)
-                    self.perms = reply.get("permissions", [])
+                    return reply.get("permissions", [])
                 except ValueError:
                     log.error("Error parsing JSON.")
                     log.error(await response.text())
+                    pass
         except aiohttp.errors.ClientError:
             pass
+
+        return []
 
     def can(self, perm: str, author: Optional[discord.Member]=None) -> bool:
         if not perm:
             return True
 
-        if author.server_permissions.administrator:
+        if author and author.server_permissions.administrator:
             return True
 
         perm = perm.strip().lower()
@@ -97,13 +119,25 @@ class Permissions(object):
         if "*" in self.perms:
             return True
 
-        # Permission check
-        if "-" + perm in self.perms:
+        # Negation checks
+
+        negated_perm = "-" + perm
+        if negated_perm in self.perms:
             return False
+
+        while "." in negated_perm:
+            negated_perm = negated_perm.rsplit(".", 1)[0]
+            if negated_perm in self.perms:
+                return False
+
+        # Positive checks
+
+        if perm in self.perms:
+            return True
 
         while "." in perm:
             perm = perm.rsplit(".", 1)[0]
-            if "-" + perm in self.perms:
-                return False
+            if perm in self.perms:
+                return True
 
-        return True
+        return False
