@@ -1,4 +1,11 @@
 API_ENDPOINTS = {
+    "danbooru": [
+        {
+            "endpoint": "https://e621.net/post/index.json",
+            "friendly_name": "e621",
+            "permalink": "https://e621.net/post/show/{}"
+        }
+    ],
     "gelbooru": [
         {
             "endpoint": "https://rule34.xxx/index.php",
@@ -10,7 +17,7 @@ API_ENDPOINTS = {
             "friendly_name": "Gelbooru",
             "permalink": "https://gelbooru.com/index.php?page=post&s=view&id={}"
         }
-    ]
+    ],
 }
 
 USER_AGENT = "github.com/nepeat/nepeatbot | nepeat#6071 | This is discord bot. This is mistake."

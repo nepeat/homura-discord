@@ -39,7 +39,10 @@ class NSFWPlugin(PluginBase):
             sites.remove(site)
             if backend == "gelbooru":
                 image = await self.fetcher.gelbooru(site, tags)
-                if isinstance(image, dict):
-                    return image
+            elif backend == "danbooru":
+                image = await self.fetcher.danbooru(site, tags)
+
+            if isinstance(image, dict):
+                return image
 
         return None
