@@ -16,7 +16,7 @@ OWNER_IDS = [
 ]
 
 class Message(object):
-    def __init__(self, content=None, embed=None, reply=False, delete_after=0, delete_invoking=False):
+    def __init__(self, content=None, embed=None, reply=False, delete_after=0, delete_invoking=0):
         self.content = content
         self.embed = embed
         self.reply = reply
@@ -87,8 +87,8 @@ def command(
                     Message(
                         content="ಠ_ಠ",
                         reply=True,
-                        delete_after=5,
-                        delete_invoking=True
+                        delete_after=10,
+                        delete_invoking=10
                     ),
                     message.channel,
                     message.author,
@@ -112,8 +112,8 @@ def command(
                     Message(
                         content="You need administrator role permissions to use this command.",
                         reply=True,
-                        delete_after=5,
-                        delete_invoking=True
+                        delete_after=10,
+                        delete_invoking=10
                     ),
                     message.channel,
                     message.author,
@@ -128,8 +128,8 @@ def command(
                     Message(
                         content="You are not allowed to use this command in this server or channel.",
                         reply=True,
-                        delete_after=5,
-                        delete_invoking=True
+                        delete_after=10,
+                        delete_invoking=10
                     ),
                     message.channel,
                     message.author,

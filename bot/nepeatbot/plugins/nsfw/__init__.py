@@ -25,8 +25,7 @@ class NSFWPlugin(PluginBase):
         if not image:
             return Message(
                 f"No posts tagged `{sanitize(args[0])}` were found.",
-                reply=True,
-                delete_after=5
+                reply=True
             )
 
         return Message(embed=self.create_image_embed(

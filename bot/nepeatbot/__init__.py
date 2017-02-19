@@ -99,7 +99,7 @@ class NepeatBot(discord.Client):
         )
 
         if message.delete_invoking and invoking:
-            await asyncio.sleep(2)
+            await asyncio.sleep(message.delete_invoking)
             await self.delete_message(invoking)
 
         if message.delete_after:
