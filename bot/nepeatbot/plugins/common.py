@@ -7,6 +7,7 @@ import discord
 
 import asyncio
 from nepeatbot.lib.permissions import Permissions
+from nepeatbot.lib.signals import BackendError
 
 log = logging.getLogger(__name__)
 
@@ -174,7 +175,11 @@ def command(
 
             # Command caller
 
-            response = await func(**handler_kwargs)
+            try:
+                response = await func(**handler_kwargs)
+            except BackendError as e:
+                return await self.bot.send_message(message.channel, str(e))
+
             if response and isinstance(response, Message):
                 await self.bot.send_message_object(response, message.channel, message.author, message)
 
@@ -207,6 +212,21 @@ class PluginBase(object):
     @property
     def redis(self):
         return self.bot.redis
+
+    def create_image_embed(self, url, top_text: str=None, bottom_text: str=None):
+        embed = discord.Embed(color=discord.Colour.gold())
+
+        if top_text:
+            embed.set_author(name=top_text, url=url)
+
+        embed.set_image(url=url)
+
+        if bottom_text:
+            embed.set_footer(text=bottom_text)
+
+        return embed
+
+    # Events
 
     async def on_ready(self):
         pass
