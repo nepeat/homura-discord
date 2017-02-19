@@ -17,6 +17,7 @@ API_ENDPOINTS = {
         "https://gelbooru.com/index.php"
     ]
 }
+USER_AGENT = "github.com/nepeat/nepeatbot | nepeat#6071 | This is discord bot. This is mistake."
 
 class NSFWPlugin(PluginBase):
     @command("rule34 (.+)", permission_name="nsfw.rule34")
@@ -42,7 +43,7 @@ class NSFWPlugin(PluginBase):
 
     async def get_gelbooru(self, endpoint, tags, nsfw=True):
         if nsfw:
-            tags = tags + "-rating:safe"
+            tags = tags + " -rating:safe"
 
         params = {
             "page": "dapi",
@@ -53,7 +54,10 @@ class NSFWPlugin(PluginBase):
 
         async with self.bot.aiosession.get(
             url=endpoint,
-            params=params
+            params=params,
+            headers={
+                "User-Agent": USER_AGENT
+            }
         ) as response:
             reply = await response.text()
 
