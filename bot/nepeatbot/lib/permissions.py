@@ -18,14 +18,21 @@ class Permissions(object):
         message: Optional[discord.Message]
     ):
         self.backend_url = os.environ.get("BOT_WEB", "http://localhost:5000")
-
         self.bot = bot
         self.message = message
         self.server = message.server
         self.channel = message.channel
-
         self.perms = []
-        self.bot.loop.create_task(self.load_perms())
+
+    @classmethod
+    async def create(
+        cls,
+        bot: Optional[discord.Client],
+        message: Optional[discord.Message]
+    ):
+        init = cls(bot, message)
+        await init.load_perms()
+        return init
 
     @property
     def redis(self):
@@ -89,10 +96,9 @@ class Permissions(object):
             "server": self.server.id,
             "channel": self.channel.id if not serveronly else None
         }
-
         try:
             async with self.bot.aiosession.get(
-                url=self.backend_url + "/api/permissions",
+                url=self.backend_url + "/api/permissions/",
                 params=params
             ) as response:
                 try:
@@ -100,7 +106,11 @@ class Permissions(object):
                     if response.status in (400, 500):
                         log.error("Error fetching permissions.")
                         log.error(reply)
-                    return reply.get("permissions", [])
+
+                    try:
+                        return reply["permissions"]
+                    except KeyError:
+                        log.error("Permissions key is missing from permissions data?")
                 except ValueError:
                     log.error("Error parsing JSON.")
                     log.error(await response.text())

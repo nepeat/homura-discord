@@ -67,7 +67,7 @@ def command(
 
             self.bot.stats.incr("nepeatbot.command,function=" + func.__name__)
 
-            permissions = Permissions(
+            permissions = await Permissions.create(
                 self.bot,
                 message
             )
