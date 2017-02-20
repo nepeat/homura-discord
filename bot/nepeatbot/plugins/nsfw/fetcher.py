@@ -64,7 +64,6 @@ class ImageFetcher(object):
 
         if not images:
             return None
-
         image = self.safe_shuffle(images)
 
         return self.dict_return(site, image)
@@ -91,6 +90,8 @@ class ImageFetcher(object):
                 log.error(await response.text())
                 return None
 
+        if not images:
+            return None
         image = self.safe_shuffle(images)
 
         return self.dict_return(site, image)
