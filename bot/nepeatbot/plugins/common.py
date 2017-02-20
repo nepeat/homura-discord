@@ -191,6 +191,17 @@ def command(
                 response = await func(**handler_kwargs)
             except BackendError as e:
                 return await self.bot.send_message(message.channel, str(e))
+            except Exception as e:
+                embed = discord.Embed(
+                    title="Something happened",
+                    description="An error happened running this command",
+                    color=discord.Colour.red()
+                )
+                sentry_code = await self.bot.on_error("command:" + func.__name__)
+                if sentry_code:
+                    embed.set_footer(text=sentry_code)
+
+                return await self.bot.send_message(message.channel, embed=embed)
 
             if response and isinstance(response, Message):
                 await self.bot.send_message_object(response, message.channel, message.author, message)

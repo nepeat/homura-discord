@@ -66,6 +66,10 @@ class OwnerPlugin(PluginBase):
         log.warning(results)
         return Message("```%s```" % str(results))
 
+    @command("owner errortest")
+    async def errortest(self):
+        return Message(1 / 0)
+
     async def on_ready(self):
         status = await self.redis.hget("nepeatbot:config", "game")
 

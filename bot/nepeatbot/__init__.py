@@ -110,7 +110,7 @@ class NepeatBot(discord.Client):
         self.stats.incr("nepeatbot.error")
         log.error("Exception in %s", event_method)
         log.error(traceback.format_exc())
-        self.sentry.captureException()
+        return self.sentry.captureException()
 
     async def on_ready(self):
         self.stats.incr("nepeatbot.ready")
