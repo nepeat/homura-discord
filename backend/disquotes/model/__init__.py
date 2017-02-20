@@ -69,7 +69,7 @@ class Event(Base):
         return self.data if self.data else {}
 
     @validates("type")
-    def validate_type(self, key, event_type):
+    def validate_type(self, _key, event_type):
         assert event_type in EVENT_TYPES
         return event_type
 

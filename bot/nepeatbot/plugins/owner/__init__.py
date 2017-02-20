@@ -14,7 +14,7 @@ class OwnerPlugin(PluginBase):
     requires_admin = True
 
     @command("owner setgame (.+)")
-    async def set_game(self, message, args):
+    async def set_game(self, args):
         await self.redis.hset("nepeatbot:config", "game", args[0])
         await self.bot.change_presence(
             game=Game(
@@ -25,7 +25,7 @@ class OwnerPlugin(PluginBase):
         return Message("\N{OK HAND SIGN}")
 
     @command("owner setname (.+)")
-    async def set_name(self, message, args):
+    async def set_name(self, args):
         await self.bot.edit_profile(username=args[0])
         return Message("\N{OK HAND SIGN}")
 
@@ -54,10 +54,12 @@ class OwnerPlugin(PluginBase):
         r"eval ```[\n]?[py\n](.+)```",
         r"eval (.+)"
     ])
-    async def eval_code(self, args, permissions, message):
+    async def eval_code(self, args, permissions, message):  # NOQA
         try:
             results = eval(args[0])
         except Exception as e:
+            log.error(f"Error in eval '{args[0]}'")
+            traceback.print_exc()
             return Message("```%s```" % (traceback.format_exc()))
 
         log.warning("Successful eval '%s'", args[0])

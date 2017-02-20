@@ -65,12 +65,6 @@ class NepeatBot(discord.Client):
 
     async def plugin_dispatch(self, event, *args, **kwargs):
         method = "on_" + event
-        server = None
-
-        for arg in args:
-            if hasattr(arg, "server"):
-                server = arg.server
-                break
 
         for plugin in self.plugins:
             func = getattr(plugin, method)
