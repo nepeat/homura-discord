@@ -27,10 +27,17 @@ class BulkEventsResource(ResourceBase):
     def put(self):
         data = self.get_field("data", asjson=True)
 
-        for server_id, server_name in data.items():
+        for server_id, server_data in data.items():
             server, channel = self.get_server_channel(create=True, server=server_id)
-            server.name = server_name
+
+            if "name" in server_data:
+                server.name = server_data["name"]
+
+            for channel_id, channel_name in server_data["channels"].items():
+                _, channel = self.get_server_channel(create=True, server=server_id, channel=channel_id)
+
             g.db.flush()
+
 
 @ns.route("/<event_type>")
 class EventsResource(ResourceBase):

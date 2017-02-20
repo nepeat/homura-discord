@@ -181,6 +181,12 @@ class ServerLogPlugin(PluginBase):
         payload = {}
 
         for server in self.bot.servers:
-            payload[server.id] = server.name
+            payload[server.id] = {
+                "name": server.name,
+                "channels": {}
+            }
+
+            for channel in server.channels:
+                payload[server.id]["channels"][channel.id] = channel.name
 
         await self.push_event("bulk", data=payload)
