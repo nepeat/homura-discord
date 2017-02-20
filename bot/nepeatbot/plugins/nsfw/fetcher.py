@@ -28,8 +28,16 @@ class ImageFetcher(object):
     def safe_shuffle(self, images):
         for x in range(0, 10):
             image = random.choice(images)
-            if not image.get("url").endswith(".webm"):
-                return image
+            url = image.get("file_url", "")
+            if not url:
+                continue
+
+            # TIL "suffix can also be a tuple of suffixes to look for"
+
+            if url.endswith((".webm", ".mp4", ".ogg")):
+                continue
+
+            return image
 
     async def gelbooru(self, site, tags, nsfw=True):
         if nsfw:
