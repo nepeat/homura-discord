@@ -26,6 +26,8 @@ log = logging.getLogger(__name__)
 class NepeatBot(discord.Client):
     def __init__(self):
         self.plugins = []
+        self.all_permissions = []
+
         self.sentry = raven.Client(
             dsn=os.environ.get("SENTRY_DSN", None),
             install_logging_hook=True

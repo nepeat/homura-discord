@@ -6,7 +6,7 @@ import aiohttp
 import discord
 
 from nepeatbot.lib.signals import BackendError
-from typing import Optional, List
+from typing import List, Optional
 
 log = logging.getLogger(__name__)
 
