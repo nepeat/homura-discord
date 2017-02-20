@@ -6,7 +6,7 @@ import aiohttp
 import discord
 
 from nepeatbot.lib.signals import BackendError
-from typing import Optional
+from typing import Optional, List
 
 log = logging.getLogger(__name__)
 
@@ -91,7 +91,7 @@ class Permissions(object):
 
         self.perms = await self.get_perms()
 
-    async def get_perms(self, serveronly=False) -> Optional[str]:
+    async def get_perms(self, serveronly=False) -> Optional[List[str]]:
         params = {
             "server": self.server.id,
             "channel": self.channel.id if not serveronly else None

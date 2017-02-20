@@ -4,8 +4,8 @@ from nepeatbot.plugins import ALL_PLUGINS
 
 log = logging.getLogger(__name__)
 
-class PluginManager:
 
+class PluginManager:
     def __init__(self, bot):
         self.bot = bot
         self.bot.plugins = []

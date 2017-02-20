@@ -11,6 +11,7 @@ permission_model = ns.model("Permission", {
     "permission": fields.String
 })
 
+
 @ns.route("/")
 @ns.param("server", "Discord Server ID", type=int, required=True)
 @ns.param("channel", "Discord Channel ID", type=int)

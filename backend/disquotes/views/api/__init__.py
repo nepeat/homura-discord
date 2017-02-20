@@ -17,6 +17,7 @@ api = Api(
     description="API services used by the bot"
 )
 
+
 @api.errorhandler
 def default_error_handler(error):
     """Default error handler"""

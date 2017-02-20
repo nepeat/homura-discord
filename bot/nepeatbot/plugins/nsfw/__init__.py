@@ -31,6 +31,7 @@ class NSFWPlugin(PluginBase):
         ))
 
     async def get_randombooru(self, tags: str):
+        image = None
         backend = random.choice(list(API_ENDPOINTS.keys()))
 
         sites = list(API_ENDPOINTS[backend])

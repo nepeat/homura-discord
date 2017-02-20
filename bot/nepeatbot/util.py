@@ -1,3 +1,4 @@
+import re
 from urllib.parse import urlencode
 
 import aiohttp
@@ -17,3 +18,11 @@ class Dummy(object):
 def sanitize(text: str) -> str:
     text = text.replace('@everyone', '@\u200beveryone').replace('@here', '@\u200bhere')
     return text
+
+
+def validate_regex(regex):
+    try:
+        re.compile(regex)
+        return True
+    except re.error:
+        return False

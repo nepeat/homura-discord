@@ -5,6 +5,7 @@ from nepeatbot.plugins.common import Message, PluginBase, command
 
 log = logging.getLogger(__name__)
 
+
 class ModerationPlugin(PluginBase):
     requires_admin = True
 

@@ -15,6 +15,7 @@ OWNER_IDS = [
     "66153853824802816"
 ]
 
+
 class Message(object):
     def __init__(self, content=None, embed=None, reply=False, delete_after=0, delete_invoking=0):
         self.content = content
@@ -22,6 +23,7 @@ class Message(object):
         self.reply = reply
         self.delete_after = delete_after
         self.delete_invoking = delete_invoking
+
 
 def command(
     pattern=None,
@@ -77,7 +79,8 @@ def command(
             # Bot owner check
 
             if (owner_only or self.owner_only) and author.id not in OWNER_IDS:
-                log.warning("%s#%s [%s] has attempted to run owner command `%s`.",
+                log.warning(
+                    "%s#%s [%s] has attempted to run owner command `%s`.",
                     author.name,
                     author.discriminator,
                     author.id,
@@ -201,6 +204,7 @@ def command(
                         "description": description}
         return wrapper
     return actual_decorator
+
 
 class PluginBase(object):
     """

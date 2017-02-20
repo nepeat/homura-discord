@@ -8,6 +8,7 @@ from nepeatbot.plugins.common import Message, PluginBase, command
 
 log = logging.getLogger(__name__)
 
+
 class OwnerPlugin(PluginBase):
     owner_only = True
     requires_admin = True

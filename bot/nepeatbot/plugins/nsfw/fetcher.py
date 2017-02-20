@@ -6,6 +6,7 @@ from nepeatbot.plugins.nsfw.common import USER_AGENT
 
 log = logging.getLogger(__name__)
 
+
 class ImageFetcher(object):
     def __init__(self, aiosession):
         self.aiosession = aiosession

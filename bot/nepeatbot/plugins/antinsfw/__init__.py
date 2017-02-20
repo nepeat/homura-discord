@@ -8,6 +8,7 @@ from nepeatbot.plugins.common import Message, PluginBase, command
 
 log = logging.getLogger(__name__)
 
+
 class AntiNSFWPlugin(PluginBase):
     requires_admin = True
     url_regex = re.compile(r"(https?://\S+)")
@@ -60,7 +61,7 @@ class AntiNSFWPlugin(PluginBase):
                 if response.get("nsfw", False):
                     return await self.bot.send_message(message.channel, "OH JESUS IT'S FUCKED UP SHIT")
 
-    async def check_image(self, image_url, **kwargs):
+    async def check_image(self, image_url, **kwargs) -> dict:
         params = {
             "url": image_url,
         }

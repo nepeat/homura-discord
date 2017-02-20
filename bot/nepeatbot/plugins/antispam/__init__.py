@@ -1,12 +1,11 @@
 import logging
 import re
 
-import discord
-
 from nepeatbot.plugins.common import Message, PluginBase, command
-from nepeatbot.util import sanitize
+from nepeatbot.util import sanitize, validate_regex
 
 log = logging.getLogger(__name__)
+
 
 class AntispamPlugin(PluginBase):
     requires_admin = True
@@ -27,7 +26,7 @@ class AntispamPlugin(PluginBase):
     @command("antispam exclude")
     async def exclude_channel(self, message):
         excluded = await self.redis.sismember("antispam:{}:excluded".format(message.server.id), message.channel.id)
-        await self._alter_list(message.server, message.channel.id, list_name="excluded", add=not excluded, validate_regex=False)
+        await self._alter_list(message.server, message.channel.id, list_name="excluded", add=not excluded, validate=False)
         return Message("Channel is {action} from antispam!".format(
             action="added" if excluded else "excluded"
         ))
@@ -40,10 +39,10 @@ class AntispamPlugin(PluginBase):
         action = True if match.group("action") == "add" else False
         return await self._alter_list(message.server, match.group("filter"), list_name=match.group("list"), add=action)
 
-    async def _alter_list(self, server, value, list_name="warns", add=True, validate_regex=True):
+    async def _alter_list(self, server, value, list_name="warns", add=True, validate=True):
         action = self.redis.sadd if add else self.redis.srem
 
-        if validate_regex and not self.validate_regex(value):
+        if validate and not validate_regex(value):
             return Message("invalid [make this user friendly l8r]")
 
         await action("antispam:{}:{}".format(server.id, list_name), [value])
@@ -54,6 +53,8 @@ class AntispamPlugin(PluginBase):
         r"antispam (blacklist|warnlist|warnings|warns) list"
     ])
     async def list_list(self, message, args):
+        list_name = ""
+
         if "black" in args[0].lower():
             list_name = "blacklist"
         elif "warn" in args[0].lower():
@@ -115,10 +116,3 @@ class AntispamPlugin(PluginBase):
                 return True
 
         return False
-
-    def validate_regex(self, regex):
-        try:
-            re.compile(regex)
-            return True
-        except re.error:
-            return False

@@ -9,6 +9,7 @@ from nepeatbot.plugins.common import Message, PluginBase, command
 
 log = logging.getLogger(__name__)
 
+
 class FunPlugin(PluginBase):
     @command("fart")
     async def fart(self, channel):

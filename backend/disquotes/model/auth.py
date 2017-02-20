@@ -15,9 +15,11 @@ def require_login(f):
         return f(*args, **kwargs)
     return inner
 
+
 @redis_cache.cache_on_arguments("access_token")
 def get_servers(access_token):
     return discord.session.get("users/@me/guilds").json()
+
 
 def get_user_managed_servers(guilds):
     return list(

@@ -13,6 +13,7 @@ redis_pool = ConnectionPool(
     decode_responses=True
 )
 
+
 def set_cookie(response):
     if "archives" not in request.cookies and hasattr(g, "session_id"):
         response.set_cookie(
@@ -23,14 +24,18 @@ def set_cookie(response):
         )
     return response
 
+
 def connect_sql():
     g.db = sm()
+
 
 def connect_redis():
     g.redis = StrictRedis(connection_pool=redis_pool)
 
+
 def before_request():
     pass
+
 
 def commit_sql(response=None):
     # Don't commit on 4xx and 5xx.
@@ -41,12 +46,14 @@ def commit_sql(response=None):
         g.db.commit()
     return response
 
+
 def disconnect_sql(result=None):
     if hasattr(g, "db"):
         g.db.close()
         del g.db
 
     return result
+
 
 def disconnect_redis(result=None):
     if hasattr(g, "redis"):

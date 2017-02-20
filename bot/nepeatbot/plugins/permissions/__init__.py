@@ -10,6 +10,7 @@ from nepeatbot.util import sanitize
 
 log = logging.getLogger(__name__)
 
+
 class PermissionsPlugin(PluginBase):
     @command("permission list (server|channel)", permission_name="permissions.list")
     async def list_permission(self, permissions, args):
