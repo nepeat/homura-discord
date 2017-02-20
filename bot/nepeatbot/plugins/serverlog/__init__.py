@@ -17,7 +17,12 @@ class ServerLogPlugin(PluginBase):
         super().__init__(*args, **kwargs)
         self.events_url = os.environ.get("BOT_WEB", "http://localhost:5000")
 
-    @command("undelete", requires_admin=True)
+    @command(
+        "undelete",
+        permission_name="serverlog.undelete",
+        description="Undeletes messages in a channel.",
+        requires_admin=True
+    )
     async def cmd_undelete(self, message, bot):
         messages = await self.get_events("delete", message.server, message.channel)
         if not messages:

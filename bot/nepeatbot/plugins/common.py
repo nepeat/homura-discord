@@ -32,7 +32,8 @@ def command(
     requires_admin=False,
     owner_only=False,
     patterns=[],
-    permission_name=""
+    permission_name="",
+    global_command=False,
 ):
 
     if pattern and not pattern.startswith("^!"):
@@ -211,8 +212,12 @@ def command(
             command_name = usage
         else:
             command_name = "!" + func.__name__
-        wrapper.info = {"name": command_name,
-                        "description": description}
+        wrapper.info = {
+            "name": command_name,
+            "description": description,
+            "permission": permission_name,
+            "global": global_command
+        }
         return wrapper
     return actual_decorator
 

@@ -14,7 +14,11 @@ class NSFWPlugin(PluginBase):
         super().__init__(*args, **kwargs)
         self.fetcher = ImageFetcher(self.bot.aiosession)
 
-    @command("nsfw (.+)", permission_name="nsfw.rule34")
+    @command(
+        "nsfw (.+)",
+        permission_name="nsfw.rule34",
+        description="The internet is for porn!"
+    )
     async def rule34(self, channel, args):
         image = await self.get_randombooru(args[0].strip())
         if not image:

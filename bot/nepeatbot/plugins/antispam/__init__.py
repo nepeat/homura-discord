@@ -10,7 +10,11 @@ log = logging.getLogger(__name__)
 class AntispamPlugin(PluginBase):
     requires_admin = True
 
-    @command("antispam status")
+    @command(
+        "antispam",
+        permission_name="antispam.status",
+        description="Lists the count of blackliist/warning entries."
+    )
     async def antispam_status(self, message):
         result = "Blacklist {blacklist} entries.\nWarnlist {warnlist} entries.".format(
             blacklist=await self.redis.scard("antispam:{}:blacklist".format(message.server.id)),
@@ -18,23 +22,35 @@ class AntispamPlugin(PluginBase):
         )
         return Message(result)
 
-    @command("antispam setlog")
+    @command(
+        "antispam setlog",
+        permission_name="antispam.alter.logging",
+        description="Sets the logging channel for warnings and blacklist hits."
+    )
     async def set_log(self, message):
         await self.redis.hset("antispam:{}:config".format(message.server.id), "log_channel", message.channel.id)
         return Message("Log channel set!")
 
-    @command("antispam exclude")
+    @command(
+        "antispam exclude",
+        permission_name="antispam.alter.exclude",
+        description="Gets the status of the NSFW filter."
+    )
     async def exclude_channel(self, message):
         excluded = await self.redis.sismember("antispam:{}:excluded".format(message.server.id), message.channel.id)
         await self._alter_list(message.server, message.channel.id, list_name="excluded", add=not excluded, validate=False)
-        return Message("Channel is {action} from antispam!".format(
-            action="added" if excluded else "excluded"
+        return Message("Channel is {action} antispam!".format(
+            action="added to" if excluded else "excluded from"
         ))
 
-    @command(patterns=[
-        r"antispam (?P<action>add|remove) (?P<list>blacklist|warnlist) (?P<filter>.+)",
-        r"antispam (?P<list>blacklist|warnlist) (?P<action>add|remove) (?P<filter>.+)"
-    ])
+    @command(
+        patterns=[
+            r"antispam (?P<action>add|remove) (?P<list>blacklist|warnlist) (?P<filter>.+)",
+            r"antispam (?P<list>blacklist|warnlist) (?P<action>add|remove) (?P<filter>.+)"
+        ],
+        permission_name="antispam.alter.lists",
+        description="Adds and removes regexes from the antispam filter."
+    )
     async def alter_list(self, message, match):
         action = True if match.group("action") == "add" else False
         return await self._alter_list(message.server, match.group("filter"), list_name=match.group("list"), add=action)
@@ -48,10 +64,14 @@ class AntispamPlugin(PluginBase):
         await action("antispam:{}:{}".format(server.id, list_name), [value])
         return Message("List updated!")
 
-    @command(patterns=[
-        r"antispam list (blacklist|warnlist|warnings|warns)",
-        r"antispam (blacklist|warnlist|warnings|warns) list"
-    ])
+    @command(
+        patterns=[
+            r"antispam list (blacklist|warnlist|warnings|warns)",
+            r"antispam (blacklist|warnlist|warnings|warns) list"
+        ],
+        permission_name="antispam.status",
+        description="Lists entries in the blacklist/warnlist."
+    )
     async def list_list(self, message, args):
         list_name = ""
 

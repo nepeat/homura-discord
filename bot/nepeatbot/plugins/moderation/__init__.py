@@ -9,7 +9,11 @@ log = logging.getLogger(__name__)
 class ModerationPlugin(PluginBase):
     requires_admin = True
 
-    @command("purgeuser")
+    @command(
+        "purgeuser",
+        permission_name="mod.purge.user",
+        description="Purges a user's messages from all channels."
+    )
     async def cmd_purge(self, message):
         mentions = [x.id for x in message.mentions]
 
@@ -45,15 +49,19 @@ class ModerationPlugin(PluginBase):
 
         return Message("{} messages removed!".format(deleted))
 
-    @command(patterns=[
-        "purgechan (\d+)",
-        "purgechan"
-    ])
+    @command(
+        patterns=[
+            "purgechan (\d+)",
+            "purgechan"
+        ],
+        permission_name="mod.purge.channel",
+        description="Purges a channel up to 1000 messages (100 default)."
+    )
     async def cmd_purge_chan(self, message, args):
         try:
             limit = int(args[0])
 
-            if limit > 600 or limit < 0:
+            if limit > 1000 or limit < 0:
                 raise ValueError()
         except (TypeError, ValueError):
             limit = 100
@@ -71,7 +79,11 @@ class ModerationPlugin(PluginBase):
 
         return Message("{} messages removed!".format(len(removed)))
 
-    @command("remove (\d+)")
+    @command(
+        "remove (\d+)",
+        permission_name="mod.remove",
+        description="Removes a message by message ID."
+    )
     async def cmd_remove(self, message, args):
         message = await self.bot.get_message(message.channel, args[0])
         if message:

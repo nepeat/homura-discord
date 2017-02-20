@@ -11,11 +11,21 @@ log = logging.getLogger(__name__)
 
 
 class FunPlugin(PluginBase):
-    @command("fart")
+    @command(
+        "fart",
+        permission_name="fun.fart",
+        description="Who farted?",
+        global_command=True
+    )
     async def fart(self, channel):
         return Message("\N{DASH SYMBOL}")
 
-    @command("cat")
+    @command(
+        "cat",
+        permission_name="fun.cat",
+        description="Cat?",
+        global_command=True
+    )
     async def cat(self, channel):
         start = datetime.datetime.now()
         try:
@@ -33,7 +43,12 @@ class FunPlugin(PluginBase):
 
         return Message(embed=embed)
 
-    @command("egg")
+    @command(
+        "egg",
+        permission_name="fun.egg",
+        description="TODO: REMOVE THIS COMMAND LOL",
+        global_command=True
+    )
     async def egg(self, message):
         em = discord.Embed(title='EGG EGG EG', description='EGGEGEGEGEGEGEG.', colour=0x416600)
         em.set_author(name='EGGEGG', icon_url="https://i.imgur.com/yuesnwm.jpg")

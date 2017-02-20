@@ -13,7 +13,11 @@ class OwnerPlugin(PluginBase):
     owner_only = True
     requires_admin = True
 
-    @command("owner setgame (.+)")
+    @command(
+        "owner setgame (.+)",
+        permission_name="owner.never.gonna.happen",
+        description="creative description goes here."
+    )
     async def set_game(self, args):
         await self.redis.hset("nepeatbot:config", "game", args[0])
         await self.bot.change_presence(
@@ -24,15 +28,23 @@ class OwnerPlugin(PluginBase):
 
         return Message("\N{OK HAND SIGN}")
 
-    @command("owner setname (.+)")
+    @command(
+        "owner setname (.+)",
+        permission_name="owner.never.gonna.happen",
+        description="creative description goes here."
+    )
     async def set_name(self, args):
         await self.bot.edit_profile(username=args[0])
         return Message("\N{OK HAND SIGN}")
 
-    @command(patterns=[
-        "owner setavatar (.+)",
-        "owner setavatar"
-    ])
+    @command(
+        patterns=[
+            "owner setavatar (.+)",
+            "owner setavatar"
+        ],
+        permission_name="owner.never.gonna.happen",
+        description="creative description goes here."
+    )
     async def set_avatar(self, message, args):
         if message.attachments:
             thing = message.attachments[0]["url"]
@@ -50,10 +62,14 @@ class OwnerPlugin(PluginBase):
 
         return Message("\N{OK HAND SIGN}")
 
-    @command(patterns=[
-        r"eval ```[\n]?[py\n](.+)```",
-        r"eval (.+)"
-    ])
+    @command(
+        patterns=[
+            r"eval ```[\n]?[py\n](.+)```",
+            r"eval (.+)"
+        ],
+        permission_name="owner.never.gonna.happen",
+        description="According to all known laws of security, there is no way an eval should be secure."
+    )
     async def eval_code(self, args, permissions, message):  # NOQA
         try:
             results = eval(args[0])
@@ -66,7 +82,11 @@ class OwnerPlugin(PluginBase):
         log.warning(results)
         return Message("```%s```" % str(results))
 
-    @command("owner errortest")
+    @command(
+        "owner errortest",
+        permission_name="owner.never.gonna.happen",
+        description="Something happened."
+    )
     async def errortest(self):
         return Message(1 / 0)
 

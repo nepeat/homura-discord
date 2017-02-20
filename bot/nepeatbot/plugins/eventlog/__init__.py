@@ -13,12 +13,20 @@ class EventLogPlugin(PluginBase):
     requires_admin = True
     EVENTS = ["join", "leave", "server_rename", "member_rename", "message_edit", "message_delete"]
 
-    @command("eventlog setchannel")
+    @command(
+        "eventlog setchannel",
+        permission_name="eventlog.setchannel",
+        description="Sets the event log channel."
+    )
     async def set_log(self, message):
         await self.redis.set("channellog:{}:channel".format(message.server.id), message.channel.id)
         return Message("Event log channel set!")
 
-    @command("eventlog")
+    @command(
+        "eventlog",
+        permission_name="eventlog.status",
+        description="Shows what events are being logged."
+    )
     async def eventlog(self, message):
         enabled = await self.bot.redis.smembers("channellog:{}:enabled".format(message.server.id))
         enabled = await enabled.asset()
@@ -28,7 +36,11 @@ class EventLogPlugin(PluginBase):
             disabled="\n".join([x for x in EventLogPlugin.EVENTS if x not in enabled])
         ))
 
-    @command("eventlog (enable|disable) (.+)")
+    @command(
+        "eventlog (enable|disable) (.+)",
+        permission_name="eventlog.toggle",
+        description="Toggles what events to log."
+    )
     async def toggle_event(self, message, args):
         enabled = await self.bot.redis.smembers("channellog:{}:enabled".format(message.server.id))
         enabled = await enabled.asset()

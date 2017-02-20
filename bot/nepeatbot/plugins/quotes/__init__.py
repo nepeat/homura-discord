@@ -8,14 +8,22 @@ from nepeatbot.plugins.common import Message, PluginBase, command
 class QuotesPlugin(PluginBase):
     url_regex = re.compile(r"(https?://\S+)")
 
-    @command("quote status")
+    @command(
+        "quote status",
+        permission_name="quotes",
+        description="TODO: Integrate this server specific thing ito the antispam module."
+    )
     async def plugin_status(self, channel):
         status = await self.bot.redis.sismember("quotes:channels", channel.id)
         return Message("Quotes is {status}".format(
             status="enabled \N{WHITE HEAVY CHECK MARK}" if status else "disabled \N{CROSS MARK}"
         ))
 
-    @command("quote (enable|on|disable|off)")
+    @command(
+        "quote (enable|on|disable|off)",
+        permission_name="quotes.toggle",
+        description="TODO: Integrate this server specific thing ito the antispam module."
+    )
     async def plugin_state(self, channel, args):
         if args[0].lower() in ["enable", "on"]:
             action = self.bot.redis.sadd

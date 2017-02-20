@@ -17,21 +17,25 @@ class AntiNSFWPlugin(PluginBase):
         super().__init__(*args, **kwargs)
         self.nsfw_url = os.environ.get("NSFWAPI_URL", "http://localhost:5001")
 
-    @command("antinsfw")
+    @command(
+        "antinsfw",
+        permission_name="nsfwfilter.status",
+        description="Gets the status of the NSFW filter."
+    )
     async def antinsfw_status(self):
         return Message("implement me lol")
 
-    @command("antinsfw (enable|disable)")
+    @command(
+        "antinsfw (enable|disable)",
+        permission_name="nsfwfilter.toggle",
+        description="Toggles the NSFW filter."
+    )
     async def toggle_event(self, message, args):
         action = self.bot.redis.sadd if args[0] == "enable" else self.bot.redis.srem
 
         await action("antinsfw:enabled", message.server.id)
 
         return Message("Updated!")
-
-    @command("antinsfw status")
-    async def antinsfw_status(self):
-        return Message("implement me lol")
 
     async def on_message(self, message):
         # We cannot run in PMs :(
