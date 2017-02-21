@@ -2,7 +2,7 @@ EVENT_TYPES = [
     "delete",
     "edit",
     "join",
-    "leave"
+    "leave",
     "edit",
     "rename",
     "topic",
