@@ -135,7 +135,14 @@ class EventLogPlugin(PluginBase):
         if await self.redis.sismember("ignored:{}".format(message.server.id), message.id):
             return
 
+        # Check: Webhooks have no display name.
+
         if not message.author.display_name:
+            return
+
+        # Check: There must be a message text.
+
+        if not message.clean_content:
             return
 
         embed = discord.Embed(
