@@ -120,7 +120,7 @@ class Permissions(object):
 
         return []
 
-    def can(self, perm: str, author: Optional[discord.Member]=None) -> bool:
+    def can(self, perm: str, author: Optional[discord.Member]=None, blacklist_only: bool=False) -> bool:
         if not perm:
             return True
 
@@ -148,6 +148,9 @@ class Permissions(object):
             return False
 
         # Positive checks
+
+        if blacklist_only:
+            return True
 
         while "." in perm:
             if perm in self.perms:

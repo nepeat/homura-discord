@@ -127,7 +127,7 @@ def command(
 
             # Permissions check
 
-            if not permissions.can(permission_name, author) and author.id not in OWNER_IDS:
+            if not permissions.can(permission_name, author, global_command) and author.id not in OWNER_IDS:
                 await self.bot.send_message_object(
                     Message(
                         content="You are not allowed to use this command in this server or channel.",
