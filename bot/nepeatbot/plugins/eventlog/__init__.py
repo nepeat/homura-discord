@@ -1,5 +1,6 @@
 import json
 import logging
+import discord
 
 import aiohttp
 
@@ -62,10 +63,19 @@ class EventLogPlugin(PluginBase):
 
     async def on_server_update(self, before, after):
         if before.name != after.name:
-            await self.log("\N{MEMO} Server has been renamed from **{before}** to **{after}**".format(
-                before=sanitize(before.name),
-                after=sanitize(after.name)
-            ), before, "server_rename")
+            embed = discord.Embed(
+                colour=discord.Colour.red(),
+                title=f"Server has been renamed"
+            ).set_thumbnail(
+                url="https://nepeat.github.io/assets/icons/edit.png"
+            ).add_field(
+                name="Before",
+                value=sanitize(before.name)
+            ).add_field(
+                name="After",
+                value=sanitize(after.name)
+            )
+            await self.log(embed, before, "server_rename")
 
     async def on_member_update(self, before, after):
         old = before.nick if before.nick else before.name
@@ -74,10 +84,20 @@ class EventLogPlugin(PluginBase):
         if old == new:
             return
 
-        await self.log("\N{MEMO} **{before}** is now known as **{after}**".format(
-            before=sanitize(old),
-            after=sanitize(new)
-        ), before.server, "member_rename")
+        embed = discord.Embed(
+            colour=discord.Colour.red(),
+            title=f"User name change"
+        ).set_thumbnail(
+            url="https://nepeat.github.io/assets/icons/edit.png"
+        ).add_field(
+            name="Before",
+            value=sanitize(old)
+        ).add_field(
+            name="After",
+            value=sanitize(new)
+        )
+
+        await self.log(embed, before.server, "member_rename")
 
     async def on_message_edit(self, before, after):
         # Ignore self messages.
@@ -87,18 +107,26 @@ class EventLogPlugin(PluginBase):
         if before.content == after.content:
             return
 
-        await self.log("\N{PENCIL} **{user}** has edited their message in __{chat}__".format(
-            user=before.author.display_name,
-            chat=before.channel.name
-        ), before.server, "message_edit")
+        embed = discord.Embed(
+            colour=discord.Colour.red(),
+            title=f"Message has been edited"
+        ).set_thumbnail(
+            url="https://nepeat.github.io/assets/icons/edit.png"
+        ).add_field(
+            name="Channel",
+            value=before.channel.mention
+        ).add_field(
+            name="User",
+            value=before.author.mention
+        ).add_field(
+            name="Before",
+            value=(before.clean_content[:900] + '...') if len(before.clean_content) > 900 else before.clean_content
+        ).add_field(
+            name="After",
+            value=(after.clean_content[:900] + '...') if len(after.clean_content) > 900 else after.clean_content
+        )
 
-        await self.log("**__Before__**\n```{message}```".format(
-            message=before.clean_content
-        ), before.server, "message_edit")
-
-        await self.log("**__After__**\n```{message}```".format(
-            message=after.clean_content
-        ), before.server, "message_edit")
+        await self.log(embed, before.server, "message_edit")
 
     async def on_message_delete(self, message):
         if message.author == self.bot.user:
@@ -107,11 +135,26 @@ class EventLogPlugin(PluginBase):
         if await self.redis.sismember("ignored:{}".format(message.server.id), message.id):
             return
 
-        await self.log("\N{PUT LITTER IN ITS PLACE SYMBOL} __{chat}__ `{user}` - {message}".format(
-            chat=message.channel.name,
-            user=message.author.display_name,
-            message=message.clean_content
-        ), message.server, "message_delete")
+        if not message.author.display_name:
+            return
+
+        embed = discord.Embed(
+            colour=discord.Colour.red(),
+            title=f"Deleted message"
+        ).set_thumbnail(
+            url="https://nepeat.github.io/assets/icons/trash.png"
+        ).add_field(
+            name="Channel",
+            value=f"<#{message.channel.id}>"
+        ).add_field(
+            name="User",
+            value=message.author.mention
+        ).add_field(
+            name="Message",
+            value=(message.clean_content[:900] + '...') if len(message.clean_content) > 900 else message.clean_content
+        )
+
+        await self.log(embed, message.server, "message_delete")
 
     async def log(self, message, server, event_type):
         log_channel_id = await self.redis.get("channellog:{}:channel".format(server.id))
@@ -124,11 +167,17 @@ class EventLogPlugin(PluginBase):
 
         enabled = await self.redis.sismember("channellog:{}:enabled".format(server.id), event_type)
         if enabled:
-            await self.bot.send_message(log_channel, message)
+            if isinstance(message, discord.Embed):
+                await self.bot.send_message(log_channel, embed=message)
+            else:
+                await self.bot.send_message(log_channel, message)
 
     async def log_member(self, member, joining):
-        await self.log("{emote} `{user}` has {action}.".format(
-            emote="\N{WHITE HEAVY CHECK MARK}" if joining else "\N{DOOR}",
-            user=member.display_name,
-            action="joined" if joining else "left"
-        ), member.server, "join" if joining else "leave")
+        embed = discord.Embed(
+            colour=discord.Colour.green() if joining else discord.Colour.red(),
+        ).set_author(
+            name=f"{member.display_name} has {'joined' if joining else 'left'}",
+            icon_url=f"https://nepeat.github.io/assets/icons/{'check' if joining else 'x_circle'}.png"
+        )
+
+        await self.log(embed, member.server, "join" if joining else "leave")

@@ -1,5 +1,6 @@
 import logging
 import re
+import discord
 
 from nepeatbot.plugins.common import Message, PluginBase, command
 from nepeatbot.util import sanitize, validate_regex
@@ -11,7 +12,7 @@ class AntispamPlugin(PluginBase):
     requires_admin = True
 
     @command(
-        "antispam",
+        "antispam$",
         permission_name="antispam.status",
         description="Lists the count of blackliist/warning entries."
     )
@@ -55,7 +56,7 @@ class AntispamPlugin(PluginBase):
         action = True if match.group("action") == "add" else False
         return await self._alter_list(message.server, match.group("filter"), list_name=match.group("list"), add=action)
 
-    async def _alter_list(self, server, value, list_name="warns", add=True, validate=True):
+    async def _alter_list(self, server, value, list_name="warnlist", add=True, validate=True):
         action = self.redis.sadd if add else self.redis.srem
 
         if validate and not validate_regex(value):
@@ -95,6 +96,28 @@ class AntispamPlugin(PluginBase):
 
         return Message(result)
 
+    def create_antispam_embed(self, message: discord.Message, event_type):
+        if event_type == "warning":
+            icon = "warning"
+        else:
+            icon = "x_circle"
+
+        return discord.Embed(
+            colour=discord.Colour.gold(),
+            title=f"{event_type.capitalize()} phrase"
+        ).set_thumbnail(
+            url=f"https://nepeat.github.io/assets/icons/{icon}.png"
+        ).add_field(
+            name="Channel",
+            value=f"<#{message.channel.id}>"
+        ).add_field(
+            name="User",
+            value=message.author.mention
+        ).add_field(
+            name="Message",
+            value=(message.clean_content[:900] + '...') if len(message.clean_content) > 900 else message.clean_content
+        )
+
     async def on_message(self, message):
         # We cannot run in PMs :(
 
@@ -112,20 +135,14 @@ class AntispamPlugin(PluginBase):
         if await self.redis.sismember("antispam:{}:excluded".format(message.server.id), message.channel.id):
             return
 
-        if await self.check_list(message, "warns"):
-            await self.bot.send_message(log_channel, "\N{WARNING SIGN} **{name}** <#{chat}> {message}".format(
-                name=sanitize(message.author.display_name),
-                chat=message.channel.id,
-                message=(message.clean_content[:500] + '...') if len(message.clean_content) > 500 else message.clean_content
-            ))
+        if await self.check_list(message, "warnlist"):
+            embed = self.create_antispam_embed(message, "warning")
+            await self.bot.send_message(log_channel, embed=embed)
         elif await self.check_list(message, "blacklist"):
             if not message.author.server_permissions.administrator:
                 await self.bot.delete_message(message)
-            await self.bot.send_message(log_channel, "\N{NO ENTRY SIGN} **{name}** <#{chat}> {message}".format(
-                name=sanitize(message.author.display_name),
-                chat=message.channel.id,
-                message=(message.clean_content[:500] + '...') if len(message.clean_content) > 500 else message.clean_content
-            ))
+            embed = self.create_antispam_embed(message, "blacklist")
+            await self.bot.send_message(log_channel, embed=embed)
 
     async def check_list(self, message, list_name):
         items = await self.redis.smembers("antispam:{}:{}".format(message.server.id, list_name))
