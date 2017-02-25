@@ -13,4 +13,4 @@ WORKDIR /app
 COPY . /app
 RUN python3 setup.py install
 
-CMD ["python3", "nepeatbot"]
+CMD ["python3", "homura"]
