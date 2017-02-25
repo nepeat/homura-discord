@@ -9,11 +9,6 @@ Homura is a personal Discord bot that I've decided to open source and try to mak
 * ~~Semi~~ working implementation of a NSFL filter
 * Spaghetti code
 
-## TODO
-* Complete the web interface for the server events
-* Complete the backend service for image determination
-* Unit testing?
-
 ## Deployment
 #### FIGURE OUT HOW TO MAKE THIS WORK FROM SCRATCH
 
