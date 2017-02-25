@@ -1,3 +1,4 @@
+import hashlib
 import re
 from urllib.parse import urlencode
 
@@ -26,3 +27,20 @@ def validate_regex(regex):
         return True
     except re.error:
         return False
+
+
+async def get_header(session, url, headerfield=None, *, timeout=5):
+    with aiohttp.Timeout(timeout):
+        async with session.head(url) as response:
+            if headerfield:
+                return response.headers.get(headerfield)
+            else:
+                return response.headers
+
+
+def md5sum(filename, limit=0):
+    fhash = hashlib.md5()
+    with open(filename, "rb") as f:
+        for chunk in iter(lambda: f.read(8192), b""):
+            fhash.update(chunk)
+    return fhash.hexdigest()[-limit:]
