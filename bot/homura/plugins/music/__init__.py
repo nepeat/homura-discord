@@ -205,7 +205,7 @@ class MusicPlugin(PluginBase):
 
     @command(
         patterns=[
-            "music shuffle",
+            "music shuffle$",
             "music shuffle (.+)"
         ],
         permission_name="music.shuffle",
