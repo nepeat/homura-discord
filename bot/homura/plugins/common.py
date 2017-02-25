@@ -318,7 +318,7 @@ class PluginBase(object):
     async def _on_message(self, message):
         if message.author.id != self.bot.user.id:
             if message.channel.is_private and message.author.id not in OWNER_IDS:
-                self.send_message(message.channel, "This bot cannot be used in private messages.")
+                self.bot.send_message(message.channel, "This bot cannot be used in private messages.")
                 return
 
             for command_name, func in self.commands.items():

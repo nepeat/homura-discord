@@ -105,7 +105,7 @@ class Playlist(EventEmitter):
             self.downloader.ytdl.prepare_filename(info),
             **meta
         )
-        self._add_entry(entry, saved=False, prepend=prepend)
+        self._add_entry(entry, prepend=prepend)
         return entry, len(self.entries)
 
     def _add_entry(self, entry, saved=False, prepend=False):
@@ -134,7 +134,7 @@ class Playlist(EventEmitter):
 
     async def refresh_saved_queue(self):
         await self.redis.delete(["music:queue:" + self.server.id])
-        await self.redis.rpush("music:queue:" + self.server.id, *[entry.to_json() for entry in self.entries])
+        await self.redis.rpush("music:queue:" + self.server.id, [entry.to_json() for entry in self.entries])
 
     async def import_from(self, playlist_url, **meta):
         """
