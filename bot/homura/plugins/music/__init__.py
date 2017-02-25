@@ -329,25 +329,28 @@ class MusicPlugin(PluginBase):
 
     # Music helper functions
 
-    async def get_user_voice(self, server: discord.Server, caller: discord.Member):
-        for channel in server.channels:
-            if channel.type != discord.ChannelType.voice:
-                continue
+    async def get_voice_client(self, server: discord.Server, member: discord.Member=None):
+        if server.id in self.players:
+            voice_client = self.players[server.id].voice_client
+        else:
+            if not member:
+                raise CommandError("Bot is not in a voice channel.")
 
-            if caller in channel.voice_members:
-                return channel
+            if not member.voice_channel:
+                raise CommandError("You must be in a channel to summon the bot!")
 
-        raise CommandError("You must be in a channel to summon the bot!")
+            voice_client = await self.bot.join_voice_channel(member.voice_channel)
 
-    async def get_player(self, server: discord.Server, caller: discord.Member=None, join=True):
+        return voice_client
+
+    async def get_player(self, server: discord.Server, caller: discord.Member=None):
         if server.id in self.players:
             return self.players[server.id]
         else:
             if not caller:
                 return
 
-            voice_channel = await self.get_user_voice(server, caller)
-            voice_client = await self.bot.join_voice_channel(voice_channel)
+            voice_client = await self.get_voice_client(server, caller)
 
             playlist = Playlist(self, server)
             player = Player(self, playlist, voice_client)\
