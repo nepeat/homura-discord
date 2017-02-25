@@ -26,7 +26,7 @@ class MusicPlugin(PluginBase):
         super().__init__(*args, **kwargs)
 
         self.players = {}
-        self.downloader = Downloader(self.bot, os.environ.get("MUSIC_DOWNLOAD_FOLDER", "audio_cache"))
+        self.downloader = Downloader(self.bot, os.environ.get("AUDIO_CACHE_PATH", "audio_cache"))
 
     @command(
         "music$",
