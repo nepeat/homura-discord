@@ -1,10 +1,10 @@
 import datetime
+import functools
 import logging
 import random
+import traceback
 from collections import deque
 from itertools import islice
-import traceback
-import functools
 
 from homura.plugins.music.exceptions import ExtractionError, WrongEntryTypeError
 from homura.plugins.music.objects import EventEmitter, URLPlaylistEntry

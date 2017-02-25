@@ -1,6 +1,7 @@
 import asyncio
 import logging
 import os
+import signal
 import traceback
 from typing import List, Optional
 
@@ -9,7 +10,6 @@ import asyncio_redis
 import discord
 import raven
 import statsd
-import signal
 
 from homura.plugins.common import Message
 from homura.plugins.manager import PluginManager

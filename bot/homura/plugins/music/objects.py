@@ -4,9 +4,8 @@ import json
 import logging
 import os
 import traceback
-import json
 
-from homura.plugins.music.exceptions import WrongEntryTypeError, ExtractionError
+from homura.plugins.music.exceptions import ExtractionError, WrongEntryTypeError
 from homura.util import get_header, md5sum
 
 log = logging.getLogger(__name__)
