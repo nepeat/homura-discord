@@ -1,12 +1,12 @@
 import json
 import logging
 import os
+from typing import List, Optional
 
 import aiohttp
 import discord
 
 from homura.lib.signals import BackendError
-from typing import List, Optional
 
 log = logging.getLogger(__name__)
 

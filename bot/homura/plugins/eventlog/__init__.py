@@ -1,8 +1,8 @@
 import json
 import logging
-import discord
 
 import aiohttp
+import discord
 
 from homura.plugins.common import Message, PluginBase, command
 from homura.util import sanitize
