@@ -297,6 +297,26 @@ class MusicPlugin(PluginBase):
 
         return Message("no!")
 
+    @command(
+        "music summon$",
+        permission_name="music.summon",
+        description="Summons the bot to a channel"
+    )
+    async def summon(self, author):
+        voice_client = await self.get_voice_client(author.server, author)
+
+        if author.voice_channel and (voice_client.channel != author.voice_channel):
+            perms = author.voice_channel.permissions_for(author.voice_channel.server.me)
+
+            if not perms.connect:
+                raise CommandError(f"I do not have permissions to connect to \"{sanitize(author.voice_channel.name)}\"!")
+            elif not perms.speak:
+                raise CommandError(f"I do not have permissions to speak in \"{sanitize(author.voice_channel.name)}\"!")
+
+            await voice_client.move_to(author.voice_channel)
+
+        return Message("Bot summoned!")
+
     # Discord events
 
     async def on_logout(self):
@@ -330,8 +350,8 @@ class MusicPlugin(PluginBase):
     # Music helper functions
 
     async def get_voice_client(self, server: discord.Server, member: discord.Member=None):
-        if server.id in self.players:
-            voice_client = self.players[server.id].voice_client
+        if server.voice_client:
+            return server.voice_client
         else:
             if not member:
                 raise CommandError("Bot is not in a voice channel.")
