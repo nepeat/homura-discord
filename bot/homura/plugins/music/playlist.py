@@ -45,7 +45,7 @@ class Playlist(EventEmitter):
             random.seed(seed)
 
         random.shuffle(self.entries)
-        self.loop.create_task(self.refresh_saved_queue)
+        self.loop.create_task(self.refresh_saved_queue())
         random.seed()
 
     def clear(self, kill=False, last_entry=None):

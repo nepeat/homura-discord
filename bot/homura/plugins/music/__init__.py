@@ -322,9 +322,17 @@ class MusicPlugin(PluginBase):
 
     # Discord events
 
+    async def on_ready(self):
+        for channel_id in await self.bot.redis.smembers_asset("music:reload"):
+            voice_channel = self.bot.get_channel(channel_id)
+            if voice_channel:
+                await self.bot.join_voice_channel(voice_channel)
+                await self.get_player(voice_channel.server)
+            await self.bot.redis.spop("music:reload")
+
     async def on_logout(self):
         log.info("Got logout event!")
-        await self.disconnect_all_voice_clients()
+        await self.cleanup_voice_clients()
 
     # Music events
 
@@ -370,9 +378,6 @@ class MusicPlugin(PluginBase):
         if server.id in self.players:
             return self.players[server.id]
         else:
-            if not caller:
-                return
-
             voice_client = await self.get_voice_client(server, caller)
 
             playlist = Playlist(self, server)
@@ -448,8 +453,11 @@ class MusicPlugin(PluginBase):
 
         return Message(embed=embed)
 
-    async def disconnect_all_voice_clients(self):
+    async def cleanup_voice_clients(self):
         for player in self.players.values():
+            if player.is_playing:
+                await self.bot.redis.sadd("music:reload", [player.voice_client.channel.id])
+
             player.kill()
             await player.voice_client.disconnect()
 
