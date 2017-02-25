@@ -9,6 +9,7 @@ import asyncio_redis
 import discord
 import raven
 import statsd
+import signal
 
 from homura.plugins.common import Message
 from homura.plugins.manager import PluginManager
@@ -62,6 +63,10 @@ class NepeatBot(discord.Client):
         self.plugin_manager = PluginManager(self)
         self.plugin_manager.load_all()
 
+        # Exit signal handlers
+        for signame in ('SIGINT', 'SIGTERM'):
+            self.loop.add_signal_handler(getattr(signal, signame), self.signal)
+
     async def create_redis(self):
         self.redis = await asyncio_redis.Pool.create(
             host=os.environ.get("REDIS_HOST", "localhost"),
@@ -91,8 +96,7 @@ class NepeatBot(discord.Client):
             if event == "message":
                 func = getattr(plugin, "_on_message")
 
-            if hasattr(self, method):
-                asyncio.ensure_future(self._plugin_run_event(func, *args, **kwargs), loop=self.loop)
+            asyncio.ensure_future(self._plugin_run_event(func, *args, **kwargs), loop=self.loop)
 
     async def send_message_object(
         self,
@@ -119,9 +123,18 @@ class NepeatBot(discord.Client):
             await asyncio.sleep(message.delete_after)
             await self.delete_message(sentmsg)
 
+    def signal(self):
+        self.loop.create_task(self.logout())
+
+    # Overloads
+
     async def send_message(self, *args, **kwargs):
         self.stats.incr("homura.message,type=send")
         return await super().send_message(*args, **kwargs)
+
+    async def logout(self):
+        await self.plugin_dispatch("logout")
+        return await super().logout()
 
     # Events
 

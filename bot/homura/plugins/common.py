@@ -378,3 +378,6 @@ class PluginBase(object):
 
     async def on_typing(self, channel, user, when):
         pass
+
+    async def on_logout(self):
+        pass
