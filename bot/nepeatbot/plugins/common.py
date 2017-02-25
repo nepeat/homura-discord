@@ -197,6 +197,8 @@ def command(
                     title="Something happened",
                     description="An error happened running this command",
                     color=discord.Colour.red()
+                ).set_thumbnail(
+                    url="https://nepeat.github.io/assets/icons/error.png"
                 )
                 sentry_code = await self.bot.on_error("command:" + func.__name__)
                 if sentry_code:

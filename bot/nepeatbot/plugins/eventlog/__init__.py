@@ -64,7 +64,7 @@ class EventLogPlugin(PluginBase):
     async def on_server_update(self, before, after):
         if before.name != after.name:
             embed = discord.Embed(
-                colour=discord.Colour.red(),
+                colour=discord.Colour.gold(),
                 title=f"Server has been renamed"
             ).set_thumbnail(
                 url="https://nepeat.github.io/assets/icons/edit.png"
@@ -85,7 +85,7 @@ class EventLogPlugin(PluginBase):
             return
 
         embed = discord.Embed(
-            colour=discord.Colour.red(),
+            colour=discord.Colour.blue(),
             title=f"User name change"
         ).set_thumbnail(
             url="https://nepeat.github.io/assets/icons/edit.png"
