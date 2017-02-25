@@ -240,7 +240,7 @@ class MusicPlugin(PluginBase):
         try:
             seek = args[0]
         except IndexError:
-            return CommandError('A time is required to seek.')
+            raise CommandError('A time is required to seek.')
 
         if not (
             message.author == player.current_entry.meta.get("author", None)
