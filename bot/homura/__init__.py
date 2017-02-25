@@ -1,6 +1,8 @@
+import asyncio
 import logging
 import os
 import traceback
+from typing import List, Optional
 
 import aiohttp
 import asyncio_redis
@@ -8,11 +10,13 @@ import discord
 import raven
 import statsd
 
-import asyncio
 from homura.plugins.common import Message
 from homura.plugins.manager import PluginManager
 from homura.util import Dummy
-from typing import List, Optional
+
+OPUS_LIBS = ['opus', 'libopus.so.0']
+
+# Logging configuration
 
 if "DEBUG" in os.environ:
     logging.basicConfig(level=logging.DEBUG)
@@ -22,6 +26,19 @@ else:
 
 log = logging.getLogger(__name__)
 
+
+# Load opus libraries if not loaded already
+
+if not discord.opus.is_loaded():
+    for lib in OPUS_LIBS:
+        try:
+            discord.opus.load_opus(lib)
+            break
+        except OSError:
+            pass
+
+    if not discord.opus.is_loaded():
+        raise Exception("Opus library could not be loaded.")
 
 class NepeatBot(discord.Client):
     def __init__(self):
