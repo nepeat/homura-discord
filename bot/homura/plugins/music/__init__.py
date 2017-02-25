@@ -212,8 +212,11 @@ class MusicPlugin(PluginBase):
         global_command=True,
         description="Shuffles the music queue."
     )
-    async def shuffle(self, channel, args):
+    async def shuffle(self, message, args):
         player = await self.get_player(message.server, message.author)
+
+        if player.is_stopped:
+            raise CommandError("Can't shuffle! The player is not playing!")
 
         if args:
             player.playlist.shuffle(args[0])
