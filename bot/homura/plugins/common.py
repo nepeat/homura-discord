@@ -1,13 +1,14 @@
+import asyncio
 import inspect
 import logging
 import re
+import traceback
 from functools import wraps
 
 import discord
 
-import asyncio
 from homura.lib.permissions import Permissions
-from homura.lib.signals import BackendError
+from homura.lib.signals import BackendError, CommandError
 
 log = logging.getLogger(__name__)
 
@@ -190,6 +191,15 @@ def command(
 
             try:
                 response = await func(**handler_kwargs)
+            except CommandError as e:
+                embed = discord.Embed(
+                    title="Command error",
+                    description=str(e),
+                    color=discord.Colour.red()
+                ).set_thumbnail(
+                    url="https://nepeat.github.io/assets/icons/error.png"
+                )
+                return await self.bot.send_message(message.channel, embed=embed)
             except BackendError as e:
                 return await self.bot.send_message(message.channel, str(e))
             except Exception as e:
@@ -200,26 +210,40 @@ def command(
                 ).set_thumbnail(
                     url="https://nepeat.github.io/assets/icons/error.png"
                 )
+
+                # Add the Sentry code if it can be obtained
+
                 sentry_code = await self.bot.on_error("command:" + func.__name__)
                 if sentry_code:
                     embed.set_footer(text=sentry_code)
+
+                # Owner extra info
+
+                if author.id in OWNER_IDS:
+                    embed.add_field(
+                        name="How you fucked up",
+                        value=f"```{traceback.format_exc()}```"
+                    )
 
                 return await self.bot.send_message(message.channel, embed=embed)
 
             if response and isinstance(response, Message):
                 await self.bot.send_message_object(response, message.channel, message.author, message)
 
-        wrapper._is_command = True
         if usage:
             command_name = usage
         else:
             command_name = "!" + func.__name__
+
         wrapper.info = {
             "name": command_name,
             "description": description,
             "permission": permission_name,
             "global": global_command
         }
+        wrapper._is_command = True
+        wrapper._func = func
+
         return wrapper
     return actual_decorator
 
