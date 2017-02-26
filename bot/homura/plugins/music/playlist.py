@@ -24,13 +24,15 @@ class Playlist(EventEmitter):
         self.server = server
         self.entries = deque()
 
+        self.queue_key = "music:queue:" + self.server.id
+
         self.loop.create_task(self.load_saved())
 
     def __iter__(self):
         return iter(self.entries)
 
     async def load_saved(self):
-        queue = await self.redis.lrange("music:queue:" + self.server.id, 0, -1)
+        queue = await self.redis.lrange(self.queue_key, 0, -1)
 
         for blob in await queue.aslist():
             entry = URLPlaylistEntry.from_json(self, blob)
@@ -54,11 +56,10 @@ class Playlist(EventEmitter):
         """
         self.entries.clear()
 
-        redis_key = "music:queue:" + self.server.id
         if kill and last_entry:
-            self.loop.create_task(self.redis.lpush(redis_key, [last_entry.to_json()]))
+            self.loop.create_task(self.redis.lpush(self.queue_key, [last_entry.to_json()]))
         else:
-            self.loop.create_task(self.redis.delete([redis_key]))
+            self.loop.create_task(self.redis.delete([self.queue_key]))
 
     async def add_entry(self, song_url, prepend=False, **meta):
         """
@@ -123,18 +124,16 @@ class Playlist(EventEmitter):
             entry.get_ready_future()
 
     async def save_entry(self, entry, prepend=False):
-        redis_key = "music:queue:" + self.server.id
-
         await self.redis.hincrby("music:played", entry.url, 1)
 
         if prepend:
-            await self.redis.lpush(redis_key, [entry.to_json()])
+            await self.redis.lpush(self.queue_key, [entry.to_json()])
         else:
-            await self.redis.rpush(redis_key, [entry.to_json()])
+            await self.redis.rpush(self.queue_key, [entry.to_json()])
 
     async def refresh_saved_queue(self):
-        await self.redis.delete(["music:queue:" + self.server.id])
-        await self.redis.rpush("music:queue:" + self.server.id, [entry.to_json() for entry in self.entries])
+        await self.redis.delete([self.queue_key])
+        await self.redis.rpush(self.queue_key, [entry.to_json() for entry in self.entries])
 
     async def import_from(self, playlist_url, **meta):
         """
@@ -244,7 +243,7 @@ class Playlist(EventEmitter):
             return None
 
         entry = self.entries.popleft()
-        await self.redis.lpop("music:queue:" + self.server.id)
+        await self.redis.lpop(self.queue_key)
 
         if predownload_next:
             next_entry = self.peek()
