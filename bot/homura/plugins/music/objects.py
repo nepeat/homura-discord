@@ -1,47 +1,14 @@
+# coding=utf-8
 import asyncio
-import collections
 import json
 import logging
 import os
 import traceback
 
-from homura.plugins.music.exceptions import ExtractionError, WrongEntryTypeError
+from homura.plugins.music.exceptions import ExtractionError
 from homura.util import get_header, md5sum
 
 log = logging.getLogger(__name__)
-
-
-class EventEmitter:
-    def __init__(self):
-        self._events = collections.defaultdict(list)
-        self.loop = asyncio.get_event_loop()
-
-    def emit(self, event, *args, **kwargs):
-        if event not in self._events:
-            return
-
-        for cb in self._events[event]:
-            # noinspection PyBroadException
-            try:
-                if asyncio.iscoroutinefunction(cb):
-                    asyncio.ensure_future(cb(*args, **kwargs), loop=self.loop)
-                else:
-                    cb(*args, **kwargs)
-
-            except:
-                traceback.print_exc()
-
-    def on(self, event, cb):
-        self._events[event].append(cb)
-        return self
-
-    def off(self, event, cb):
-        self._events[event].remove(cb)
-
-        if not self._events[event]:
-            del self._events[event]
-
-        return self
 
 
 class BasePlaylistEntry(object):
@@ -70,7 +37,8 @@ class BasePlaylistEntry(object):
 
     def get_ready_future(self):
         """
-        Returns a future that will fire when the song is ready to be played. The future will either fire with the result (being the entry) or an exception
+        Returns a future that will fire when the song is ready to be played.
+        The future will either fire with the result (being the entry) or an exception
         as to why the song download failed.
         """
         future = asyncio.Future()

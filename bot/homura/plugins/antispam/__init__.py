@@ -1,10 +1,11 @@
+# coding=utf-8
 import logging
 import re
 
 import discord
 
 from homura.plugins.common import Message, PluginBase, command
-from homura.util import sanitize, validate_regex
+from homura.util import validate_regex
 
 log = logging.getLogger(__name__)
 

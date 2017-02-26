@@ -1,4 +1,6 @@
+# coding=utf-8
 # Base exception class for music
+
 
 class MusicException(Exception):
     def __init__(self, message, *, expire_in=0):

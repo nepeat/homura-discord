@@ -1,4 +1,4 @@
-import asyncio
+# coding=utf-8
 import inspect
 import logging
 import re
@@ -52,9 +52,9 @@ def command(
 
             match = None
             for prog in progs:
-                log.debug("prog %s" % (prog))
+                log.debug("prog %s" % prog)
                 match = prog.match(message.content)
-                log.debug("matching %s" % (match))
+                log.debug("matching %s" % match)
                 if match:
                     break
 

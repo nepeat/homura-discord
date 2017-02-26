@@ -1,8 +1,5 @@
-import datetime
+# coding=utf-8
 import logging
-import xml.etree.ElementTree as ET
-
-import aiohttp
 import discord
 
 from homura.plugins.common import Message, PluginBase, command

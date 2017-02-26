@@ -1,3 +1,4 @@
+# coding=utf-8
 import asyncio
 import logging
 import time
@@ -7,9 +8,9 @@ from datetime import timedelta
 import discord
 
 import pytimeparse
+from homura.plugins.music.base import MusicBase
 from homura.lib.signals import CommandError
 from homura.plugins.common import Message, command
-from homura.plugins.music.base import MusicBase
 from homura.util import sanitize
 
 DISCORD_FIELD_CHAR_LIMIT = 1000
@@ -115,7 +116,7 @@ class MusicCommands(MusicBase):
                 download=False,
                 process=True,
                 on_error=lambda e: asyncio.ensure_future(
-                    self.send_message(channel, "```\n%s\n```" % e), loop=self.loop)
+                    self.bot.send_message(message.channel, "```\n%s\n```" % e), loop=self.bot.loop)
             )
 
             if not info or not info.get("entries", []):
@@ -141,7 +142,7 @@ class MusicCommands(MusicBase):
             wait_per_song = 1.2
 
             procmesg = await self.bot.send_message(
-                channel,
+                message.channel,
                 embed=self.create_voice_embed(
                     title="Processing",
                     description='Gathering playlist information for {} songs{}'.format(
@@ -155,7 +156,7 @@ class MusicCommands(MusicBase):
                 )
             )
 
-            entry_list, position = await player.playlist.import_from(url, channel=channel, author=author)
+            entry_list, position = await player.playlist.import_from(url, channel=message.channel, author=message.author)
 
             tnow = time.time()
             ttime = tnow - t0
@@ -171,7 +172,7 @@ class MusicCommands(MusicBase):
 
             await self.bot.delete_message(procmesg)
 
-            embed_description = f"**{(listlen)}** songs have been queued!"
+            embed_description = f"**{listlen}** songs have been queued!"
         else:
             entry, position = await player.playlist.add_entry(url, channel=message.channel, author=message.author, prepend=prepend)
             embed_description = f"**{entry.title}** has been {'prepended' if prepend else 'queued'}!"
@@ -429,7 +430,7 @@ class MusicCommands(MusicBase):
         info = await self.downloader.extract_info(player.playlist.loop, playlist_url, download=False, process=False)
 
         if not info:
-            raise exceptions.CommandError("That playlist cannot be played.")
+            raise CommandError("That playlist cannot be played.")
 
         num_songs = sum(1 for _ in info['entries'])
         t0 = time.time()

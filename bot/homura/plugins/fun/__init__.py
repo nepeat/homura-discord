@@ -1,8 +1,8 @@
+# coding=utf-8
 import datetime
 import logging
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree
 
-import aiohttp
 import discord
 
 from homura.plugins.common import Message, PluginBase, command
@@ -71,7 +71,7 @@ class FunPlugin(PluginBase):
         ) as response:
             reply = await response.text()
 
-        root = ET.fromstring(reply)
+        root = xml.etree.ElementTree.fromstring(reply)
         image = root.find("./data/images/image/url").text
 
         return image.replace("http:", "https:")

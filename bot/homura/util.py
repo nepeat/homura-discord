@@ -1,6 +1,6 @@
+# coding=utf-8
 import hashlib
 import re
-from urllib.parse import urlencode
 
 import aiohttp
 

@@ -1,9 +1,10 @@
+# coding=utf-8
 import asyncio
 import logging
 import os
 import signal
 import traceback
-from typing import List, Optional
+from typing import Optional
 
 import aiohttp
 import asyncio_redis

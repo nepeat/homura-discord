@@ -1,13 +1,15 @@
+# coding=utf-8
 import datetime
-import functools
 import logging
 import random
 import traceback
 from collections import deque
 from itertools import islice
 
+from homura.util import get_header
+from homura.lib.eventemitter import EventEmitter
 from homura.plugins.music.exceptions import ExtractionError, WrongEntryTypeError
-from homura.plugins.music.objects import EventEmitter, URLPlaylistEntry
+from homura.plugins.music.objects import URLPlaylistEntry
 
 log = logging.getLogger(__name__)
 
@@ -219,7 +221,7 @@ class Playlist(EventEmitter):
                 if extractor == "youtube:playlist":
                     baseurl = info['webpage_url'].split('playlist?list=')[0]
                     song_url = baseurl + 'watch?v=%s' % entry_data['id']
-                elif site in ['soundcloud:set', 'bandcamp:album']:
+                elif extractor in ['soundcloud:set', 'bandcamp:album']:
                     song_url = entry_data['url']
                 else:
                     raise ExtractionError("No handler for extractor %s" % extractor)

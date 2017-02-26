@@ -1,4 +1,6 @@
+# coding=utf-8
 import influxdb
+
 
 class CustomInfluxDBClient(influxdb.InfluxDBClient):
     def count(self, measurement, count=1, **kwargs):

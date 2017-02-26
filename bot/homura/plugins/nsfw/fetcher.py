@@ -1,6 +1,7 @@
+# coding=utf-8
 import logging
 import random
-import xml.etree.ElementTree as ET
+import xml.etree.ElementTree
 
 from homura.plugins.nsfw.common import USER_AGENT
 
@@ -59,7 +60,7 @@ class ImageFetcher(object):
         ) as response:
             reply = await response.text()
 
-        root = ET.fromstring(reply)
+        root = xml.etree.ElementTree.fromstring(reply)
         images = root.findall("post")
 
         if not images:

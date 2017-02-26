@@ -1,3 +1,4 @@
+# coding=utf-8
 from homura.plugins.antinsfw import AntiNSFWPlugin
 from homura.plugins.antispam import AntispamPlugin
 from homura.plugins.eventlog import EventLogPlugin

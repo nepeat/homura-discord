@@ -1,3 +1,4 @@
+# coding=utf-8
 import asyncio
 import functools
 import hashlib
@@ -78,7 +79,8 @@ class Downloader(object):
         Gets cached data from Redis for extract_info 
 
         :param url: URL of the video to grab from the cache
-        :param kwargs: extract_info kwargs. download is True = no fetch; process is True = ":processed" appended to cache key 
+        :param kwargs: extract_info kwargs. download is True = no fetch;
+                       process is True = ":processed" appended to cache key 
         :return: 
         """
         cachekey = "musicbot:cache:" + self.hash_string(url)

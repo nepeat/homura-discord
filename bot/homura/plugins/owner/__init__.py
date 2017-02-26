@@ -1,3 +1,4 @@
+# coding=utf-8
 import logging
 import traceback
 
@@ -51,7 +52,7 @@ class OwnerPlugin(PluginBase):
         else:
             if not args:
                 return
-            thing = url.strip("<>")
+            thing = args[0].strip("<>")
 
         try:
             with aiohttp.Timeout(10):

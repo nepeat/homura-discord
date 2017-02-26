@@ -1,6 +1,5 @@
+# coding=utf-8
 import logging
-
-import discord
 
 from homura.plugins.common import Message
 from homura.plugins.music.commands import MusicCommands
