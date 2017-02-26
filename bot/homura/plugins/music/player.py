@@ -1,8 +1,11 @@
 import asyncio
 import logging
 from enum import Enum
+import audioop
 
 import discord
+
+from typing import Optional
 
 from homura.plugins.music.objects import EventEmitter
 
@@ -22,18 +25,20 @@ class MusicPlayerState(Enum):
 
 class PatchedBuff(object):
     """
-        PatchedBuff monkey patches a readable object.
-        This is only used to get the frame count of the player object.
-        Volume is removed because the native library can do that.
+        PatchedBuff monkey patches a readable object, allowing you to vary what the volume is as the song is playing.
     """
 
     def __init__(self, buff, *args):
         self.buff = buff
         self.frame_count = 0
+        self.volume = 1.0
 
     def read(self, frame_size):
         self.frame_count += 1
         frame = self.buff.read(frame_size)
+
+        if self.volume != 1:
+            frame = audioop.mul(frame, 2, self.volume)
 
         return frame
 
@@ -47,11 +52,25 @@ class Player(EventEmitter):
         self.voice_client = voice_client
         self.playlist = playlist
         self.playlist.on("entry-added", self.on_entry_added)
+        self._volume = 1.0
 
         self._play_lock = asyncio.Lock()
         self._current_player = None
         self._current_entry = None
         self.state = MusicPlayerState.STOPPED
+
+    @property
+    def volume(self):
+        return self._volume
+
+    @volume.setter
+    def volume(self, value):
+        if value == self._volume:
+            return
+
+        self._volume = value
+        if self._current_player:
+            self._current_player.buff.volume = value
 
     def on_entry_added(self, playlist, entry):
         if self.is_stopped:
@@ -173,14 +192,17 @@ class Player(EventEmitter):
                     seek=entry.seek
                 )
 
+                options = "-vn -b:a 128k"
+
                 self._current_player = self._monkeypatch_player(self.voice_client.create_ffmpeg_player(
                     entry.filename,
                     before_options=before_options,
-                    options="-vn -b:a 128k",
+                    options=options,
                     # Threadsafe call soon, b/c after will be called from the voice playback thread.
                     after=lambda: self.loop.call_soon_threadsafe(self._playback_finished)
                 ))
                 self._current_player.setDaemon(True)
+                self._current_player.buff.volume = self.volume
 
                 self.state = MusicPlayerState.PLAYING
                 self._current_entry = entry
@@ -196,6 +218,14 @@ class Player(EventEmitter):
         original_buff = player.buff
         player.buff = PatchedBuff(original_buff)
         return player
+
+    @property
+    def server(self) -> Optional[discord.Server]:
+        return self.voice_client.server
+
+    @property
+    def channel(self) -> Optional[discord.Channel]:
+        return self.voice_client.channel
 
     @property
     def current_entry(self):
