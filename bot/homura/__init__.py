@@ -9,8 +9,8 @@ import aiohttp
 import asyncio_redis
 import discord
 import raven
-import statsd
 
+from homura.lib.stats import CustomInfluxDBClient
 from homura.plugins.common import Message
 from homura.plugins.manager import PluginManager
 from homura.util import Dummy
@@ -51,8 +51,12 @@ class NepeatBot(discord.Client):
             install_logging_hook=True
         )
 
-        if "STATSD_HOST" in os.environ:
-            self.stats = statsd.StatsClient(os.environ.get("STATSD_HOST"), os.environ.get("STATSD_PORT", 8125))
+        if "INFLUX_HOST" in os.environ:
+            self.stats = CustomInfluxDBClient(
+                host=os.environ.get("INFLUX_HOST"),
+                port=int(os.environ.get("INFLUX_PORT", 8086)),
+                database=os.environ.get("INFLUX__DATABASE", "homura"),
+            )
         else:
             self.stats = Dummy()
 
@@ -129,7 +133,7 @@ class NepeatBot(discord.Client):
     # Overloads
 
     async def send_message(self, *args, **kwargs):
-        self.stats.incr("homura.message,type=send")
+        self.stats.count("message", type="send")
         return await super().send_message(*args, **kwargs)
 
     async def logout(self):
@@ -139,13 +143,13 @@ class NepeatBot(discord.Client):
     # Events
 
     async def on_error(self, event_method, *args, **kwargs):
-        self.stats.incr("homura.error")
+        self.stats.count("error", method=event_method)
         log.error("Exception in %s", event_method)
         log.error(traceback.format_exc())
         return self.sentry.captureException()
 
     async def on_ready(self):
-        self.stats.incr("homura.ready")
+        self.stats.count("ready")
         log.info("Bot ready!")
 
         if hasattr(self, "shard_id") and self.shard_id:
@@ -169,7 +173,7 @@ class NepeatBot(discord.Client):
         if message.author.id == self.user.id:
             return
 
-        self.stats.incr("homura.message,type=receive", rate=0.1)
+        self.stats.count("message", type="receive")
 
         if message.content == "!shard?":
             if hasattr(self, 'shard_id'):

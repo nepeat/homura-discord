@@ -131,6 +131,7 @@ class Playlist(EventEmitter):
 
     async def save_entry(self, entry, prepend=False):
         await self.redis.hincrby("music:played", entry.url, 1)
+        self.bot.stats.count("music_play", url=entry.url)
 
         if prepend:
             await self.redis.lpush(self.queue_key, [entry.to_json()])

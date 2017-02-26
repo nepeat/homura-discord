@@ -4,6 +4,6 @@ hiredis
 raven
 blinker
 asyncio_redis
-statsd==3.2.1
 youtube-dl
 pytimeparse
+influxdb

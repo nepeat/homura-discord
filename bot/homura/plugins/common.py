@@ -69,7 +69,7 @@ def command(
 
             # Analytics and setup
 
-            self.bot.stats.incr("homura.command,function=" + func.__name__)
+            self.bot.stats.count("command", function=func.__name__)
 
             permissions = await Permissions.create(
                 self.bot,
