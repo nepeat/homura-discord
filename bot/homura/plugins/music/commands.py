@@ -299,6 +299,9 @@ class MusicCommands(MusicBase):
         description="Summons the bot to a channel"
     )
     async def summon(self, author):
+        if not author.voice_channel:
+            raise CommandError("You must be in a channel to summon the bot!")
+
         voice_client = await self.get_voice_client(author.server, author)
 
         if author.voice_channel and (voice_client.channel != author.voice_channel):
