@@ -41,6 +41,7 @@ if not discord.opus.is_loaded():
     if not discord.opus.is_loaded():
         raise Exception("Opus library could not be loaded.")
 
+
 class NepeatBot(discord.Client):
     def __init__(self):
         self.plugins = []

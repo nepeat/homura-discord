@@ -66,6 +66,7 @@ class Playlist(EventEmitter):
             Validates and adds a song_url to be played. This does not start the download of the song.
             Returns the entry & the position it is in the queue.
             :param song_url: The song url to add to the playlist.
+            :param prepend: Prepends the song to the playlist.
             :param meta: Any additional metadata to add to the playlist entry.
         """
 
@@ -200,6 +201,7 @@ class Playlist(EventEmitter):
             Processes youtube playlists, soundcloud set and bancdamp album links from `playlist_url` in a questionable,
             async fashion.
             :param playlist_url: The playlist url to be cut into individual urls and added to the playlist
+            :param extractor: The extractor to be using for the playlist url
             :param meta: Any additional metadata to add to the playlist entry
         """
         try:
@@ -220,7 +222,7 @@ class Playlist(EventEmitter):
                 elif site in ['soundcloud:set', 'bandcamp:album']:
                     song_url = entry_data['url']
                 else:
-                    raise ExtractionError("No handler for extractor %s", extractor)
+                    raise ExtractionError("No handler for extractor %s" % extractor)
 
                 try:
                     entry, elen = await self.add_entry(song_url, **meta)

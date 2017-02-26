@@ -51,6 +51,14 @@ class Downloader(object):
         return m.hexdigest()
 
     async def set_cache(self, url, data, **kwargs):
+        """
+        Sets cached data into Redis for extract_info for one day.
+
+        :param url: URL of the video to set in the cache
+        :param data: Data to cache
+        :param kwargs: extract_info kwargs. process is True = ":processed" appended to cache key 
+        :return: 
+        """
         cachekey = "musicbot:cache:" + self.hash_string(url)
 
         # Do not cache searches on YouTube.
@@ -66,6 +74,13 @@ class Downloader(object):
             pass
 
     async def get_cache(self, url, **kwargs):
+        """
+        Gets cached data from Redis for extract_info 
+
+        :param url: URL of the video to grab from the cache
+        :param kwargs: extract_info kwargs. download is True = no fetch; process is True = ":processed" appended to cache key 
+        :return: 
+        """
         cachekey = "musicbot:cache:" + self.hash_string(url)
 
         # Don't hit the cache if we are downloading the video.
@@ -75,17 +90,18 @@ class Downloader(object):
         if "process" in kwargs and kwargs["process"] is True:
             cachekey += ":processed"
 
+        _data = await self.bot.redis.get(cachekey)
+
+        if not _data:
+            return
+
         try:
-            _data = await self.bot.redis.get(cachekey)
-
-            if not _data:
-                return
-
             data = json.loads(_data)
-            if data:
-                return data
         except json.JSONDecodeError:
             return None
+
+        if data:
+            return data
 
     async def extract_info(self, loop, *args, on_error=None, **kwargs):
         """
