@@ -56,13 +56,19 @@ class MusicBase(PluginBase):
 
             return player
 
-    async def cleanup_voice_clients(self):
-        for player in self.players.values():
+    async def cleanup_voice_client(self, voice_client):
+        try:
             if player.is_playing:
                 await self.bot.redis.sadd("music:reload", [player.voice_client.channel.id])
 
-            player.kill()
+            voice_client.kill()
             await player.voice_client.disconnect()
+        finally:
+            del self.players[voice_client.server.id]
+
+    async def cleanup_voice_clients(self):
+        for player in self.players.values():
+            await self.cleanup_voice_client(voice_client)
 
     @staticmethod
     def _fixg(x, dp=2):

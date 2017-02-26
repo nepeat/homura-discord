@@ -1,3 +1,4 @@
+import asyncio
 import logging
 import time
 import traceback
@@ -55,9 +56,9 @@ class MusicCommands(MusicBase):
         andmoretext = '* ... and %s more*' % ('x' * len(player.playlist.entries))
         for i, item in enumerate(player.playlist, 1):
             if item.meta.get("author", ""):
-                nextline = f"`{i}.` **{item.title}** added by {item.meta['author'].mention}".strip()
+                nextline = f"{i}. **{item.title}** added by {item.meta['author'].mention}".strip()
             else:
-                nextline = f"`{i}.` **{item.title}**".strip()
+                nextline = f"{i}. **{item.title}**".strip()
 
             currentlinesum = sum(len(x) + 1 for x in queue_lines)
 
@@ -287,7 +288,7 @@ class MusicCommands(MusicBase):
             player.skip()
             return Message(embed=self.create_voice_embed("Skipped! (instantly)"))
 
-        return Message(self.create_voice_embed(
+        return Message(embed=self.create_voice_embed(
             colour=discord.Colour.red(),
             description="ADD! VOTESKIP! CODE! LATER!"
         ))
@@ -324,6 +325,102 @@ class MusicCommands(MusicBase):
             title="Queue cleared",
             description="\N{PUT LITTER IN ITS PLACE SYMBOL}"
         ))
+
+    @command(
+        patterns=[
+            "music volume$",
+            "music volume (.+)"
+        ],
+        permission_name="music.volume",
+        description="Sets the bot volume"
+    )
+    async def volume(self, message, args):
+        player = await self.get_player(message.server, message.author)
+
+        if not args:
+            return Message(embed=self.create_voice_embed(
+                title="Volume",
+                description="The current bot volume is %s%%" % (player.volume * 100)
+            ))
+
+        relative = False
+        if args[0][0] in '+-':
+            relative = True
+
+        try:
+            new_volume = int(args[0])
+        except ValueError:
+            raise CommandError('{} is not a valid number'.format(args[0]))
+
+        if relative:
+            vol_change = new_volume
+            new_volume += (player.volume * 100)
+
+        old_volume = int(player.volume * 100)
+
+        if 0.0 < new_volume <= 200:
+            player.volume = new_volume / 100.0
+
+            return Message(embed=self.create_voice_embed(
+                title="Volume",
+                description='Volume has been updated from %d%% to %d%%' % (old_volume, new_volume)
+            ))
+        elif new_volume >= 200:
+            if not message.author.server_permissions.administrator:
+                return CommandError("You must be an administrator to set the volume beyond 200%")
+
+            embed = self.create_voice_embed(
+                title="ARE YOU FUCKING SURE?" if new_volume >= 1000 else "Are you sure?",
+                description="Are you sure you would like to set the volume to {volume}%?\n"
+                            "Setting the volume beyond this level gives no benefit to the volume or quality at all.\n"
+                            "You have 15 seconds to say \"yes\" to confirm this.{danger}".format(
+                    volume=new_volume,
+                    danger="\n**RIP HEADPHONE USERS OH GOD**" if new_volume > 500 else ""
+                )
+            )
+
+            if new_volume >= 1000:
+                embed.set_thumbnail(url="https://i.imgur.com/lWUsTOR.jpg")
+
+            temp_confirm = await self.bot.send_message(message.channel, embed=embed)
+            confirmed = await self.bot.wait_for_message(timeout=15, author=message.author, channel=message.channel, content="yes")
+            await self.bot.delete_message(temp_confirm)
+            if confirmed:
+                player.volume = new_volume / 100.0
+                return Message(embed=self.create_voice_embed(
+                    title="Volume",
+                    description='Volume has been updated from %d%% to %d%%' % (old_volume, new_volume)
+                ))
+            else:
+                return Message(embed=self.create_voice_embed(
+                    description="15 seconds has passed without a response. Timing out."
+                ))
+        else:
+            if relative:
+                raise CommandError(
+                    'Unreasonable volume change provided: {}{:+} -> {}%.  Provide a change between {} and {:+}.'.format(
+                        old_volume,
+                        vol_change,
+                        old_volume + vol_change, 1 - old_volume, 100 - old_volume
+                    ))
+            else:
+                raise CommandError(
+                    'Unreasonable volume provided: {}%. Provide a value between 1 and 100.'.format(new_volume)
+                )
+
+    @command(
+        "music (disconnect|leave)$",
+        permission_name="music.leave",
+        description="Makes the bot disconnect"
+    )
+    async def leave(self, message, args):
+        if not message.server.voice_client:
+            return Message(embed=self.create_voice_embed("The bot is not in the server!"))
+
+        player = await self.get_player(message.server, message.author)
+        await self.cleanup_voice_client(player)
+
+        return Message(embed=self.create_voice_embed("Bot has left the server!"))
 
     async def play_playlist_async(self, player, channel, author, playlist_url, extractor_type):
         info = await self.downloader.extract_info(player.playlist.loop, playlist_url, download=False, process=False)
