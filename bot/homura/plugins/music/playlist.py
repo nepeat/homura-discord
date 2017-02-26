@@ -107,7 +107,13 @@ class Playlist(EventEmitter):
             **meta
         )
         self._add_entry(entry, prepend=prepend)
-        return entry, len(self.entries)
+        
+        if prepend:
+            position = 1
+        else:
+            position = len(self.entries)
+
+        return entry, position
 
     def _add_entry(self, entry, saved=False, prepend=False):
         if prepend:

@@ -36,7 +36,7 @@ class MusicCommands(MusicBase):
             if player.current_entry.meta.get("author", ""):
                 embed.add_field(
                     name="Added by",
-                    value=player.current_entry.meta["author"].name
+                    value=player.current_entry.meta["author"].mention
                 )
 
             song_progress = str(timedelta(seconds=player.progress)).lstrip('0').lstrip(':')
@@ -52,7 +52,7 @@ class MusicCommands(MusicBase):
         andmoretext = '* ... and %s more*' % ('x' * len(player.playlist.entries))
         for i, item in enumerate(player.playlist, 1):
             if item.meta.get("author", ""):
-                nextline = f"`{i}.` **{item.title}** added by **{item.meta['author'].name}**".strip()
+                nextline = f"`{i}.` **{item.title}** added by {item.meta['author'].mention}".strip()
             else:
                 nextline = f"`{i}.` **{item.title}**".strip()
 
@@ -80,20 +80,20 @@ class MusicCommands(MusicBase):
         return Message(embed=embed)
 
     @command(
-        "music (?:play|queue) (.+)",
+        "music (play|queue|prepend) (.+)",
         permission_name="music.queue",
         global_command=True,
         description="Queues a URL for playback."
     )
     async def play(self, message, args):
         player = await self.get_player(message.server, message.author)
-        url = args[0].strip()
+        url = args[1].strip()
 
         if url.startswith("prepend:"):
             url = url.lstrip("prepend:")
             prepend = True
         else:
-            prepend = False
+            prepend = args[0].lower() == "prepend"
 
         info = await self.downloader.extract_info(player.playlist.loop, url, download=False, process=False)
 
@@ -114,14 +114,12 @@ class MusicCommands(MusicBase):
                     self.send_message(channel, "```\n%s\n```" % e), loop=self.loop)
             )
 
-            if not info.get("entries", []):
+            if not info or not info.get("entries", []):
                 raise CommandError(f"No videos were found.")
 
             song_url = info["entries"][0]["webpage_url"]
-            if prepend:
-                song_url = "prepend:" + song_url
 
-            return await self.play._func(self, message, [song_url])
+            return await self.play._func(self, message, ["prepend" if prepend else "play", song_url])
 
         if "entries" in info:
             num_songs = sum(1 for _ in info["entries"])
