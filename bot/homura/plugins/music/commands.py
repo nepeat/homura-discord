@@ -333,28 +333,20 @@ class MusicCommands(MusicBase):
         busymsg = await self.bot.send_message(channel, "Processing %s songs..." % num_songs)
 
         entries_added = 0
-        if extractor_type == 'youtube:playlist':
+        if extractor_type.lower() in ['youtube:playlist', 'soundcloud:set', 'bandcamp:album']:
             try:
-                entries_added = await player.playlist.async_process_youtube_playlist(
-                    playlist_url, channel=channel, author=author)
+                entries_added = await player.playlist.async_process_playlist(
+                    playlist_url,
+                    extractor_type.lower(),
+                    channel=channel,
+                    author=author
+                )
                 # TODO: Add hook to be called after each song
                 # TODO: Add permissions
 
             except Exception:
                 traceback.print_exc()
                 raise CommandError('Error handling playlist %s queuing.' % playlist_url)
-
-        elif extractor_type.lower() in ['soundcloud:set', 'bandcamp:album']:
-            try:
-                entries_added = await player.playlist.async_process_sc_bc_playlist(
-                    playlist_url, channel=channel, author=author)
-                # TODO: Add hook to be called after each song
-                # TODO: Add permissions
-
-            except Exception:
-                traceback.print_exc()
-                raise CommandError('Error handling playlist %s queuing.' % playlist_url)
-
 
         songs_processed = len(entries_added)
 

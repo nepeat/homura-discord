@@ -189,13 +189,13 @@ class Playlist(EventEmitter):
 
         return entry_list, position
 
-    async def async_process_youtube_playlist(self, playlist_url, **meta):
+    async def async_process_playlist(self, playlist_url, extractor, **meta):
         """
-            Processes youtube playlists links from `playlist_url` in a questionable, async fashion.
+            Processes youtube playlists, soundcloud set and bancdamp album links from `playlist_url` in a questionable,
+            async fashion.
             :param playlist_url: The playlist url to be cut into individual urls and added to the playlist
             :param meta: Any additional metadata to add to the playlist entry
         """
-
         try:
             info = await self.downloader.extract_info(self.loop, playlist_url, download=False, process=False)
         except Exception as e:
@@ -206,48 +206,15 @@ class Playlist(EventEmitter):
 
         gooditems = []
         baditems = 0
-        for entry_data in info['entries']:
+        for entry_data in info["entries"]:
             if entry_data:
-                baseurl = info['webpage_url'].split('playlist?list=')[0]
-                song_url = baseurl + 'watch?v=%s' % entry_data['id']
-
-                try:
-                    entry, elen = await self.add_entry(song_url, **meta)
-                    gooditems.append(entry)
-                except ExtractionError:
-                    baditems += 1
-                except Exception as e:
-                    baditems += 1
-                    log.warning("There was an error adding the song {}: {}: {}\n".format(
-                        entry_data['id'], e.__class__.__name__, e))
-            else:
-                baditems += 1
-
-        if baditems:
-            log.debug("Skipped %s bad entries" % baditems)
-
-        return gooditems
-
-    async def async_process_sc_bc_playlist(self, playlist_url, **meta):
-        """
-            Processes soundcloud set and bancdamp album links from `playlist_url` in a questionable, async fashion.
-            :param playlist_url: The playlist url to be cut into individual urls and added to the playlist
-            :param meta: Any additional metadata to add to the playlist entry
-        """
-
-        try:
-            info = await self.downloader.extract_info(self.loop, playlist_url, download=False, process=False)
-        except Exception as e:
-            raise ExtractionError('Could not extract information from {}\n\n{}'.format(playlist_url, e))
-
-        if not info:
-            raise ExtractionError('Could not extract information from %s' % playlist_url)
-
-        gooditems = []
-        baditems = 0
-        for entry_data in info['entries']:
-            if entry_data:
-                song_url = entry_data['url']
+                if extractor == "youtube:playlist":
+                    baseurl = info['webpage_url'].split('playlist?list=')[0]
+                    song_url = baseurl + 'watch?v=%s' % entry_data['id']
+                elif site in ['soundcloud:set', 'bandcamp:album']:
+                    song_url = entry_data['url']
+                else:
+                    raise ExtractionError("No handler for extractor %s", extractor)
 
                 try:
                     entry, elen = await self.add_entry(song_url, **meta)
