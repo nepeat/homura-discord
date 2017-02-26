@@ -33,10 +33,7 @@ class MusicPlugin(MusicCommands):
         if channel and author:
             next = player.playlist.peek()
 
-            embed = discord.Embed(
-                colour=discord.Colour.orange(),
-                title="Music",
-            ).add_field(
+            embed = self.create_voice_embed().add_field(
                 name="Now playing",
                 value=entry.title,
                 inline=False

@@ -16,7 +16,7 @@ class MusicBase(PluginBase):
         self.players = {}
         self.downloader = Downloader(self.bot, os.environ.get("AUDIO_CACHE_PATH", "audio_cache"))
 
-    def create_voice_embed(self, description=None, colour=discord.Colour.orange(), title=None):
+    def create_voice_embed(self, description=None, colour=discord.Colour.blue(), title=None):
         if not title:
             title = "Music"
         else:
@@ -67,7 +67,7 @@ class MusicBase(PluginBase):
             del self.players[player.server.id]
 
     async def cleanup_players(self):
-        for player in self.players.values():
+        for player in self.players.copy().values():
             await self.cleanup_player(player)
 
     @staticmethod
