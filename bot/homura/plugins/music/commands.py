@@ -418,7 +418,7 @@ class MusicCommands(MusicBase):
             return Message(embed=self.create_voice_embed("The bot is not in the server!"))
 
         player = await self.get_player(message.server, message.author)
-        await self.cleanup_voice_client(player)
+        await self.cleanup_player(player)
 
         return Message(embed=self.create_voice_embed("Bot has left the server!"))
 

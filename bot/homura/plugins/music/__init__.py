@@ -22,7 +22,7 @@ class MusicPlugin(MusicCommands):
 
     async def on_logout(self):
         log.info("Got logout event!")
-        await self.cleanup_voice_clients()
+        await self.cleanup_players()
 
     # Music events
 
