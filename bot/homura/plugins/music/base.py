@@ -16,7 +16,18 @@ class MusicBase(PluginBase):
         self.players = {}
         self.downloader = Downloader(self.bot, os.environ.get("AUDIO_CACHE_PATH", "audio_cache"))
 
-    # Music helper functions
+    def create_voice_embed(self, description=None, colour=discord.Colour.orange(), title=None):
+        if not title:
+            title = "Music"
+        else:
+            title = "Music - " + title
+
+        return discord.Embed(
+            colour=colour,
+            title=title,
+            description=description
+        )
+
 
     async def get_voice_client(self, server: discord.Server, member: discord.Member=None):
         if server.voice_client:

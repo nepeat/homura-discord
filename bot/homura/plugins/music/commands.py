@@ -25,10 +25,7 @@ class MusicCommands(MusicBase):
     async def music(self, message, args):
         player = await self.get_player(message.server, message.author)
 
-        embed = discord.Embed(
-            colour=discord.Colour.orange(),
-            title="Music"
-        )
+        embed = self.create_voice_embed()
 
         if player.current_entry:
             embed.add_field(
@@ -101,12 +98,11 @@ class MusicCommands(MusicBase):
         info = await self.downloader.extract_info(player.playlist.loop, url, download=False, process=False)
 
         if not info:
-            embed = discord.Embed(
-                title="Unable to play URL",
+            return Message(embed=self.create_voice_embed(
+                title="Play error",
                 colour=discord.Colour.red(),
                 description="This URL could not be played."
-            )
-            return Message(embed=embed)
+            ))
 
         if info.get("url", "").startswith("ytsearch"):
             info = await self.downloader.extract_info(
@@ -144,13 +140,16 @@ class MusicCommands(MusicBase):
 
             procmesg = await self.bot.send_message(
                 channel,
-                'Gathering playlist information for {} songs{}'.format(
-                    num_songs,
-                    ', ETA: {} seconds'.format(
-                        self._fixg(
-                            num_songs * wait_per_song
-                        )
-                    ) if num_songs >= 10 else '.'
+                embed=self.create_voice_embed(
+                    title="Processing",
+                    description='Gathering playlist information for {} songs{}'.format(
+                        num_songs,
+                        ', ETA: {} seconds'.format(
+                            self._fixg(
+                                num_songs * wait_per_song
+                            )
+                        ) if num_songs >= 10 else '.'
+                    )
                 )
             )
 
@@ -173,11 +172,9 @@ class MusicCommands(MusicBase):
             embed_description = f"**{(listlen)}** songs have been queued!"
         else:
             entry, position = await player.playlist.add_entry(url, channel=message.channel, author=message.author, prepend=prepend)
-            embed_description = f"**{entry.title}** has been queued!"
+            embed_description = f"**{entry.title}** has been {'prepended' if prepend else 'queued'}!"
 
-        embed = discord.Embed(
-            colour=discord.Colour.orange(),
-            title="Music",
+        embed = self.create_voice_embed(
             description=embed_description
         ).add_field(
             name="Queue position",
@@ -214,7 +211,7 @@ class MusicCommands(MusicBase):
         else:
             player.playlist.shuffle()
 
-        return Message("Playlist shuffled!")
+        return Message(embed=self.create_voice_embed("Playlist shuffled!"))
 
     @command(
         patterns=[
@@ -240,7 +237,7 @@ class MusicCommands(MusicBase):
             message.author == player.current_entry.meta.get("author", None)
             or message.author.server_permissions.administrator
         ):
-            return Message("no!")
+            raise CommandError("You cannot seek the video unless you have added the video or are a server admin.")
 
         try:
             original_seek = seek
@@ -260,9 +257,9 @@ class MusicCommands(MusicBase):
         except ValueError as e:
             raise CommandError(str(e))
 
-        return Message('Seeked video to %s!' % (
+        return Message(embed=self.create_voice_embed('Seeked video to %s!' % (
             str(timedelta(seconds=seek)).lstrip('0').lstrip(':')
-        ))
+        )))
 
     @command(
         patterns=[
@@ -280,16 +277,19 @@ class MusicCommands(MusicBase):
 
         if not player.current_entry:
             if player.playlist.peek():
-                return Message("The next song (%s) is downloading, please wait." % player.playlist.peek().title)
+                raise CommandError("The next song (%s) is downloading, please wait." % player.playlist.peek().title)
 
         if (
             message.author == player.current_entry.meta.get("author", None)
             or message.author.server_permissions.administrator
         ):
             player.skip()
-            return Message("Skipped! (instantly)")
+            return Message(embed=self.create_voice_embed("Skipped! (instantly)"))
 
-        return Message("no!")
+        return Message(self.create_voice_embed(
+            colour=discord.Colour.red(),
+            description="ADD! VOTESKIP! CODE! LATER!"
+        ))
 
     @command(
         "music summon$",
@@ -309,7 +309,7 @@ class MusicCommands(MusicBase):
 
             await voice_client.move_to(author.voice_channel)
 
-        return Message("Bot summoned!")
+        return Message(embed=self.create_voice_embed("Bot summoned!"))
 
     @command(
         "music clear$",
@@ -319,7 +319,10 @@ class MusicCommands(MusicBase):
     async def clear(self, message):
         player = await self.get_player(message.server, message.author)
         player.playlist.clear()
-        return Message("\N{PUT LITTER IN ITS PLACE SYMBOL}")
+        return Message(embed=self.create_voice_embed(
+            title="Queue cleared",
+            description="\N{PUT LITTER IN ITS PLACE SYMBOL}"
+        ))
 
     async def play_playlist_async(self, player, channel, author, playlist_url, extractor_type):
         info = await self.downloader.extract_info(player.playlist.loop, playlist_url, download=False, process=False)
@@ -330,7 +333,10 @@ class MusicCommands(MusicBase):
         num_songs = sum(1 for _ in info['entries'])
         t0 = time.time()
 
-        busymsg = await self.bot.send_message(channel, "Processing %s songs..." % num_songs)
+        busymsg = await self.bot.send_message(channel, embed=self.create_voice_embed(
+            title="Processing",
+            description="Processing %s songs..." % num_songs
+        ))
 
         entries_added = 0
         if extractor_type.lower() in ['youtube:playlist', 'soundcloud:set', 'bandcamp:album']:
@@ -368,13 +374,9 @@ class MusicCommands(MusicBase):
             self._fixg(wait_per_song * num_songs))
         )
 
-        embed = discord.Embed(
-            colour=discord.Colour.orange(),
-            title="Music",
-            description="Enqueued {} songs to be played in {} seconds".format(
+        return Message(embed=self.create_voice_embed(
+            "Enqueued {} songs to be played in {} seconds".format(
                 songs_added,
                 self._fixg(ttime, 1)
             )
-        )
-
-        return Message(embed=embed)
+        ))
