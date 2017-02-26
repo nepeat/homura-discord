@@ -45,6 +45,9 @@ class MusicCommands(MusicBase):
             embed.add_field(
                 name="Progress",
                 value=prog_str
+            ).add_field(
+                name="Permalink",
+                value=player.current_entry.url
             )
 
         queue_lines = []
