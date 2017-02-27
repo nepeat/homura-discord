@@ -112,3 +112,5 @@ class EventsResource(ResourceBase):
             channel.name = data["channel"]["after"]
         elif event_type == "rename_server" and server:
             server.name = data["server"]["after"]
+        elif event_type == "server_join" and server:
+            server.name = data["server"]["name"]

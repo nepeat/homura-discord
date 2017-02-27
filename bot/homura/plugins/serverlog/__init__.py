@@ -45,6 +45,13 @@ class ServerLogPlugin(PluginBase):
     async def on_member_remove(self, member):
         await self.log_member(member, False)
 
+    async def on_server_join(self, server):
+        await self.push_event("server_join", server, None, {
+            "server": {
+                "name": server.name
+            }
+        })
+
     async def on_server_update(self, before, after):
         if before.name != after.name:
             await self.push_event("rename_server", before, None, {
@@ -62,8 +69,13 @@ class ServerLogPlugin(PluginBase):
             return
 
         await self.push_event("rename", before.server, None, {
-            "old": old,
-            "new": new
+            "sender": {
+                "id": before.id
+            },
+            "nick": {
+                "old": old,
+                "new": new
+            }
         })
 
     async def on_channel_update(self, before, after):
@@ -180,6 +192,7 @@ class ServerLogPlugin(PluginBase):
         action = "join" if joining else "leave"
 
         await self.push_event(action, member.server, None, {
+            "id": member.id,
             "name": member.name
         })
 
