@@ -30,7 +30,7 @@ class MusicPlugin(MusicCommands):
         author = entry.meta.get("author", None)
 
         if channel and author:
-            next = player.playlist.peek()
+            next_entry = player.playlist.peek()
 
             embed = self.create_voice_embed().add_field(
                 name="Now playing",
@@ -38,7 +38,7 @@ class MusicPlugin(MusicCommands):
                 inline=False
             ).add_field(
                 name="Up next",
-                value=next.title if next else "Nothing!",
+                value=next_entry.title if next_entry else "Nothing!",
                 inline=False
             )
 
