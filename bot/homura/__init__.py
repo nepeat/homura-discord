@@ -2,7 +2,9 @@
 import asyncio
 import logging
 import os
+import random
 import signal
+import time
 import traceback
 from typing import Optional
 
@@ -83,6 +85,8 @@ class NepeatBot(discord.Client):
         )
 
     async def _plugin_run_event(self, method, *args, **kwargs):
+        start = time.time()
+
         try:
             await method(*args, **kwargs)
         except asyncio.CancelledError:
@@ -92,6 +96,12 @@ class NepeatBot(discord.Client):
                 await self.on_error(method.__name__, *args, **kwargs)
             except asyncio.CancelledError:
                 pass
+
+        delta = time.time() - start
+
+        if random.randint(0, 100) > 50 or delta > 1.0:
+            self.stats.count("event_timings", event=method, time=str(delta))
+
 
     async def plugin_dispatch(self, event, *args, **kwargs):
         method = "on_" + event
