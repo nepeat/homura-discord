@@ -100,7 +100,12 @@ class NepeatBot(discord.Client):
         delta = time.time() - start
 
         if random.randint(0, 100) > 50 or delta > 1.0:
-            self.stats.count("event_timings", event=method, time=str(delta))
+            self.stats.count(
+                "event_timings",
+                event=str(method.__name__),
+                module=str(type(method.__self__).__name__),  # god why
+                count=float(delta)
+            )
 
 
     async def plugin_dispatch(self, event, *args, **kwargs):

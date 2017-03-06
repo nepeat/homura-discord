@@ -96,7 +96,7 @@ class OwnerPlugin(PluginBase):
 
     @command(
         patterns=[
-            "owner sleep",
+            "owner sleep$",
             "owner sleep (\d+)"
         ],
         permission_name="owner.never.gonna.happen",
@@ -104,9 +104,9 @@ class OwnerPlugin(PluginBase):
     )
     async def sleeptest(self, args):
         if args:
-            sleep_time = args[0]
+            sleep_time = float(args[0])
         else:
-            sleep_time = random.randint(0, 4)
+            sleep_time = random.randint(1, 5)
 
         await asyncio.sleep(sleep_time)
         return Message(f"Slept for {sleep_time} seconds!")
