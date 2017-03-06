@@ -90,10 +90,12 @@ class EventLogPlugin(PluginBase):
             url="https://nepeat.github.io/assets/icons/edit.png"
         ).add_field(
             name="Before",
-            value=sanitize(old)
+            value=sanitize(old),
+            inline=False
         ).add_field(
             name="After",
-            value=sanitize(new)
+            value=sanitize(new),
+            inline=False
         )
 
         await self.log(embed, before.server, "member_rename")
