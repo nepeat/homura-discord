@@ -1,5 +1,7 @@
 # coding=utf-8
+import asyncio
 import logging
+import random
 import traceback
 
 import aiohttp
@@ -90,6 +92,24 @@ class OwnerPlugin(PluginBase):
     )
     async def errortest(self):
         return Message(1 / 0)
+
+
+    @command(
+        patterns=[
+            "owner sleep",
+            "owner sleep (\d+)"
+        ],
+        permission_name="owner.never.gonna.happen",
+        description="Sleeps the coroutine."
+    )
+    async def sleeptest(self, args):
+        if args:
+            sleep_time = args[0]
+        else:
+            sleep_time = random.randint(0, 4)
+
+        await asyncio.sleep(sleep_time)
+        return Message(f"Slept for {sleep_time} seconds!")
 
     async def on_ready(self):
         status = await self.redis.hget("bot:config", "game")
