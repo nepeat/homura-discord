@@ -6,10 +6,10 @@ import traceback
 from collections import deque
 from itertools import islice
 
-from homura.util import get_header
 from homura.lib.eventemitter import EventEmitter
 from homura.plugins.music.exceptions import ExtractionError, WrongEntryTypeError
 from homura.plugins.music.objects import URLPlaylistEntry
+from homura.util import get_header
 
 log = logging.getLogger(__name__)
 

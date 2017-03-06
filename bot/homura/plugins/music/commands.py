@@ -6,11 +6,11 @@ import traceback
 from datetime import timedelta
 
 import discord
-
 import pytimeparse
-from homura.plugins.music.base import MusicBase
+
 from homura.lib.signals import CommandError
 from homura.plugins.common import Message, command
+from homura.plugins.music.base import MusicBase
 from homura.util import sanitize
 
 DISCORD_FIELD_CHAR_LIMIT = 1000

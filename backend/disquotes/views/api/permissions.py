@@ -1,5 +1,5 @@
 from flask import g
-from flask_restplus import Namespace, Resource, abort, fields
+from flask_restplus import Namespace, abort, fields
 from sqlalchemy import or_
 
 from disquotes.model import Channel, Permission, Server
