@@ -101,11 +101,13 @@ class AntispamPlugin(PluginBase):
     def create_antispam_embed(self, message: discord.Message, event_type):
         if event_type == "warning":
             icon = "warning"
+            colour = discord.Colour.gold()
         else:
             icon = "x_circle"
+            colour = discord.Colour.red()
 
         return discord.Embed(
-            colour=discord.Colour.gold(),
+            colour=colour,
             title=f"{event_type.capitalize()} phrase"
         ).set_thumbnail(
             url=f"https://nepeat.github.io/assets/icons/{icon}.png"

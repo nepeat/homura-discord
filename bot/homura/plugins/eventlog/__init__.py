@@ -109,7 +109,7 @@ class EventLogPlugin(PluginBase):
             return
 
         embed = discord.Embed(
-            colour=discord.Colour.red(),
+            colour=discord.Colour.blue(),
             title=f"Message has been edited"
         ).set_thumbnail(
             url="https://nepeat.github.io/assets/icons/edit.png"

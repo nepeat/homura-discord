@@ -43,10 +43,7 @@ class ModerationPlugin(PluginBase):
 
             for messages in zip_longest(*(iter(removed),) * 100):
                 messages = [message for message in messages if message]
-                await self.redis.sadd("ignored:{}".format(message.server.id), [m.id for m in messages])
                 await self.bot.delete_messages(messages)
-
-            await self.redis.expire("ignored:{}".format(message.server.id), 120)
 
         return Message("{} messages removed!".format(deleted))
 
@@ -74,9 +71,6 @@ class ModerationPlugin(PluginBase):
         for messages in zip_longest(*(iter(removed),) * 100):
             messages = [message for message in messages if message]
             await self.bot.delete_messages(messages)
-            await self.redis.sadd("ignored:{}".format(message.server.id), [m.id for m in messages])
-
-        await self.redis.expire("ignored:{}".format(message.server.id), 120)
 
         return Message("{} messages removed!".format(len(removed)))
 
@@ -88,5 +82,4 @@ class ModerationPlugin(PluginBase):
     async def cmd_remove(self, message, args):
         message = await self.bot.get_message(message.channel, args[0])
         if message:
-            await self.redis.sadd("ignored:{}".format(message.server.id), [message.id])
             await self.bot.delete_message(message)

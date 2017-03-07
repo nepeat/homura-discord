@@ -99,7 +99,7 @@ class NepeatBot(discord.Client):
 
         delta = time.time() - start
 
-        if random.randint(0, 100) > 50 or delta > 1.0:
+        if delta > 1.0:
             self.stats.count(
                 "event_timings",
                 event=str(method.__name__),
@@ -152,6 +152,18 @@ class NepeatBot(discord.Client):
     async def send_message(self, *args, **kwargs):
         self.stats.count("message", type="send")
         return await super().send_message(*args, **kwargs)
+
+    async def delete_message(self, message):
+        await self.redis.sadd("ignored:{}".format(message.server.id), [message.id])
+        await self.redis.expire("ignored:{}".format(message.server.id), 120)
+
+        return await super().delete_message(message)
+
+    async def delete_messages(self, messages):
+        await self.redis.sadd("ignored:{}".format(messages[0].server.id), [m.id for m in messages])
+        await self.redis.expire("ignored:{}".format(messages[0].server.id), 120)
+
+        return await super().delete_messages(messages)
 
     async def logout(self):
         await self.plugin_dispatch("logout")
