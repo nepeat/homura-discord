@@ -322,3 +322,27 @@ class StreamPlaylistEntry(BasePlaylistEntry):
             # although maybe that should be at a slightly lower level
         finally:
             self._is_downloading = False
+
+
+class SkipState:
+    __slots__ = ['skippers']
+
+    def __init__(self):
+        self.skippers = set()
+
+    @property
+    def skip_count(self):
+        return len(self.skippers)
+
+    def reset(self):
+        self.skippers.clear()
+
+    def toggle_skip(self, skipper):
+        if skipper in self.skippers:
+            added = False
+            self.skippers.remove(skipper)
+        else:
+            added = True
+            self.skippers.add(skipper)
+
+        return self.skip_count, added

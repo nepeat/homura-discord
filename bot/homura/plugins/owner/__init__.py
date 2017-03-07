@@ -1,5 +1,6 @@
 # coding=utf-8
 import asyncio
+import inspect
 import logging
 import random
 import traceback
@@ -76,6 +77,8 @@ class OwnerPlugin(PluginBase):
     async def eval_code(self, args, permissions, message):  # NOQA
         try:
             results = eval(args[0])
+            if inspect.isawaitable(results):
+                results = await results
         except Exception as e:
             log.error(f"Error in eval '{args[0]}'")
             traceback.print_exc()

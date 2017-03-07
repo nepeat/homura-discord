@@ -8,6 +8,7 @@ import discord
 
 import audioop
 from homura.lib.eventemitter import EventEmitter
+from homura.plugins.music.objects import SkipState
 
 log = logging.getLogger(__name__)
 
@@ -53,6 +54,7 @@ class Player(EventEmitter):
         self.playlist = playlist
         self.playlist.on("entry-added", self.on_entry_added)
         self._volume = 1.0
+        self.skip_state = SkipState()
 
         self._play_lock = asyncio.Lock()
         self._current_player = None

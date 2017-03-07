@@ -11,16 +11,19 @@ import pytimeparse
 from homura.lib.signals import CommandError
 from homura.plugins.common import Message, command
 from homura.plugins.music.base import MusicBase
-from homura.util import sanitize
+from homura.util import sanitize, sane_round_int
 
 DISCORD_FIELD_CHAR_LIMIT = 1000
+MIN_SKIPS = 4
+SKIP_RATIO = 0.5
+
 log = logging.getLogger(__name__)
 
 
 class MusicCommands(MusicBase):
     @command(
         "music$",
-        permission_name="music",
+        permission_name="music.info",
         global_command=True,
         description="Music status"
     )
@@ -202,7 +205,6 @@ class MusicCommands(MusicBase):
             "music shuffle (.+)"
         ],
         permission_name="music.shuffle",
-        global_command=True,
         description="Shuffles the music queue."
     )
     async def shuffle(self, message, args):
@@ -224,7 +226,6 @@ class MusicCommands(MusicBase):
             "music seek (.+)"
         ],
         permission_name="music.seek",
-        global_command=True,
         description="Seeks the current song."
     )
     async def seek(self, message, args):
@@ -262,9 +263,12 @@ class MusicCommands(MusicBase):
         except (ValueError, TypeError) as e:
             raise CommandError(str(e))
 
-        return Message(embed=self.create_voice_embed('Seeked video to %s!' % (
-            str(timedelta(seconds=seek)).lstrip('0').lstrip(':')
-        )))
+        return Message(embed=self.create_voice_embed(
+            title="Seek",
+            description='Seeked to %s!' % (
+                str(timedelta(seconds=seek)).lstrip('0').lstrip(':')
+            )
+        ))
 
     @command(
         patterns=[
@@ -289,12 +293,38 @@ class MusicCommands(MusicBase):
             or message.author.server_permissions.administrator
         ):
             player.skip()
-            return Message(embed=self.create_voice_embed("Skipped! (instantly)"))
+            return Message(embed=self.create_voice_embed(
+                title="Skip",
+                description=f"**{player.current_entry.title}** been skipped. (instantly)"
+            ))
 
-        return Message(embed=self.create_voice_embed(
-            colour=discord.Colour.red(),
-            description="ADD! VOTESKIP! CODE! LATER!"
+        num_voice = sum(1 for m in player.voice_client.channel.voice_members if not (
+            m.deaf or
+            m.self_deaf or
+            m.server_permissions.administrator or
+            m.id == self.bot.user.id
         ))
+
+        num_skips, added = player.skip_state.toggle_skip(message.author.id)
+
+        skips_remaining = min(
+            MIN_SKIPS,
+            sane_round_int(num_voice * SKIP_RATIO)
+        ) - num_skips
+
+        if skips_remaining <= 0:
+            player.skip()
+            return Message(embed=self.create_voice_embed(
+                title="Skip",
+                description=f"Your skip for **{player.current_entry.title}** has been successful.\n"
+                            f"Playing the next song!" if player.playlist.peek() else "No more songs left in queue!"
+            ))
+        else:
+            return Message(embed=self.create_voice_embed(
+                title="Skip",
+                description=f"Your skip for **{player.current_entry.title}** has been {'added' if added else 'removed'}.\n"
+                            f"**{skips_remaining} more {'skip' if skips_remaining == 1 else 'skips'} are required to skip."
+            ), reply=True)
 
     @command(
         "music summon$",

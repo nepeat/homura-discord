@@ -26,6 +26,8 @@ class MusicPlugin(MusicCommands):
     # Music events
 
     async def on_player_play(self, player, entry):
+        player.skip_state.reset()
+
         channel = entry.meta.get("channel", None)
         author = entry.meta.get("author", None)
 
