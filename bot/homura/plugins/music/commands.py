@@ -44,9 +44,10 @@ class MusicCommands(MusicBase):
                     value=player.current_entry.meta["author"].mention
                 )
 
-            song_progress = str(timedelta(seconds=player.progress)).lstrip('0').lstrip(':')
-            song_total = str(timedelta(seconds=player.current_entry.duration)).lstrip('0').lstrip(':')
-            prog_str = '%s/%s' % (song_progress, song_total)
+            prog_str = '{progress}{extra}'.format(
+                progress=str(timedelta(seconds=player.progress)).lstrip('0').lstrip(':'),
+                extra="/" + str(timedelta(seconds=player.current_entry.duration)).lstrip('0').lstrip(':')
+            )
             embed.add_field(
                 name="Progress",
                 value=prog_str
