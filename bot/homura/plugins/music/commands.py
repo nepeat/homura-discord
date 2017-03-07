@@ -257,7 +257,7 @@ class MusicCommands(MusicBase):
 
         try:
             player.seek(seek)
-        except ValueError as e:
+        except (ValueError, TypeError) as e:
             raise CommandError(str(e))
 
         return Message(embed=self.create_voice_embed('Seeked video to %s!' % (

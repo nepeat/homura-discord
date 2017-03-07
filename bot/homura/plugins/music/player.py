@@ -82,6 +82,9 @@ class Player(EventEmitter):
         if not entry:
             return
 
+        if not entry.seekable:
+            raise TypeError("You cannot seek this type of video.")
+
         if time < 0:
             raise ValueError("Cannot seek past negative numbers.")
 

@@ -17,6 +17,7 @@ class BasePlaylistEntry(object):
         self._is_downloading = False
         self._waiting_futures = []
         self.quiet = False
+        self._seekable = False
 
     @property
     def is_downloaded(self):
@@ -24,6 +25,10 @@ class BasePlaylistEntry(object):
             return False
 
         return bool(self.filename)
+
+    @property
+    def seekable(self):
+        return self._seekable
 
     @classmethod
     def from_json(cls, playlist, jsonstring):
@@ -81,6 +86,7 @@ class URLPlaylistEntry(BasePlaylistEntry):
     def __init__(self, playlist, url, title, duration=0, expected_filename=None, seek=0, **meta):
         super().__init__()
 
+        self._seekable = True
         self.playlist = playlist
         self.url = url
         self.title = title
