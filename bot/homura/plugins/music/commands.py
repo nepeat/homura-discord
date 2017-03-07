@@ -85,7 +85,7 @@ class MusicCommands(MusicBase):
         return Message(embed=embed)
 
     @command(
-        "music (play|queue|prepend) (.+)",
+        "music (play|queue|prepend|stream) (.+)",
         permission_name="music.queue",
         global_command=True,
         description="Queues a URL for playback."
@@ -97,8 +97,10 @@ class MusicCommands(MusicBase):
         if url.startswith("prepend:"):
             url = url.lstrip("prepend:")
             prepend = True
+            stream = args[0].lower() == "stream"
         else:
             prepend = args[0].lower() == "prepend"
+            stream = args[0].lower() == "stream"
 
         info = await self.downloader.extract_info(player.playlist.loop, url, download=False, process=False)
 
@@ -174,7 +176,7 @@ class MusicCommands(MusicBase):
 
             embed_description = f"**{listlen}** songs have been queued!"
         else:
-            entry, position = await player.playlist.add_entry(url, channel=message.channel, author=message.author, prepend=prepend)
+            entry, position = await player.playlist.add_entry(url, channel=message.channel, author=message.author, prepend=prepend, stream=stream)
             embed_description = f"**{entry.title}** has been {'prepended' if prepend else 'queued'}!"
 
         embed = self.create_voice_embed(

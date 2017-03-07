@@ -242,3 +242,83 @@ class URLPlaylistEntry(BasePlaylistEntry):
             else:
                 # Move the temporary file to it's final location.
                 os.rename(unhashed_fname, self.filename)
+
+class StreamPlaylistEntry(BasePlaylistEntry):
+    def __init__(self, playlist, url, title, *, destination=None, **meta):
+        super().__init__()
+
+        self.playlist = playlist
+        self.url = url
+        self.title = title
+        self.destination = destination
+        self.duration = 0
+        self.seek = 0
+        self.meta = meta
+
+        if self.destination:
+            self.filename = self.destination
+
+    @classmethod
+    def from_json(cls, playlist, jsonstring):
+        data = json.loads(jsonstring)
+        # TODO: version check
+        url = data['url']
+        title = data['title']
+        destination = data['destination']
+        filename = data['filename']
+        meta = {}
+
+        # TODO: Better [name] fallbacks
+        if 'channel' in data['meta']:
+            ch = playlist.bot.get_channel(data['meta']['channel']['id'])
+            meta['channel'] = ch or data['meta']['channel']['name']
+
+        if 'author' in data['meta']:
+            meta['author'] = meta['channel'].server.get_member(data['meta']['author']['id'])
+
+        entry = cls(playlist, url, title, destination=destination, **meta)
+        if not destination and filename:
+            entry.filename = destination
+
+        return entry
+
+    def to_json(self, pretty=False):
+        data = {
+            'version': 1,
+            'type': self.__class__.__name__,
+            'url': self.url,
+            'filename': self.filename,
+            'title': self.title,
+            'destination': self.destination,
+            'meta': {
+                i: {
+                    'type': self.meta[i].__class__.__name__,
+                    'id': self.meta[i].id,
+                    'name': self.meta[i].name
+                } for i in self.meta
+            }
+            # Actually I think I can just getattr instead, getattr(discord, type)
+        }
+        return json.dumps(data, indent=2 if pretty else None)
+
+    # noinspection PyMethodOverriding
+    async def _download(self, *, fallback=False):
+        self._is_downloading = True
+
+        url = self.destination if fallback else self.url
+
+        try:
+            result = await self.playlist.downloader.extract_info(self.playlist.loop, url, download=False)
+            log.info(result)
+        except Exception as e:
+            if not fallback and self.destination:
+                return await self._download(fallback=True)
+
+            raise ExtractionError(e)
+        else:
+            self.filename = result.get('url', url)
+            # I might need some sort of events or hooks or shit
+            # for when ffmpeg inevitebly fucks up and i have to restart
+            # although maybe that should be at a slightly lower level
+        finally:
+            self._is_downloading = False

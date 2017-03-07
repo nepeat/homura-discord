@@ -1,4 +1,5 @@
 # coding=utf-8
+import os
 import datetime
 import logging
 import random
@@ -6,9 +7,11 @@ import traceback
 from collections import deque
 from itertools import islice
 
+from urllib.error import URLError
+from youtube_dl.utils import DownloadError, UnsupportedError
 from homura.lib.eventemitter import EventEmitter
 from homura.plugins.music.exceptions import ExtractionError, WrongEntryTypeError
-from homura.plugins.music.objects import URLPlaylistEntry
+from homura.plugins.music.objects import URLPlaylistEntry, StreamPlaylistEntry
 from homura.util import get_header
 
 log = logging.getLogger(__name__)
@@ -37,7 +40,11 @@ class Playlist(EventEmitter):
         queue = await self.redis.lrange(self.queue_key, 0, -1)
 
         for blob in await queue.aslist():
-            entry = URLPlaylistEntry.from_json(self, blob)
+            if "StreamPlaylistEntry" in blob:
+                entry = StreamPlaylistEntry.from_json(self, blob)
+            else:
+                entry = URLPlaylistEntry.from_json(self, blob)
+
             self._add_entry(entry, saved=True)
 
     def shuffle(self, seed: str=None):
@@ -63,7 +70,7 @@ class Playlist(EventEmitter):
         else:
             self.loop.create_task(self.redis.delete([self.queue_key]))
 
-    async def add_entry(self, song_url, prepend=False, **meta):
+    async def add_entry(self, song_url, prepend=False, stream=False, **meta):
         """
             Validates and adds a song_url to be played. This does not start the download of the song.
             Returns the entry & the position it is in the queue.
@@ -84,6 +91,9 @@ class Playlist(EventEmitter):
         if info.get("_type", None) == "playlist":
             raise WrongEntryTypeError("This is a playlist.", True, info.get("webpage_url", None) or info.get("url", None))
 
+        if info.get('is_live', False) or stream:
+            return await self.add_stream_entry(song_url, info=info, prepend=prepend, **meta)
+
         if info["extractor"] in ["generic", "Dropbox"]:
             try:
                 content_type = await get_header(self.plugin.bot.aiosession, info["url"], "CONTENT-TYPE")
@@ -97,7 +107,9 @@ class Playlist(EventEmitter):
                 if content_type.startswith(("application/", "image/")):
                     if "/ogg" not in content_type:  # How does a server say `application/ogg` what the actual fuck
                         raise ExtractionError("Invalid content type \"%s\" for url %s" % (content_type, song_url))
-
+                elif content_type.startswith('text/html'):
+                    log.warning("Got text/html for content-type, this might be a stream")
+                    pass # TODO: Check for shoutcast/icecast
                 elif not content_type.startswith(("audio/", "video/")):
                     log.warning("Questionable content type \"%s\" for url %s", content_type, song_url)
 
@@ -111,6 +123,62 @@ class Playlist(EventEmitter):
         )
         self._add_entry(entry, prepend=prepend)
         
+        if prepend:
+            position = 1
+        else:
+            position = len(self.entries)
+
+        return entry, position
+
+    async def add_stream_entry(self, song_url, info=None, prepend=False, **meta):
+        if info is None:
+            info = {'title': song_url, 'extractor': None}
+
+            try:
+                info = await self.downloader.extract_info(self.loop, song_url, download=False)
+
+            except DownloadError as e:
+                if e.exc_info[0] == UnsupportedError: # ytdl doesn't like it but its probably a stream
+                    log.debug("Assuming content is a direct stream")
+
+                elif e.exc_info[0] == URLError:
+                    if os.path.exists(os.path.abspath(song_url)):
+                        raise ExtractionError("This is not a stream, this is a file path.")
+
+                    else: # it might be a file path that just doesn't exist
+                        raise ExtractionError("Invalid input: {0.exc_info[0]}: {0.exc_info[1].reason}".format(e))
+
+                else:
+                    # traceback.print_exc()
+                    raise ExtractionError("Unknown error: {}".format(e))
+
+            except Exception as e:
+                log.error('Could not extract information from {} ({}), falling back to direct'.format(song_url, e), exc_info=True)
+
+        dest_url = song_url
+        if "formats" in info:
+            dest_url = info["formats"][0].get("url", dest_url)
+
+        if info.get('extractor', "generic") != "generic":
+            dest_url = info.get('url', dest_url)
+
+
+        if info.get('extractor', None) == 'twitch:stream': # may need to add other twitch types
+            title = info.get('description')
+        else:
+            title = info.get('title', 'Untitled')
+
+        # TODO: A bit more validation, "~stream some_url" should not just say :ok_hand:
+
+        entry = StreamPlaylistEntry(
+            self,
+            song_url,
+            title,
+            destination=dest_url,
+            **meta
+        )
+        self._add_entry(entry, prepend=prepend)
+
         if prepend:
             position = 1
         else:
