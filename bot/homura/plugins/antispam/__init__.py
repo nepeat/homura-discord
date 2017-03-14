@@ -8,6 +8,8 @@ from homura.lib.structure import Message
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command
 from homura.util import validate_regex
+from homura.plugins.antispam import nsfw
+from homura.plugins.antispam.signals import Delete, Warning
 
 log = logging.getLogger(__name__)
 
@@ -22,16 +24,28 @@ class AntispamPlugin(PluginBase):
         usage="antispam"
     )
     async def antispam_status(self, message):
-        result = "Blacklist {blacklist} entries.\nWarnlist {warnlist} entries.".format(
-            blacklist=await self.redis.scard("antispam:{}:blacklist".format(message.server.id)),
-            warnlist=await self.redis.scard("antispam:{}:warnlist".format(message.server.id)),
+        nsfw_on = await self.redis.sismember("antispam:nsfwfilter", message.server.id)
+
+        embed = discord.Embed(
+            colour=discord.Colour.blue(),
+            title="Antispam status"
+        ).add_field(
+            name="Blacklist entries",
+            value=await self.redis.scard("antispam:{}:blacklist".format(message.server.id)),
+        ).add_field(
+            name="Warnlist entries",
+            value=await self.redis.scard("antispam:{}:warnlist".format(message.server.id)),
+        ).add_field(
+            name="NSFW Filter status",
+            value="on" if nsfw_on else "off",
         )
-        return Message(result)
+
+        return Message(embed=embed)
 
     @command(
         "antispam exclude$",
         permission_name="antispam.alter.exclude",
-        description="Gets the status of the NSFW filter.",
+        description="Excludes a channel from antispam.",
         usage="antispam exclude"
     )
     async def exclude_channel(self, message):
@@ -40,6 +54,18 @@ class AntispamPlugin(PluginBase):
         return Message("Channel is {action} antispam!".format(
             action="added to" if excluded else "excluded from"
         ))
+
+    @command(
+        "antispam nsfw (enable|on|disable|off)$",
+        permission_name="antispam.alter.nsfw",
+        description="Toggles the NSFW filter.",
+        usage="antispam nsfw [enable|disable]"
+    )
+    async def toggle_nsfw(self, message, args):
+        action = self.bot.redis.sadd if args[0] in ("enable", "on") else self.bot.redis.srem
+        await action("antispam:nsfwfilter", [message.server.id])
+
+        return Message("Updated!")
 
     @command(
         patterns=[
@@ -132,14 +158,25 @@ class AntispamPlugin(PluginBase):
         if await self.redis.sismember("antispam:{}:excluded".format(message.server.id), message.channel.id):
             return
 
-        if await self.check_list(message, "warnlist"):
-            embed = self.create_antispam_embed(message, "warning")
-            await self.bot.send_message(log_channel, embed=embed)
-        elif await self.check_list(message, "blacklist"):
+        try:
+            if await self.redis.sismember("antispam:nsfwfilter", message.server.id):
+                await nsfw.check(self.bot.aiosession, message)
+
+            await self.check_lists(message)
+        except Delete:
             if not message.author.server_permissions.administrator:
                 await self.bot.delete_message(message)
             embed = self.create_antispam_embed(message, "blacklist")
             await self.bot.send_message(log_channel, embed=embed)
+        except Warning:
+            embed = self.create_antispam_embed(message, "warning")
+            await self.bot.send_message(log_channel, embed=embed)
+
+    async def check_lists(self, message):
+        if await self.check_list(message, "blacklist"):
+            raise Delete()
+        elif await self.check_list(message, "warnlist"):
+            raise Warning()
 
     async def check_list(self, message, list_name):
         items = await self.redis.smembers("antispam:{}:{}".format(message.server.id, list_name))
