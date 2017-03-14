@@ -7,7 +7,7 @@ from sqlalchemy.orm.exc import NoResultFound
 from disquotes.model import Channel, Event, Permission, Server
 from disquotes.model.types import EVENT_TYPES
 from disquotes.model.validators import validate_push
-from disquotes.views.api import events, permissions, settings
+from disquotes.views.api import events, permissions
 
 blueprint = Blueprint("api", __name__)
 api = Api(
@@ -28,4 +28,3 @@ def default_error_handler(error):
 
 api.add_namespace(permissions.ns)
 api.add_namespace(events.ns)
-api.add_namespace(settings.ns)
