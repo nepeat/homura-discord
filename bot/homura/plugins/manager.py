@@ -27,7 +27,7 @@ class PluginManager:
                 log.warning(f"Command {command_name} of {plugin.__name__} does not have a permission")
                 continue
 
-            self.bot.all_permissions.append(permission)
+            self.bot.all_permissions.add(permission)
 
         log.info('{} loaded.'.format(plugin.__name__))
 
