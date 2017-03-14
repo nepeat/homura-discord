@@ -5,11 +5,11 @@ import re
 import discord
 
 from homura.lib.structure import Message
+from homura.plugins.antispam import images, nsfw
+from homura.plugins.antispam.signals import Delete, Warning
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command
 from homura.util import validate_regex
-from homura.plugins.antispam import nsfw, images
-from homura.plugins.antispam.signals import Delete, Warning
 
 log = logging.getLogger(__name__)
 

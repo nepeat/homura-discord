@@ -1,5 +1,6 @@
 # coding=utf-8
 from homura import NepeatBot
+
 bot = NepeatBot()
 
 print("""---

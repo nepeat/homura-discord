@@ -1,8 +1,9 @@
 # coding=utf-8
-import aiohttp
-import os
 import logging
+import os
 import re
+
+import aiohttp
 
 from homura.plugins.antispam.signals import Delete
 

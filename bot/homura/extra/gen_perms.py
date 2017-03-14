@@ -1,5 +1,6 @@
 # coding=utf-8
 import operator
+
 from homura import NepeatBot
 
 bot = NepeatBot()
