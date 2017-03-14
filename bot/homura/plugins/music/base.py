@@ -1,5 +1,6 @@
 # coding=utf-8
 import os
+import asyncio
 
 import discord
 
@@ -16,6 +17,30 @@ class MusicBase(PluginBase):
 
         self.players = {}
         self.downloader = Downloader(self.bot, os.environ.get("AUDIO_CACHE_PATH", "audio_cache"))
+        self.loop.create_task(self.inactive_purger)
+
+    async def inactive_purger(self):
+        checks = {}
+
+        while True:
+            for server_id, player in self.players.items():
+                # Nobody has joined for almost two minutes, bye client!
+                if checks[server_id] == 3:
+                    del checks[server_id]
+                    await self.cleanup_player(player)
+                    continue
+
+                if len(player.voice_client.channel.voice_members) == 1:
+                    # We are the only one in the channel, strike!
+                    if server_id not in checks:
+                        checks[server_id] = 1
+                    else:
+                        checks[server_id] += 1
+                else:
+                    # Reset the counter if there is more people than us.
+                    del checks[server_id]
+
+            await asyncio.sleep(60)
 
     def create_voice_embed(self, description=None, colour=discord.Colour.blue(), title=None):
         if not title:

@@ -297,6 +297,10 @@ class PluginBase(object):
     def redis(self):
         return self.bot.redis
 
+    @property
+    def loop(self):
+        return self.bot.loop
+
     def create_image_embed(self, url, top_text: str=None, bottom_text: str=None, top_url: str=None,):
         embed = discord.Embed(color=discord.Colour.gold())
 

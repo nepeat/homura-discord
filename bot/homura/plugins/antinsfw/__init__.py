@@ -19,7 +19,7 @@ class AntiNSFWPlugin(PluginBase):
         self.nsfw_url = os.environ.get("NSFWAPI_URL", "http://localhost:5001")
 
     @command(
-        "antinsfw",
+        "antinsfw$",
         permission_name="nsfwfilter.status",
         description="Gets the status of the NSFW filter."
     )
@@ -34,7 +34,7 @@ class AntiNSFWPlugin(PluginBase):
     async def toggle_event(self, message, args):
         action = self.bot.redis.sadd if args[0] == "enable" else self.bot.redis.srem
 
-        await action("antinsfw:enabled", message.server.id)
+        await action("antinsfw:enabled", [message.server.id])
 
         return Message("Updated!")
 
