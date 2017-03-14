@@ -217,7 +217,7 @@ def command(
                 await self.bot.send_message_object(response, message.channel, message.author, message)
 
         if usage:
-            command_name = usage
+            command_name = "!" + usage
         else:
             command_name = "!" + func.__name__
 

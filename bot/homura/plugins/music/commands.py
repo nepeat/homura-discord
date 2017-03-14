@@ -26,7 +26,8 @@ class MusicCommands(MusicBase):
         "music$",
         permission_name="music.info",
         global_command=True,
-        description="Music status"
+        description="Music status",
+        usage="music"
     )
     async def music(self, message, args):
         player = await self.get_player(message.server, message.author)
@@ -93,7 +94,8 @@ class MusicCommands(MusicBase):
         "music (play|queue|prepend|stream) (.+)",
         permission_name="music.queue",
         global_command=True,
-        description="Queues a URL for playback."
+        description="Queues a URL for playback.",
+        usage="music [play|prepend|queue]"
     )
     async def play(self, message, args):
         player = await self.get_player(message.server, message.author)
@@ -207,7 +209,8 @@ class MusicCommands(MusicBase):
             "music shuffle (.+)"
         ],
         permission_name="music.shuffle",
-        description="Shuffles the music queue."
+        description="Shuffles the music queue.",
+        usage="music shuffle"
     )
     async def shuffle(self, message, args):
         player = await self.get_player(message.server, message.author)
@@ -228,7 +231,8 @@ class MusicCommands(MusicBase):
             "music seek (.+)"
         ],
         permission_name="music.seek",
-        description="Seeks the current song."
+        description="Seeks the current song.",
+        usage="music seek 4:20"
     )
     async def seek(self, message, args):
         player = await self.get_player(message.server, message.author)
@@ -274,11 +278,12 @@ class MusicCommands(MusicBase):
 
     @command(
         patterns=[
-            "music skip",
+            "music skip$",
         ],
         permission_name="music.skip",
         global_command=True,
-        description="Skips the current playing song."
+        description="Skips the current playing song.",
+        usage="music skip"
     )
     async def skip(self, message, args):
         player = await self.get_player(message.server, message.author)
@@ -331,7 +336,8 @@ class MusicCommands(MusicBase):
     @command(
         "music summon$",
         permission_name="music.summon",
-        description="Summons the bot to a channel"
+        description="Summons the bot to a channel",
+        usage="music summon"
     )
     async def summon(self, author):
         if not author.voice_channel:
@@ -354,7 +360,8 @@ class MusicCommands(MusicBase):
     @command(
         "music clear$",
         permission_name="music.clear",
-        description="Clears the music queue"
+        description="Clears the music queue",
+        usage="music clear"
     )
     async def clear(self, message):
         player = await self.get_player(message.server, message.author)
@@ -370,7 +377,8 @@ class MusicCommands(MusicBase):
             "music volume (.+)"
         ],
         permission_name="music.volume",
-        description="Sets the bot volume"
+        description="Sets the bot volume",
+        usage="music volume"
     )
     async def volume(self, message, args):
         player = await self.get_player(message.server, message.author)
@@ -449,7 +457,8 @@ class MusicCommands(MusicBase):
     @command(
         "music (disconnect|leave)$",
         permission_name="music.leave",
-        description="Makes the bot disconnect"
+        description="Makes the bot disconnect",
+        usage="music leave"
     )
     async def leave(self, message, args):
         if not message.server.voice_client:
@@ -465,8 +474,9 @@ class MusicCommands(MusicBase):
             "music surprise$",
             "music surprise (prepend)"
         ],
-        permission_name="music.play.surprise",
-        description="Plays a random song from all the songs"
+        permission_name="music.queue.surprise",
+        description="Plays a random song from all the songs",
+        usage="music surprise"
     )
     async def surprise(self, message, args):
         if args:

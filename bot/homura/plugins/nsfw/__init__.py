@@ -20,7 +20,8 @@ class NSFWPlugin(PluginBase):
     @command(
         "nsfw (.+)",
         permission_name="nsfw.rule34",
-        description="The internet is for porn!"
+        description="The internet is for porn!",
+        usage="nsfw <query>"
     )
     async def rule34(self, channel, args):
         image = await self.get_randombooru(args[0].strip())

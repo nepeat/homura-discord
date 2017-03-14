@@ -23,7 +23,8 @@ class AntiNSFWPlugin(PluginBase):
     @command(
         "antinsfw$",
         permission_name="nsfwfilter.status",
-        description="Gets the status of the NSFW filter."
+        description="Gets the status of the NSFW filter.",
+        usage="antinsfw"
     )
     async def antinsfw_status(self):
         return Message("implement me lol")

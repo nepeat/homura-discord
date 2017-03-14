@@ -23,7 +23,8 @@ class ServerLogPlugin(PluginBase):
         "undelete",
         permission_name="serverlog.undelete",
         description="Undeletes messages in a channel.",
-        requires_admin=True
+        requires_admin=True,
+        usage="undelete"
     )
     async def cmd_undelete(self, message, bot):
         messages = await self.get_events("delete", message.server, message.channel)

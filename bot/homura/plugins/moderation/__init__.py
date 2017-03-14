@@ -15,7 +15,8 @@ class ModerationPlugin(PluginBase):
     @command(
         "purgeuser",
         permission_name="mod.purge.user",
-        description="Purges a user's messages from all channels."
+        description="Purges a user's messages from all channels.",
+        usage="purgeuser <@mentions>"
     )
     async def cmd_purge(self, message):
         mentions = [x.id for x in message.mentions]
@@ -55,7 +56,8 @@ class ModerationPlugin(PluginBase):
             "purgechan"
         ],
         permission_name="mod.purge.channel",
-        description="Purges a channel up to 1000 messages (100 default)."
+        description="Purges a channel up to 1000 messages (100 purged by default).",
+        usage="purgechan <optional:200>"
     )
     async def cmd_purge_chan(self, message, args):
         try:
@@ -79,7 +81,8 @@ class ModerationPlugin(PluginBase):
     @command(
         "remove (\d+)",
         permission_name="mod.remove",
-        description="Removes a message by message ID."
+        description="Removes a message by message ID.",
+        usage="remove <message id>"
     )
     async def cmd_remove(self, message, args):
         message = await self.bot.get_message(message.channel, args[0])

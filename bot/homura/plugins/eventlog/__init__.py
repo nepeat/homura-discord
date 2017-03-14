@@ -18,7 +18,8 @@ class EventLogPlugin(PluginBase):
     @command(
         "eventlog",
         permission_name="eventlog.status",
-        description="Shows what events are being logged."
+        description="Shows what events are being logged.",
+        usage="eventlog"
     )
     async def eventlog(self, message):
         enabled = await self.bot.redis.smembers("channellog:{}:enabled".format(message.server.id))
@@ -32,7 +33,8 @@ class EventLogPlugin(PluginBase):
     @command(
         "eventlog (enable|disable) (.+)",
         permission_name="eventlog.toggle",
-        description="Toggles what events to log."
+        description="Toggles what events to log.",
+        usage="eventlog [enable|disable]"
     )
     async def toggle_event(self, message, args):
         enabled = await self.bot.redis.smembers("channellog:{}:enabled".format(message.server.id))

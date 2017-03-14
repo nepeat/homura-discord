@@ -18,7 +18,8 @@ class AntispamPlugin(PluginBase):
     @command(
         "antispam$",
         permission_name="antispam.status",
-        description="Lists the count of blackliist/warning entries."
+        description="Lists the count of blackliist/warning entries.",
+        usage="antispam"
     )
     async def antispam_status(self, message):
         result = "Blacklist {blacklist} entries.\nWarnlist {warnlist} entries.".format(
@@ -28,9 +29,10 @@ class AntispamPlugin(PluginBase):
         return Message(result)
 
     @command(
-        "antispam exclude",
+        "antispam exclude$",
         permission_name="antispam.alter.exclude",
-        description="Gets the status of the NSFW filter."
+        description="Gets the status of the NSFW filter.",
+        usage="antispam exclude"
     )
     async def exclude_channel(self, message):
         excluded = await self.redis.sismember("antispam:{}:excluded".format(message.server.id), message.channel.id)
@@ -45,7 +47,8 @@ class AntispamPlugin(PluginBase):
             r"antispam (?P<list>blacklist|warnlist) (?P<action>add|remove) (?P<filter>.+)"
         ],
         permission_name="antispam.alter.lists",
-        description="Adds and removes regexes from the antispam filter."
+        description="Adds and removes regexes from the antispam filter.",
+        usage="antispam [blacklist|warnlist] [add|remove] [filter]"
     )
     async def alter_list(self, message, match):
         action = True if match.group("action") == "add" else False
@@ -66,7 +69,8 @@ class AntispamPlugin(PluginBase):
             r"antispam (blacklist|warnlist|warnings|warns) list"
         ],
         permission_name="antispam.status",
-        description="Lists entries in the blacklist/warnlist."
+        description="Lists entries in the blacklist/warnlist.",
+        usage="antispam [blacklist|warnlist] list"
     )
     async def list_list(self, message, args):
         list_name = ""

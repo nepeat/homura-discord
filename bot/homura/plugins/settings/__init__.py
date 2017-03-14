@@ -13,7 +13,8 @@ class SettingsPlugin(PluginBase):
     @command(
         "settings get logchannel$",
         permission_name="settings.get.logchannel",
-        description="Gets the moderation logging channel."
+        description="Gets the moderation logging channel.",
+        usage="settings get logchannel"
     )
     async def get_log_channel(self, message):
         log_channel = await self.redis.hget(f"{message.server.id}:settings", "log_channel")
@@ -25,7 +26,8 @@ class SettingsPlugin(PluginBase):
     @command(
         "settings set logchannel$",
         permission_name="settings.set.logchannel",
-        description="Sets the moderation logging channel."
+        description="Sets the moderation logging channel.",
+        usage="settings set logchannel"
     )
     async def set_log_channel(self, message):
         await self.redis.hset(f"{message.server.id}:settings", "log_channel", message.channel.id)
