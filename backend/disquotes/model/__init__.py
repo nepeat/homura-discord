@@ -3,10 +3,11 @@ import datetime
 import os
 
 from sqlalchemy import BigInteger, Column, DateTime, ForeignKey, Integer, String, Unicode, create_engine
-from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.dialects.postgresql import JSONB, HSTORE
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, scoped_session, sessionmaker, validates
 from sqlalchemy.schema import Index
+from sqlalchemy.ext.mutable import MutableDict
 
 from disquotes.model.types import EVENT_TYPES
 
@@ -37,7 +38,6 @@ class Server(Base):
     server_id = Column(BigInteger, nullable=False)
 
     name = Column(Unicode(100))
-
     meta = Column(JSONB)
 
 
@@ -80,6 +80,13 @@ class Permission(Base):
     server_id = Column(ForeignKey("servers.id"), nullable=False)
     channel_id = Column(ForeignKey("channels.id"))
     permission = Column(String, nullable=False)
+
+
+class Setting(Base):
+    __tablename__ = "settings"
+    id = Column(Integer, primary_key=True)
+    server_id = Column(ForeignKey("servers.id"), nullable=False)
+    store = Column(MutableDict.as_mutable(HSTORE))
 
 
 Index("permission_server", Permission.server_id)
