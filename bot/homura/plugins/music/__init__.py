@@ -1,7 +1,7 @@
 # coding=utf-8
 import logging
 
-from homura.plugins.common import Message
+from homura.lib.structure import Message
 from homura.plugins.music.commands import MusicCommands
 
 log = logging.getLogger(__name__)

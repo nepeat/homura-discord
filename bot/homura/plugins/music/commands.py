@@ -9,8 +9,8 @@ from datetime import timedelta
 import discord
 import pytimeparse
 
-from homura.lib.signals import CommandError
-from homura.plugins.common import Message, command
+from homura.lib.structure import CommandError, Message
+from homura.plugins.command import command
 from homura.plugins.music.base import MusicBase
 from homura.util import sane_round_int, sanitize
 

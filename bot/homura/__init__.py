@@ -14,7 +14,7 @@ import discord
 import raven
 
 from homura.lib.stats import CustomInfluxDBClient
-from homura.plugins.common import Message
+from homura.lib.structure import Message
 from homura.plugins.manager import PluginManager
 from homura.util import Dummy
 

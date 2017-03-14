@@ -7,7 +7,7 @@ from typing import List, Optional
 import aiohttp
 import discord
 
-from homura.lib.signals import BackendError
+from homura.lib.structure import BackendError
 
 log = logging.getLogger(__name__)
 

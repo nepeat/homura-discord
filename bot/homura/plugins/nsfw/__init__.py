@@ -2,7 +2,9 @@
 import logging
 import random
 
-from homura.plugins.common import Message, PluginBase, command
+from homura.lib.structure import Message
+from homura.plugins.base import PluginBase
+from homura.plugins.command import command
 from homura.plugins.nsfw.common import API_ENDPOINTS, USER_AGENT
 from homura.plugins.nsfw.fetcher import ImageFetcher
 from homura.util import sanitize

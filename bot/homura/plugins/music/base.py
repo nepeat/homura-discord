@@ -4,8 +4,8 @@ import os
 
 import discord
 
-from homura.lib.signals import CommandError
-from homura.plugins.common import PluginBase
+from homura.lib.structure import CommandError
+from homura.plugins.base import PluginBase
 from homura.plugins.music.downloader import Downloader
 from homura.plugins.music.player import Player
 from homura.plugins.music.playlist import Playlist
