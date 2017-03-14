@@ -3,6 +3,7 @@ import asyncio
 import logging
 import time
 import traceback
+import random
 from datetime import timedelta
 
 import discord
@@ -458,6 +459,23 @@ class MusicCommands(MusicBase):
         await self.cleanup_player(player)
 
         return Message(embed=self.create_voice_embed("Bot has left the server!"))
+
+    @command(
+        patterns=[
+            "music surprise$",
+            "music surprise (prepend)"
+        ],
+        permission_name="music.play.surprise",
+        description="Plays a random song from all the songs"
+    )
+    async def surprise(self, message, args):
+        if args:
+            prepend = args[0].lower() == "prepend"
+        else:
+            prepend = False
+
+        song_url = random.choice(list(self.bot.stats.query('select sample("value", 15), url from music_play').get_points()))["url"]
+        return await self.play._func(self, message, ["prepend" if prepend else "play", song_url])
 
     async def play_playlist_async(self, player, channel, author, playlist_url, extractor_type):
         info = await self.downloader.extract_info(player.playlist.loop, playlist_url, download=False, process=False)
