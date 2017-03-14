@@ -32,3 +32,15 @@ class SettingsPlugin(PluginBase):
     async def set_log_channel(self, message):
         await self.redis.hset(f"{message.server.id}:settings", "log_channel", message.channel.id)
         return Message("Updated!")
+
+    @command(
+        "settings nsfwfilter (enable|on|disable|off)$",
+        permission_name="settings.set.nsfwfilter",
+        description="Toggles the NSFW filter.",
+        usage="settings nsfwfilter [enable|disable]"
+    )
+    async def toggle_nsfw(self, message, args):
+        action = self.bot.redis.sadd if args[0] in ("enable", "on") else self.bot.redis.srem
+        await action("antispam:nsfwfilter", [message.server.id])
+
+        return Message("Updated!")

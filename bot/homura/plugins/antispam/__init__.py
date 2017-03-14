@@ -56,18 +56,6 @@ class AntispamPlugin(PluginBase):
         ))
 
     @command(
-        "antispam nsfw (enable|on|disable|off)$",
-        permission_name="antispam.alter.nsfw",
-        description="Toggles the NSFW filter.",
-        usage="antispam nsfw [enable|disable]"
-    )
-    async def toggle_nsfw(self, message, args):
-        action = self.bot.redis.sadd if args[0] in ("enable", "on") else self.bot.redis.srem
-        await action("antispam:nsfwfilter", [message.server.id])
-
-        return Message("Updated!")
-
-    @command(
         patterns=[
             r"antispam (?P<action>add|remove) (?P<list>blacklist|warnlist) (?P<filter>.+)",
             r"antispam (?P<list>blacklist|warnlist) (?P<action>add|remove) (?P<filter>.+)"
