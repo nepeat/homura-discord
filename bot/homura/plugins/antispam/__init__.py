@@ -117,9 +117,14 @@ class AntispamPlugin(PluginBase):
             icon = "x_circle"
             colour = discord.Colour.red()
 
+        if event_type == "nsfw":
+            title = "That is NSF[W/L], do not click"
+        else:
+            title = f"{event_type.capitalize()} phrase"
+
         return discord.Embed(
             colour=colour,
-            title=f"{event_type.capitalize()} phrase"
+            title=title
         ).set_thumbnail(
             url=f"https://nepeat.github.io/assets/icons/{icon}.png"
         ).add_field(
@@ -151,10 +156,10 @@ class AntispamPlugin(PluginBase):
                 await nsfw.check(self.bot.aiosession, message)
 
             await self.check_lists(message)
-        except Delete:
+        except Delete as e:
             if not message.author.server_permissions.administrator:
                 await self.bot.delete_message(message)
-            embed = self.create_antispam_embed(message, "blacklist")
+            embed = self.create_antispam_embed(message, str(e))
             await self.bot.send_message(log_channel, embed=embed)
         except Warning:
             embed = self.create_antispam_embed(message, "warning")
@@ -162,9 +167,9 @@ class AntispamPlugin(PluginBase):
 
     async def check_lists(self, message):
         if await self.check_list(message, "blacklist"):
-            raise Delete()
+            raise Delete("blacklist")
         elif await self.check_list(message, "warnlist"):
-            raise Warning()
+            raise Warning("warning")
 
     async def check_list(self, message, list_name):
         items = await self.redis.smembers("antispam:{}:{}".format(message.server.id, list_name))

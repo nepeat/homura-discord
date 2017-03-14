@@ -21,14 +21,14 @@ async def check(session, message):
 
         response = await test_image(session, embed["thumbnail"]["proxy_url"])
         if response.get("nsfw", False):
-            raise Delete()
+            raise Delete("nsfw")
 
     urls = url_regex.search(message.content)
     if urls:
         for url in urls.groups():
             response = await test_image(session, url)
             if response.get("nsfw", False):
-                raise Delete
+                raise Delete("nsfw")
 
 async def test_image(session, image_url, **kwargs) -> dict:
     params = {
