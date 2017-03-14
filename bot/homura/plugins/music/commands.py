@@ -1,9 +1,9 @@
 # coding=utf-8
 import asyncio
 import logging
+import random
 import time
 import traceback
-import random
 from datetime import timedelta
 
 import discord
@@ -12,7 +12,7 @@ import pytimeparse
 from homura.lib.signals import CommandError
 from homura.plugins.common import Message, command
 from homura.plugins.music.base import MusicBase
-from homura.util import sanitize, sane_round_int
+from homura.util import sane_round_int, sanitize
 
 DISCORD_FIELD_CHAR_LIMIT = 1000
 MIN_SKIPS = 4

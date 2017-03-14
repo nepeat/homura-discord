@@ -1,6 +1,6 @@
 # coding=utf-8
-import os
 import asyncio
+import os
 
 import discord
 

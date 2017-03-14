@@ -17,7 +17,7 @@ event_model = ns.model("Event", {
 })
 
 events_model = ns.model("Events", {
-    "events": fields.Nested(event_model)
+    "events": fields.List(fields.Nested(event_model))
 })
 
 

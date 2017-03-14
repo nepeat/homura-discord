@@ -1,17 +1,18 @@
 # coding=utf-8
-import os
 import datetime
 import logging
+import os
 import random
 import traceback
 from collections import deque
 from itertools import islice
-
 from urllib.error import URLError
+
 from youtube_dl.utils import DownloadError, UnsupportedError
+
 from homura.lib.eventemitter import EventEmitter
 from homura.plugins.music.exceptions import ExtractionError, WrongEntryTypeError
-from homura.plugins.music.objects import URLPlaylistEntry, StreamPlaylistEntry
+from homura.plugins.music.objects import StreamPlaylistEntry, URLPlaylistEntry
 from homura.util import get_header
 
 log = logging.getLogger(__name__)

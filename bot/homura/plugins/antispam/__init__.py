@@ -26,15 +26,6 @@ class AntispamPlugin(PluginBase):
         return Message(result)
 
     @command(
-        "antispam setlog",
-        permission_name="antispam.alter.logging",
-        description="Sets the logging channel for warnings and blacklist hits."
-    )
-    async def set_log(self, message):
-        await self.redis.hset("antispam:{}:config".format(message.server.id), "log_channel", message.channel.id)
-        return Message("Log channel set!")
-
-    @command(
         "antispam exclude",
         permission_name="antispam.alter.exclude",
         description="Gets the status of the NSFW filter."
@@ -128,11 +119,7 @@ class AntispamPlugin(PluginBase):
         if not message.server:
             return
 
-        log_channel_id = await self.redis.hget("antispam:{}:config".format(message.server.id), "log_channel")
-        if not log_channel_id:
-            return
-
-        log_channel = self.bot.get_channel(log_channel_id)
+        log_channel = self.bot.get_channel(await self.bot.redis.hget(f"{message.server.id}:settings", "log_channel"))
         if not log_channel:
             return
 

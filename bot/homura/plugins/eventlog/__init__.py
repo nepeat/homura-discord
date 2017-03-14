@@ -14,15 +14,6 @@ class EventLogPlugin(PluginBase):
     EVENTS = ["join", "leave", "server_rename", "member_rename", "message_edit", "message_delete"]
 
     @command(
-        "eventlog setchannel",
-        permission_name="eventlog.setchannel",
-        description="Sets the event log channel."
-    )
-    async def set_log(self, message):
-        await self.redis.set("channellog:{}:channel".format(message.server.id), message.channel.id)
-        return Message("Event log channel set!")
-
-    @command(
         "eventlog",
         permission_name="eventlog.status",
         description="Shows what events are being logged."
@@ -165,11 +156,7 @@ class EventLogPlugin(PluginBase):
         await self.log(embed, message.server, "message_delete")
 
     async def log(self, message, server, event_type):
-        log_channel_id = await self.redis.get("channellog:{}:channel".format(server.id))
-        if not log_channel_id:
-            return
-
-        log_channel = self.bot.get_channel(log_channel_id)
+        log_channel = self.bot.get_channel(await self.bot.redis.hget(f"{server.id}:settings", "log_channel"))
         if not log_channel:
             return
 

@@ -1,7 +1,7 @@
 # coding=utf-8
+import decimal
 import hashlib
 import re
-import decimal
 
 import aiohttp
 
