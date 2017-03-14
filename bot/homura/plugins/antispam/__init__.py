@@ -8,7 +8,7 @@ from homura.lib.structure import Message
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command
 from homura.util import validate_regex
-from homura.plugins.antispam import nsfw
+from homura.plugins.antispam import nsfw, images
 from homura.plugins.antispam.signals import Delete, Warning
 
 log = logging.getLogger(__name__)
@@ -155,10 +155,18 @@ class AntispamPlugin(PluginBase):
             if await self.redis.sismember("antispam:nsfwfilter", message.server.id):
                 await nsfw.check(self.bot.aiosession, message)
 
+            if await self.redis.sismember("antispam:imagechannels", message.channel.id):
+                await images.check(self.bot.aiosession, message)
+
             await self.check_lists(message)
         except Delete as e:
             if not message.author.server_permissions.administrator:
                 await self.bot.delete_message(message)
+
+            # Do not log quiet deletes
+            if str(e) == "quiet":
+                return
+
             embed = self.create_antispam_embed(message, str(e))
             await self.bot.send_message(log_channel, embed=embed)
         except Warning:

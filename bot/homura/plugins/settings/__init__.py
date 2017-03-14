@@ -44,3 +44,15 @@ class SettingsPlugin(PluginBase):
         await action("antispam:nsfwfilter", [message.server.id])
 
         return Message("Updated!")
+
+    @command(
+        "settings imagechannel (enable|on|disable|off)$",
+        permission_name="settings.set.imagechannel",
+        description="Toggles the image only mode.",
+        usage="settings imagechannel [enable|disable]"
+    )
+    async def toggle_imagechannel(self, message, args):
+        action = self.bot.redis.sadd if args[0] in ("enable", "on") else self.bot.redis.srem
+        await action("antispam:imagechannels", [message.channel.id])
+
+        return Message("Updated!")
