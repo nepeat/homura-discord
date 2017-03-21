@@ -3,7 +3,7 @@ import logging
 import random
 import xml.etree.ElementTree
 
-from homura.plugins.nsfw.common import USER_AGENT
+from homura.plugins.nsfw.common import API_ENDPOINTS, USER_AGENT
 
 log = logging.getLogger(__name__)
 
@@ -96,3 +96,20 @@ class ImageFetcher(object):
         image = self.safe_shuffle(images)
 
         return self.dict_return(site, image)
+
+    async def random(self, tags: str):
+        image = None
+
+        sites = API_ENDPOINTS.copy()
+        while sites:
+            site = random.choice(sites)
+            sites.remove(site)
+            if site["type"] == "gelbooru":
+                image = await self.gelbooru(site, tags)
+            elif site["type"] == "danbooru":
+                image = await self.danbooru(site, tags)
+
+            if isinstance(image, dict):
+                return image
+
+        return None

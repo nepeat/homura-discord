@@ -1,11 +1,9 @@
 # coding=utf-8
 import logging
-import random
 
 from homura.lib.structure import Message
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command
-from homura.plugins.nsfw.common import API_ENDPOINTS, USER_AGENT
 from homura.plugins.nsfw.fetcher import ImageFetcher
 from homura.util import sanitize
 
@@ -24,7 +22,7 @@ class NSFWPlugin(PluginBase):
         usage="nsfw <query>"
     )
     async def rule34(self, channel, args):
-        image = await self.get_randombooru(args[0].strip())
+        image = await self.fetcher.random(args[0].strip())
         if not image:
             return Message(
                 f"No posts tagged `{sanitize(args[0])}` were found.",
@@ -37,20 +35,3 @@ class NSFWPlugin(PluginBase):
             url=image["url"],
             bottom_text=f"Tagged {image['tags'].strip().replace(' ', ', ')}"
         ))
-
-    async def get_randombooru(self, tags: str):
-        image = None
-
-        sites = API_ENDPOINTS.copy()
-        while sites:
-            site = random.choice(sites)
-            sites.remove(site)
-            if site["type"] == "gelbooru":
-                image = await self.fetcher.gelbooru(site, tags)
-            elif site["type"] == "danbooru":
-                image = await self.fetcher.danbooru(site, tags)
-
-            if isinstance(image, dict):
-                return image
-
-        return None
