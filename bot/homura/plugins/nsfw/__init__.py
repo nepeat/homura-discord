@@ -40,15 +40,14 @@ class NSFWPlugin(PluginBase):
 
     async def get_randombooru(self, tags: str):
         image = None
-        backend = random.choice(list(API_ENDPOINTS.keys()))
 
-        sites = list(API_ENDPOINTS[backend])
+        sites = API_ENDPOINTS.copy()
         while sites:
             site = random.choice(sites)
             sites.remove(site)
-            if backend == "gelbooru":
+            if site["type"] == "gelbooru":
                 image = await self.fetcher.gelbooru(site, tags)
-            elif backend == "danbooru":
+            elif site["type"] == "danbooru":
                 image = await self.fetcher.danbooru(site, tags)
 
             if isinstance(image, dict):
