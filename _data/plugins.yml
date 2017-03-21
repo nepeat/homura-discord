@@ -1,0 +1,118 @@
+Antispam:
+    commands:
+    -   description: Lists the count of blackliist/warning entries.
+        name: '!antispam'
+        permission: antispam.status
+    -   description: Adds and removes regexes from the antispam filter.
+        name: '!antispam [blacklist\|warnlist] [add\|remove] [filter]'
+        permission: antispam.alter.lists
+    -   description: Lists entries in the blacklist/warnlist.
+        name: '!antispam [blacklist\|warnlist] list'
+        permission: antispam.status
+    -   description: Excludes a channel from antispam.
+        name: '!antispam exclude'
+        permission: antispam.alter.exclude
+EventLog:
+    commands:
+    -   description: Shows what events are being logged.
+        name: '!eventlog'
+        permission: eventlog.status
+    -   description: Toggles what events to log.
+        name: '!eventlog [enable\|disable]'
+        permission: eventlog.toggle
+Fun:
+    commands:
+    -   description: Cat?
+        name: '!cat'
+        permission: fun.cat
+    -   description: 'TODO: REMOVE THIS COMMAND LOL'
+        name: '!egg'
+        permission: fun.egg
+    -   description: Who farted?
+        name: '!fart'
+        permission: fun.fart
+Moderation:
+    commands:
+    -   description: Purges a channel up to 1000 messages (100 purged by default).
+        name: '!purgechan <optional:200>'
+        permission: mod.purge.channel
+    -   description: Purges a user's messages from all channels.
+        name: '!purgeuser <@mentions>'
+        permission: mod.purge.user
+    -   description: Removes a message by message ID.
+        name: '!remove <message id>'
+        permission: mod.remove
+Music:
+    commands:
+    -   description: Music status
+        name: '!music'
+        permission: music.info
+    -   description: Queues a URL for playback.
+        name: '!music [play\|prepend\|queue]'
+        permission: music.queue
+    -   description: Clears the music queue
+        name: '!music clear'
+        permission: music.clear
+    -   description: Makes the bot disconnect
+        name: '!music leave'
+        permission: music.leave
+    -   description: Seeks the current song.
+        name: '!music seek 4:20'
+        permission: music.seek
+    -   description: Shuffles the music queue.
+        name: '!music shuffle'
+        permission: music.shuffle
+    -   description: Skips the current playing song.
+        name: '!music skip'
+        permission: music.skip
+    -   description: Summons the bot to a channel
+        name: '!music summon'
+        permission: music.summon
+    -   description: Plays a random song from all the songs
+        name: '!music surprise'
+        permission: music.queue.surprise
+    -   description: Sets the bot volume
+        name: '!music volume'
+        permission: music.volume
+NSFW:
+    commands:
+    -   description: The internet is for porn!
+        name: '!nsfw <query>'
+        permission: nsfw.rule34
+Permissions:
+    commands:
+    -   description: Adds permissions to a channel.
+        name: '!permission channel add <permission>'
+        permission: permissions.add.channel
+    -   description: Removes permissions from a channel.
+        name: '!permission channel remove <permission>'
+        permission: permissions.remove.channel
+    -   description: Lists active permissions for a server or channel.
+        name: '!permission list [server\|channel]'
+        permission: permissions.list
+    -   description: Adds permissions to a server.
+        name: '!permission server add <permission>'
+        permission: permissions.add.server
+    -   description: Removes permissions from a server.
+        name: '!permission server remove <permission>'
+        permission: permissions.remove.server
+ServerLog:
+    commands:
+    -   description: Undeletes messages in a channel.
+        name: '!undelete'
+        permission: serverlog.undelete
+Settings:
+    commands:
+    -   description: Gets the moderation logging channel.
+        name: '!settings get logchannel'
+        permission: settings.get.logchannel
+    -   description: Toggles the image only mode.
+        name: '!settings imagechannel [enable\|disable]'
+        permission: settings.set.imagechannel
+    -   description: Toggles the NSFW filter.
+        name: '!settings nsfwfilter [enable\|disable]'
+        permission: settings.set.nsfwfilter
+    -   description: Sets the moderation logging channel.
+        name: '!settings set logchannel'
+        permission: settings.set.logchannel
+
