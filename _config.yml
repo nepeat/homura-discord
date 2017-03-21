@@ -25,8 +25,6 @@ twitter_username: jekyllrb
 github_username:  jekyll
 
 # Build settings
-markdown: kramdown
-theme: jekyll-whiteglass
 
 gems:
   - jekyll-archives
@@ -43,3 +41,6 @@ jekyll-archives:
   layout: category_archives
   permalinks:
     category: /categories/:name/
+
+markdown: kramdown
+theme: jekyll-whiteglass
