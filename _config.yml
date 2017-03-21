@@ -30,6 +30,7 @@ theme: jekyll-whiteglass
 
 gems:
   - jekyll-archives
+  - jekyll-whiteglass
 
 collections:
   help:
