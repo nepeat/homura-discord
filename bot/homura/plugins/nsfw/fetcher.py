@@ -97,7 +97,7 @@ class ImageFetcher(object):
 
         return self.dict_return(site, image)
 
-    async def random(self, tags: str):
+    async def random(self, tags: str, nsfw: bool=True):
         image = None
 
         sites = API_ENDPOINTS.copy()
@@ -105,9 +105,9 @@ class ImageFetcher(object):
             site = random.choice(sites)
             sites.remove(site)
             if site["type"] == "gelbooru":
-                image = await self.gelbooru(site, tags)
+                image = await self.gelbooru(site, tags, nsfw)
             elif site["type"] == "danbooru":
-                image = await self.danbooru(site, tags)
+                image = await self.danbooru(site, tags, nsfw)
 
             if isinstance(image, dict):
                 return image
