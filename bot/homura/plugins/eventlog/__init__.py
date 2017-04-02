@@ -174,9 +174,12 @@ class EventLogPlugin(PluginBase):
     async def log_member(self, member, joining):
         embed = discord.Embed(
             colour=discord.Colour.green() if joining else discord.Colour.red(),
-        ).set_author(
-            name=f"{member.display_name} has {'joined' if joining else 'left'}",
-            icon_url=f"https://nepeat.github.io/assets/icons/{'check' if joining else 'x_circle'}.png"
+            title=f"{member.display_name} has {'joined' if joining else 'left'}"
+        ).set_thumbnail(
+            url=f"https://nepeat.github.io/assets/icons/{'check' if joining else 'x_circle'}.png"
+        ).add_field(
+            name="Mention",
+            value=member.mention
         )
 
         await self.log(embed, member.server, "join" if joining else "leave")
