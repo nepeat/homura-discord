@@ -100,6 +100,9 @@ class EventLogPlugin(PluginBase):
         if before.content == after.content:
             return
 
+        if before.author.bot:
+            return
+
         embed = discord.Embed(
             colour=discord.Colour.blue(),
             title=f"Message has been edited"
@@ -136,6 +139,11 @@ class EventLogPlugin(PluginBase):
         # Check: There must be a message text.
 
         if not message.clean_content:
+            return
+
+        # Check: This is not a bot user.
+
+        if message.author.bot:
             return
 
         embed = discord.Embed(
