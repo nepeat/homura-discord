@@ -1,22 +1,22 @@
 # coding=utf-8
-import asyncio
 import logging
 import os
 import random
 import signal
 import time
 import traceback
-from typing import Optional
 
-import aiohttp
-import asyncio_redis
-import discord
 import raven
 
+import aiohttp
+import asyncio
+import asyncio_redis
+import discord
 from homura.lib.stats import CustomInfluxDBClient
 from homura.lib.structure import Message
 from homura.plugins.manager import PluginManager
 from homura.util import Dummy
+from typing import Optional
 
 OPUS_LIBS = ['opus', 'libopus.so.0']
 

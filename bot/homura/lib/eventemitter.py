@@ -1,7 +1,8 @@
 # coding=utf-8
-import asyncio
 import collections
 import traceback
+
+import asyncio
 
 
 class EventEmitter:

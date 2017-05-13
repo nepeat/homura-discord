@@ -4,7 +4,6 @@ import logging
 import xml.etree.ElementTree
 
 import discord
-
 from homura.lib.structure import Message
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command

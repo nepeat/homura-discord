@@ -4,7 +4,6 @@ import os
 import re
 
 import aiohttp
-
 from homura.plugins.antispam.signals import Delete
 
 log = logging.getLogger(__name__)

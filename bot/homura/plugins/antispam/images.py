@@ -1,7 +1,6 @@
 import re
 
 import aiohttp
-
 from homura.plugins.antispam.signals import Delete
 
 url_regex = re.compile(r"(https?://\S+)")

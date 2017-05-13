@@ -3,7 +3,6 @@ import logging
 import re
 
 import discord
-
 from homura.lib.structure import Message
 from homura.plugins.antispam import images, nsfw
 from homura.plugins.antispam.signals import Delete, Warning

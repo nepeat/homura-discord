@@ -1,7 +1,8 @@
 # coding=utf-8
 import logging
 import math
-from discord import Embed, Colour
+
+from discord import Colour, Embed
 from homura.lib.structure import Message
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command

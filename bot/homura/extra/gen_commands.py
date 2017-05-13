@@ -1,11 +1,11 @@
 # coding=utf-8
-import sys
-import os
-import json
 import io
-import yaml
+import json
 import operator
+import os
+import sys
 
+import yaml
 from homura import NepeatBot
 
 # Argument parsing
