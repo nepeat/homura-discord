@@ -80,6 +80,17 @@ class PluginBase(object):
 
         return embed
 
+    def get_role(self, server, role_idx):
+        role_idx = str(role_idx)
+
+        return discord.utils.find(
+            lambda role: (
+                role.name.strip().lower() == role_idx.strip().lower() or
+                role.id == role_idx
+            ),
+            server.roles
+        )
+
     # Events
 
     async def on_ready(self):

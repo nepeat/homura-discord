@@ -9,3 +9,5 @@ from homura.plugins.owner import OwnerPlugin
 from homura.plugins.permissions import PermissionsPlugin
 from homura.plugins.serverlog import ServerLogPlugin
 from homura.plugins.settings import SettingsPlugin
+from homura.plugins.osu import OsuPlugin
+from homura.plugins.roles import RolesPlugin
