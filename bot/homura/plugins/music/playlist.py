@@ -97,7 +97,7 @@ class Playlist(EventEmitter):
         if info["extractor"] in ["generic", "Dropbox"]:
             try:
                 content_type = await get_header(self.plugin.bot.aiosession, info["url"], "CONTENT-TYPE")
-                log.warning("Got content type", content_type)
+                log.warning("Got content type %s", content_type)
 
             except Exception as e:
                 log.warning("Failed to get content type for url %s (%s)", song_url, e)
@@ -329,7 +329,10 @@ class Playlist(EventEmitter):
             if next_entry:
                 next_entry.get_ready_future()
 
-        return await entry.get_ready_future()
+        try:
+            return await entry.get_ready_future()
+        except ExtractionError:
+            return await self.get_next_entry()
 
     def peek(self):
         """

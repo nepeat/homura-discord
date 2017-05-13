@@ -192,10 +192,10 @@ class URLPlaylistEntry(BasePlaylistEntry):
 
                 if expected_fname_base in ldir:
                     self.filename = os.path.join(self.download_folder, expected_fname_base)
-                    log.debug("Cached:", self.url)
+                    log.debug("Cached: %s", self.url)
 
                 elif expected_fname_noex in flistdir:
-                    log.debug("Cached (different extension):", self.url)
+                    log.debug("Cached (different extension): %s", self.url)
                     self.filename = os.path.join(self.download_folder, ldir[flistdir.index(expected_fname_noex)])
                     log.debug("Expected %s, got %s" % (
                         self.expected_filename.rsplit('.', 1)[-1],
