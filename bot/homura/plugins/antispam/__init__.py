@@ -99,8 +99,7 @@ class AntispamPlugin(PluginBase):
     async def _list_list(self, server, list_name):
         list_key = "antispam:{}:{}".format(server.id, list_name)
 
-        contents = await self.redis.smembers(list_key)
-        contents = await contents.asset()
+        contents = await self.redis.smembers_asset(list_key)
 
         result = "**__{}__**\n".format(
             list_key.split(":")[-1].capitalize()
@@ -180,8 +179,7 @@ class AntispamPlugin(PluginBase):
             raise Warning("warning")
 
     async def check_list(self, message, list_name):
-        items = await self.redis.smembers("antispam:{}:{}".format(message.server.id, list_name))
-        items = await items.asset()
+        items = await self.redis.smembers_asset("antispam:{}:{}".format(message.server.id, list_name))
 
         for item in items:
             if re.search(item, message.clean_content, (re.I | re.M)):

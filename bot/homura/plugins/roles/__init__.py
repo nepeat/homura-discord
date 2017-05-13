@@ -33,8 +33,7 @@ class RolesPlugin(PluginBase):
         return Message(f"Role has been {'removed' if role_exists else 'added'}!")
 
     async def on_member_join(self, member):
-        roles = await self.bot.redis.smembers("server:%s:autoroles" % (member.server.id))
-        roles = await roles.asset()
+        roles = await self.bot.redis.smembers_asset("server:%s:autoroles" % (member.server.id))
 
         for role_id in roles:
             role = self.get_role(member.server, role_id)
