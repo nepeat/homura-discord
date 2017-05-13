@@ -26,14 +26,14 @@ class RolesPlugin(PluginBase):
         if not role:
             return Message("Role does not exist.")
 
-        role_exists = await self.bot.redis.sismember("server:%s:autoroles" % (server.id), role.id)
-        action = self.bot.redis.srem if role_exists else self.bot.redis.sadd
+        role_exists = await self.redis.sismember("server:%s:autoroles" % (server.id), role.id)
+        action = self.redis.srem if role_exists else self.redis.sadd
         await action("server:%s:autoroles" % (server.id), [role.id])
 
         return Message(f"Role has been {'removed' if role_exists else 'added'}!")
 
     async def on_member_join(self, member):
-        roles = await self.bot.redis.smembers_asset("server:%s:autoroles" % (member.server.id))
+        roles = await self.redis.smembers_asset("server:%s:autoroles" % (member.server.id))
 
         for role_id in roles:
             role = self.get_role(member.server, role_id)

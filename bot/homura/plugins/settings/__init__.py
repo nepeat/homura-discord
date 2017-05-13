@@ -40,7 +40,7 @@ class SettingsPlugin(PluginBase):
         usage="settings nsfwfilter [enable|disable]"
     )
     async def toggle_nsfw(self, message, args):
-        action = self.bot.redis.sadd if args[0] in ("enable", "on") else self.bot.redis.srem
+        action = self.redis.sadd if args[0] in ("enable", "on") else self.redis.srem
         await action("antispam:nsfwfilter", [message.server.id])
 
         return Message("Updated!")
@@ -52,7 +52,7 @@ class SettingsPlugin(PluginBase):
         usage="settings imagechannel [enable|disable]"
     )
     async def toggle_imagechannel(self, message, args):
-        action = self.bot.redis.sadd if args[0] in ("enable", "on") else self.bot.redis.srem
+        action = self.redis.sadd if args[0] in ("enable", "on") else self.redis.srem
         await action("antispam:imagechannels", [message.channel.id])
 
         return Message("Updated!")

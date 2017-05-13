@@ -143,7 +143,7 @@ class AntispamPlugin(PluginBase):
         if not message.server:
             return
 
-        log_channel = self.bot.get_channel(await self.bot.redis.hget(f"{message.server.id}:settings", "log_channel"))
+        log_channel = self.bot.get_channel(await self.redis.hget(f"{message.server.id}:settings", "log_channel"))
         if not log_channel:
             return
 

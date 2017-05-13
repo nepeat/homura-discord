@@ -85,7 +85,7 @@ class MusicBase(PluginBase):
     async def cleanup_player(self, player):
         try:
             if player.is_playing:
-                await self.bot.redis.sadd("music:reload", [player.channel.id])
+                await self.redis.sadd("music:reload", [player.channel.id])
 
             player.kill()
             await player.voice_client.disconnect()

@@ -22,7 +22,7 @@ class EventLogPlugin(PluginBase):
         usage="eventlog"
     )
     async def eventlog(self, message):
-        enabled = await self.bot.redis.smembers_asset("channellog:{}:enabled".format(message.server.id))
+        enabled = await self.redis.smembers_asset("channellog:{}:enabled".format(message.server.id))
 
         return Message("**__Enabled__**\n{enabled}\n**__Disabled__**\n{disabled}".format(
             enabled="\n".join(enabled),
@@ -36,9 +36,9 @@ class EventLogPlugin(PluginBase):
         usage="eventlog [enable|disable]"
     )
     async def toggle_event(self, message, args):
-        enabled = await self.bot.redis.smembers_asset("channellog:{}:enabled".format(message.server.id))
+        enabled = await self.redis.smembers_asset("channellog:{}:enabled".format(message.server.id))
 
-        action = self.bot.redis.sadd if args[0] == "enable" else self.bot.redis.srem
+        action = self.redis.sadd if args[0] == "enable" else self.redis.srem
 
         if args[1] == "all":
             await action("channellog:{}:enabled".format(message.server.id), EventLogPlugin.EVENTS)
@@ -158,7 +158,7 @@ class EventLogPlugin(PluginBase):
         await self.log(embed, message.server, "message_delete")
 
     async def log(self, message, server, event_type):
-        log_channel = self.bot.get_channel(await self.bot.redis.hget(f"{server.id}:settings", "log_channel"))
+        log_channel = self.bot.get_channel(await self.redis.hget(f"{server.id}:settings", "log_channel"))
         if not log_channel:
             return
 
