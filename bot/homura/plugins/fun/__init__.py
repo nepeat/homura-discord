@@ -1,17 +1,21 @@
 # coding=utf-8
 import datetime
 import logging
-import xml.etree.ElementTree
 
 import discord
 from homura.lib.structure import Message
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command
+from homura.plugins.fun.animal_api import AnimalAPI
 
 log = logging.getLogger(__name__)
 
 
 class FunPlugin(PluginBase):
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.animal_api = AnimalAPI(self.bot.aiosession)
+
     @command(
         "fart",
         permission_name="fun.fart",
@@ -22,22 +26,22 @@ class FunPlugin(PluginBase):
         return Message("\N{DASH SYMBOL}")
 
     @command(
-        "cat",
-        permission_name="fun.cat",
-        description="Cat?",
+        "(cat|dog)$",
+        permission_name="fun.animal",
+        description="Cat? Dog?",
         global_command=True
     )
-    async def cat(self, channel):
+    async def animal(self, channel, args):
         start = datetime.datetime.now()
         try:
-            cat_url = await self.get_cat()
+            animal_url = await self.animal_api.get(args[0])
         except Exception as e:
-            await self.bot.on_error("cat")
-            return Message("Could not fetch a cat. :(")
+            await self.bot.on_error("animal")
+            return Message(f"Could not fetch your {args[0]}. :(")
 
         embed = discord.Embed(color=discord.Colour.gold())
-        embed.set_author(name="Cat!", url=cat_url)
-        embed.set_image(url=cat_url)
+        embed.set_author(name=f"{args[0].capitalize()}!", url=animal_url)
+        embed.set_image(url=animal_url)
         end = datetime.datetime.now()
         delta = end - start
         embed.set_footer(text="rendered in {}ms".format(int(delta.total_seconds() * 1000)))
@@ -58,21 +62,3 @@ class FunPlugin(PluginBase):
         em.add_field(name="ROLL", value="EGG")
         em.set_image(url="https://i.imgur.com/YFeZaoM.jpg")
         return Message(embed=em)
-
-    async def get_cat(self):
-        params = {
-            "format": "xml",
-            "results_per_page": "1",
-            "api_key": "MTQwODc0"
-        }
-
-        async with self.bot.aiosession.get(
-            url="http://thecatapi.com/api/images/get",
-            params=params
-        ) as response:
-            reply = await response.text()
-
-        root = xml.etree.ElementTree.fromstring(reply)
-        image = root.find("./data/images/image/url").text
-
-        return image.replace("http:", "https:")

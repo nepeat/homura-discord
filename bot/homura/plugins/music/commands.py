@@ -22,7 +22,10 @@ log = logging.getLogger(__name__)
 
 class MusicCommands(MusicBase):
     @command(
-        "music$",
+        patterns=[
+            r"music$",
+            r"music queue"
+        ],
         permission_name="music.info",
         global_command=True,
         description="Music status",
@@ -328,8 +331,9 @@ class MusicCommands(MusicBase):
         else:
             return Message(embed=self.create_voice_embed(
                 title="Skip",
-                description=f"Your skip for **{player.current_entry.title}** has been {'added' if added else 'removed'}.\n"
-                            f"**{skips_remaining} more {'skip' if skips_remaining == 1 else 'skips'} are required to skip."
+                description=f"Your skip for **{player.current_entry.title}** has been {'added' if added else 'removed'}."
+            ).set_footer(
+                text=f"{skips_remaining} more {'skip' if skips_remaining == 1 else 'skips'} are required to skip."
             ), reply=True)
 
     @command(
