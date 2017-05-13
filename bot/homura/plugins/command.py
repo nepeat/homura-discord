@@ -173,6 +173,9 @@ def command(
             if params.pop('permissions', None):
                 handler_kwargs['permissions'] = permissions
 
+            if params.pop('is_owner', None):
+                handler_kwargs['is_owner'] = author.id in OWNER_IDS
+
             # Command caller
 
             try:
