@@ -17,18 +17,24 @@ class FunPlugin(PluginBase):
         self.animal_api = AnimalAPI(self.bot.aiosession)
 
     @command(
-        "fart",
+        "fart$",
         permission_name="fun.fart",
         description="Who farted?",
         global_command=True
     )
-    async def fart(self, channel):
+    async def fart(self, message):
+        try:
+            await self.bot.delete_message(message)
+        except discord.Forbidden:
+            pass
+
         return Message("\N{DASH SYMBOL}")
 
     @command(
         "(cat|dog)$",
         permission_name="fun.animal",
         description="Cat? Dog?",
+        usage="[cat,dog]",
         global_command=True
     )
     async def animal(self, channel, args):

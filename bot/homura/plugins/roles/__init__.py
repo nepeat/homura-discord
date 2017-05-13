@@ -17,7 +17,7 @@ class RolesPlugin(PluginBase):
             r"autorole"
         ],
         permission_name="mod.autorole",
-        description="Toggles a role that will be automatically given to members.",
+        description="Toggles a role that will be automatically given to new members.",
         usage="autorole <role_name>",
     )
     async def cmd_autorole(self, message, server, args):

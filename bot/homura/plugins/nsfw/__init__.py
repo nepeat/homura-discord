@@ -18,7 +18,7 @@ class NSFWPlugin(PluginBase):
     @command(
         "nsfw (.+)",
         permission_name="nsfw.rule34",
-        description="The internet is for porn!",
+        description="Fetches an image from gelbooru, rule34, and e621.",
         usage="nsfw <query>"
     )
     async def rule34(self, channel, args):
