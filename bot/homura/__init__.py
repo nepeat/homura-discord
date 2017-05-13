@@ -128,7 +128,10 @@ class NepeatBot(discord.Client):
     ):
         content = message.content
         if message.reply and author:
-            content = '{}, {}'.format(author.mention, content)
+            if content:
+                content = '{}, {}'.format(author.mention, content)
+            else:
+                content = '{}'.format(author.mention)
 
         sentmsg = await self.send_message(
             channel,
