@@ -8,6 +8,7 @@ from homura.plugins.base import PluginBase
 from homura.plugins.command import command
 from homura.plugins.osu.api import OsuAPI
 from homura.util import sanitize
+from homura.lib.cached_http import CachedHTTP
 
 log = logging.getLogger(__name__)
 OSU_TYPES = [
@@ -20,7 +21,7 @@ OSU_TYPES = [
 class OsuPlugin(PluginBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.api = OsuAPI(self.bot.aiosession)
+        self.api = OsuAPI(CachedHTTP(self.bot))
 
     @command(
         patterns=[
@@ -42,8 +43,6 @@ class OsuPlugin(PluginBase):
                 if match.group("type") == "catch the beat":
                     osu_type = "ctb"
         except IndexError:
-            log.error("error group")
-            log.error(match.groups())
             osu_type = "osu"
 
         info = await self.api.get_user(username, osu_type)

@@ -7,14 +7,14 @@ from homura.lib.structure import Message
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command
 from homura.plugins.fun.animal_api import AnimalAPI
-
+from homura.lib.cached_http import CachedHTTP
 log = logging.getLogger(__name__)
 
 
 class FunPlugin(PluginBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.animal_api = AnimalAPI(self.bot.aiosession)
+        self.animal_api = AnimalAPI(CachedHTTP(self.bot))
 
     @command(
         "fart$",

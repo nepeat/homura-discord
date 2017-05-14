@@ -6,6 +6,7 @@ from homura.plugins.base import PluginBase
 from homura.plugins.command import command
 from homura.plugins.nsfw.fetcher import ImageFetcher
 from homura.util import sanitize
+from homura.lib.cached_http import CachedHTTP
 
 log = logging.getLogger(__name__)
 
@@ -13,7 +14,7 @@ log = logging.getLogger(__name__)
 class NSFWPlugin(PluginBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.fetcher = ImageFetcher(self.bot.aiosession)
+        self.fetcher = ImageFetcher(CachedHTTP(self.bot))
 
     @command(
         "nsfw (.+)",

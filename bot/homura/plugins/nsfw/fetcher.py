@@ -3,17 +3,21 @@ import logging
 import random
 import xml.etree.ElementTree
 
-from homura.plugins.nsfw.common import API_ENDPOINTS, USER_AGENT
+from homura.plugins.nsfw.common import API_ENDPOINTS
 
 log = logging.getLogger(__name__)
 
 
 class ImageFetcher(object):
-    def __init__(self, aiosession):
-        self.aiosession = aiosession
+    def __init__(self, http):
+        self.http = http
 
     def dict_return(self, site, image):
-        url = image.get("file_url")
+        try:
+            url = image.get("file_url")
+        except AttributeError:
+            return None
+
         if url.startswith("//"):
             url = "https://" + url[2:]
 
@@ -48,54 +52,53 @@ class ImageFetcher(object):
             "page": "dapi",
             "s": "post",
             "q": "index",
-            "tags": tags
+            "tags": tags,
+            "limit": site["max_limit"]
         }
 
-        async with self.aiosession.get(
+        reply = await self.http.get(
             url=site["endpoint"],
-            params=params,
-            headers={
-                "User-Agent": USER_AGENT
-            }
-        ) as response:
-            reply = await response.text()
+            params=params
+        )
 
         root = xml.etree.ElementTree.fromstring(reply)
         images = root.findall("post")
 
-        if not images:
-            return None
-        image = self.safe_shuffle(images)
+        while images:
+            image = self.safe_shuffle(images)
+            images.remove(image)
+            metadata = self.dict_return(site, image)
+            if not metadata:
+                continue
+            return metadata
 
-        return self.dict_return(site, image)
+        return None
 
     async def danbooru(self, site, tags, nsfw=True):
         if nsfw:
             tags = tags + " -rating:safe"
 
         params = {
-            "tags": tags
+            "tags": tags,
+            "limit": site["max_limit"]
         }
 
-        async with self.aiosession.get(
+        images = await self.http.get(
             url=site["endpoint"],
             params=params,
-            headers={
-                "User-Agent": USER_AGENT
-            }
-        ) as response:
-            try:
-                images = await response.json()
-            except ValueError as e:
-                log.error("Error parsing booru JSON")
-                log.error(await response.text())
-                return None
+            asjson=True
+        )
 
-        if not images:
-            return None
-        image = self.safe_shuffle(images)
 
-        return self.dict_return(site, image)
+        while images:
+            image = self.safe_shuffle(images)
+            images.remove(image)
+            metadata = self.dict_return(site, image)
+            if not metadata:
+                continue
+            return metadata
+
+        return None
 
     async def random(self, tags: str, nsfw: bool=True):
         image = None

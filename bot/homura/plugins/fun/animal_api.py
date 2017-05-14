@@ -53,12 +53,11 @@ class AnimalAPI(object):
         if animal not in IMGUR_MULTISUBS:
             raise ValueError(f"{animal} is not in IMGUR_MULTIS")
 
-        async with self.http.get(
-            url=urllib.parse.urljoin(self.imgur_api_url, f"3/gallery/r/{IMGUR_MULTISUBS[animal]}/time"),
-            headers=self.imgur_api_headers
-        ) as response:
-            reply = await response.json()
-            etag = response.headers.get("ETag", None)
+        reply = await self.http.get(
+            url=urllib.parse.urljoin(self.imgur_api_url, f"3/gallery/r/{IMGUR_MULTISUBS[animal]}/time/{random.randint(1, 10)}"),
+            headers=self.imgur_api_headers,
+            asjson=True
+        )
 
         if not reply["data"]:
             raise AnimalException("Zero pictures were given in the data. " +  str(reply))
@@ -73,17 +72,17 @@ class AnimalAPI(object):
     async def _get_catapi(self):
         params = {
             "format": "xml",
-            "results_per_page": "1",
+            "results_per_page": "100",
             "api_key": "MTQwODc0"
         }
 
-        async with self.http.get(
+        reply = await self.http.get(
             url="http://thecatapi.com/api/images/get",
             params=params
-        ) as response:
-            reply = await response.text()
+        )
 
         root = xml.etree.ElementTree.fromstring(reply)
-        image = root.find("./data/images/image/url").text
+        images = root.findall("./data/images/image")
+        image = random.choice(images).find("url").text
 
         return image.replace("http:", "https:")

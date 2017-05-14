@@ -6,13 +6,12 @@ import urllib.parse
 from homura.lib.structure import CommandError
 
 log = logging.getLogger(__name__)
-USER_AGENT = "github.com/nepeat/homura-discord | nepeat#6071 | This is discord bot. This is mistake."
 OSU_API_BASE = "https://osu.ppy.sh/api/"
 
 
 class OsuAPI(object):
-    def __init__(self, aiosession):
-        self.aiosession = aiosession
+    def __init__(self, http):
+        self.http = http
         self.api_key = os.environ.get("OSU_API", None)
 
         if not self.api_key:
@@ -42,21 +41,11 @@ class OsuAPI(object):
             "u": username
         }
 
-        async with self.aiosession.get(
+        response = await self.http.get(
             url=urllib.parse.urljoin(OSU_API_BASE, "get_user"),
             params=params,
-            headers={
-                "User-Agent": USER_AGENT
-            }
-        ) as response:
-            try:
-                response = await response.json()
-            except ValueError as e:
-                log.error("Error parsing osu JSON")
-                log.error(await response.text())
-                return None
-
-        log.error(response)
+            asjson=True
+        )
 
         if not response:
             return None
