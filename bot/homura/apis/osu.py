@@ -18,7 +18,7 @@ class OsuAPI(object):
             log.error("OSU_API is missing from the environment.")
 
     @staticmethod
-    def parse_mode(self, mode):
+    def parse_mode(mode):
         if mode == "osu":
             return 0
         elif mode == "taiko":

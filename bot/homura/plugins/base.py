@@ -68,7 +68,7 @@ class PluginBase(object):
         return "!"
 
     @staticmethod
-    def create_image_embed(self, url, top_text: str=None, bottom_text: str=None, top_url: str=None,):
+    def create_image_embed(url, top_text: str=None, bottom_text: str=None, top_url: str=None,):
         embed = discord.Embed(color=discord.Colour.gold())
 
         if top_text:
@@ -82,7 +82,7 @@ class PluginBase(object):
         return embed
 
     @staticmethod
-    def get_role(self, server, role_idx):
+    def get_role(server, role_idx):
         role_idx = str(role_idx)
 
         return discord.utils.find(

@@ -14,7 +14,7 @@ class CachedHTTP(object):
         self.cache_time = 300
 
     @staticmethod
-    def generate_cachekey(self, url: str, params: dict, **kwargs) -> str:
+    def generate_cachekey(url: str, params: dict, **kwargs) -> str:
         """
         Generates a cache key for Redis storage.
 

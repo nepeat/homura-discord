@@ -43,7 +43,7 @@ class MusicBase(PluginBase):
             await asyncio.sleep(60)
 
     @staticmethod
-    def create_voice_embed(self, description=None, colour=discord.Colour.blue(), title=None):
+    def create_voice_embed(description=None, colour=discord.Colour.blue(), title=None):
         if not title:
             title = "Music"
         else:

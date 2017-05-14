@@ -104,7 +104,7 @@ class AntispamPlugin(PluginBase):
         return Message(result)
 
     @staticmethod
-    def create_antispam_embed(self, message: discord.Message, event_type):
+    def create_antispam_embed(message: discord.Message, event_type):
         if event_type == "warning":
             icon = "warning"
             colour = discord.Colour.gold()
