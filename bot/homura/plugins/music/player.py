@@ -1,14 +1,14 @@
 # coding=utf-8
-import audioop
-import logging
-
-from enum import Enum
-
 import asyncio
+import logging
+from enum import Enum
+from typing import Optional
+
 import discord
+
+import audioop
 from homura.lib.eventemitter import EventEmitter
 from homura.plugins.music.objects import SkipState
-from typing import Optional
 
 log = logging.getLogger(__name__)
 

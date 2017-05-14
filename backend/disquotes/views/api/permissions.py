@@ -1,6 +1,6 @@
 from flask import g
 from flask_restplus import Namespace, abort, fields
-from sqlalchemy import or_, and_
+from sqlalchemy import and_, or_
 
 from disquotes.model import Channel, Permission, Server
 from disquotes.views.api.base import ResourceBase

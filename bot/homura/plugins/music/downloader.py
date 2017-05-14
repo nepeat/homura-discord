@@ -1,12 +1,12 @@
 # coding=utf-8
+import asyncio
 import functools
 import hashlib
 import json
 import os
-
-import asyncio
-import youtube_dl
 from concurrent.futures import ThreadPoolExecutor
+
+import youtube_dl
 
 YOUTUBEDL_ARGS = {
     "format": "bestaudio/best",

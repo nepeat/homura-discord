@@ -3,6 +3,7 @@ import logging
 from itertools import zip_longest
 
 import discord
+
 from homura.lib.structure import Message
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command

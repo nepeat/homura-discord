@@ -1,5 +1,6 @@
-from disquotes.model.handlers import redis_pool
 from dogpile.cache import make_region
+
+from disquotes.model.handlers import redis_pool
 
 redis_cache = make_region().configure(
     'dogpile.cache.redis',
