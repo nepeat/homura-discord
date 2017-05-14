@@ -12,16 +12,29 @@ log = logging.getLogger(__name__)
 
 class PermissionsPlugin(PluginBase):
     @command(
-        "permission list (server|channel)",
+        "permission list",
         permission_name="permissions.list",
         description="Lists active permissions for a server or channel.",
         usage="permission list [server|channel]"
     )
     async def list_permission(self, permissions, args):
-        perm_list = await permissions.get_perms("server" in args[0].lower())
-        output = "__**Permissions**__\n"
-        output += "\n".join(perm_list)
-        return Message(output)
+        embed = discord.Embed(
+            title="Permissions"
+        )
+
+        channel_perms = await permissions.get_perms()
+        embed.add_field(
+            name="Channel",
+            value="\n".join(channel_perms if channel_perms else ["None!"])
+        )
+
+        server_perms = await permissions.get_perms(True)
+        embed.add_field(
+            name="Server",
+            value="\n".join(server_perms if server_perms else ["None!"])
+        )
+
+        return Message(embed=embed)
 
     @command(
         "permission channel add (.+)",
@@ -54,7 +67,7 @@ class PermissionsPlugin(PluginBase):
         usage="permission server add <permission>"
     )
     async def server_add_permission(self, permissions, args):
-        await permissions.add(args[0], serverwide=False)
+        await permissions.add(args[0], serverwide=True)
         return Message(
             f"`{sanitize(args[0])}` has been added serverwide!"
         )
@@ -66,7 +79,7 @@ class PermissionsPlugin(PluginBase):
         usage="permission server remove <permission>"
     )
     async def server_remove_permission(self, permissions, args):
-        await permissions.remove(args[0], serverwide=False)
+        await permissions.remove(args[0], serverwide=True)
         return Message(
             f"`{sanitize(args[0])}` has been removed serverwide!"
         )

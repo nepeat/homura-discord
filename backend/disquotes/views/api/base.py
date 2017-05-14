@@ -33,7 +33,7 @@ class ResourceBase(Resource):
 
         try:
             channel_id = int(kwargs.get("channel", self.get_field("channel", 0)))
-        except TypeError:
+        except (TypeError, ValueError):
             channel_id = None
 
         try:

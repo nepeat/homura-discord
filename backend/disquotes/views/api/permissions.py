@@ -1,6 +1,6 @@
 from flask import g
 from flask_restplus import Namespace, abort, fields
-from sqlalchemy import or_
+from sqlalchemy import or_, and_
 
 from disquotes.model import Channel, Permission, Server
 from disquotes.views.api.base import ResourceBase
@@ -21,13 +21,20 @@ class PermissionResource(ResourceBase):
 
         if channel:
             query = g.db.query(Permission.permission).filter(or_(
-                Permission.server_id == server.id,
-                Permission.channel_id == channel.id
+                and_(
+                    Permission.server_id == server.id,
+                    Permission.channel_id == channel.id
+                ),
+                and_(
+                    Permission.server_id == server.id,
+                    Permission.channel_id == None
+                )
             ))
         else:
-            query = g.db.query(Permission.permission).filter(
-                Permission.server_id == server.id
-            )
+            query = g.db.query(Permission.permission).filter(and_(
+                Permission.server_id == server.id,
+                Permission.channel_id == None
+            ))
 
         return {
             "permissions": [x[0] for x in query.all()]
@@ -52,11 +59,9 @@ class PermissionResource(ResourceBase):
 
         new_perm = Permission(
             server_id=server.id,
+            channel_id=channel.id if channel else None,
             permission=self.get_field("perm")
         )
-
-        if channel:
-            new_perm.channel_id = channel.id
 
         g.db.add(new_perm)
 
@@ -64,9 +69,12 @@ class PermissionResource(ResourceBase):
     def delete(self):
         server, channel = self.get_server_channel()
 
-        deleted_perm = g.db.query(Permission).filter(Permission.server_id == server.id)
-
         if channel:
-            deleted_perm = deleted_perm.filter(Permission.channel_id == channel.id)
+            deleted_perm = g.db.query(Permission).filter(Permission.channel_id == channel.id)
+        else:
+            deleted_perm = g.db.query(Permission).filter(and_(
+                Permission.server_id == server.id,
+                Permission.channel_id == None
+            ))
 
         deleted_perm = deleted_perm.filter(Permission.permission == self.get_field("perm")).delete()
