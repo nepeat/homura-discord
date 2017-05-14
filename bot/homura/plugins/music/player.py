@@ -1,12 +1,12 @@
 # coding=utf-8
 import asyncio
+import functools
 import logging
+import traceback
 from enum import Enum
 from typing import Optional
-import traceback
 
 import discord
-import functools
 
 import audioop
 from homura.lib.eventemitter import EventEmitter
