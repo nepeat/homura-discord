@@ -8,11 +8,12 @@ from collections import deque
 from itertools import islice
 from urllib.error import URLError
 
+from youtube_dl.utils import DownloadError, UnsupportedError
+
 from homura.lib.eventemitter import EventEmitter
+from homura.lib.util import get_header
 from homura.plugins.music.exceptions import ExtractionError, WrongEntryTypeError
 from homura.plugins.music.objects import StreamPlaylistEntry, URLPlaylistEntry
-from homura.util import get_header
-from youtube_dl.utils import DownloadError, UnsupportedError
 
 log = logging.getLogger(__name__)
 

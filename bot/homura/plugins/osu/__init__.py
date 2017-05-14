@@ -3,12 +3,13 @@ import logging
 import math
 
 from discord import Colour, Embed
+
+from homura.lib.cached_http import CachedHTTP
 from homura.lib.structure import Message
+from homura.lib.util import sanitize
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command
 from homura.plugins.osu.api import OsuAPI
-from homura.util import sanitize
-from homura.lib.cached_http import CachedHTTP
 
 log = logging.getLogger(__name__)
 OSU_TYPES = [

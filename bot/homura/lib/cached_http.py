@@ -1,10 +1,7 @@
-from aiohttp import ClientSession
-from asyncio_redis import Connection
-
-import hashlib
-import urllib.parse
-from homura.util import md5_string
 import json
+import urllib.parse
+
+from homura.lib.util import md5_string
 
 USER_AGENT = "github.com/nepeat/homura-discord | nepeat#6071 | This is discord bot. This is mistake."
 

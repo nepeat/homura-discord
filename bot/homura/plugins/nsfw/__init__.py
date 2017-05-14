@@ -1,12 +1,12 @@
 # coding=utf-8
 import logging
 
+from homura.lib.cached_http import CachedHTTP
 from homura.lib.structure import Message
+from homura.lib.util import sanitize
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command
 from homura.plugins.nsfw.fetcher import ImageFetcher
-from homura.util import sanitize
-from homura.lib.cached_http import CachedHTTP
 
 log = logging.getLogger(__name__)
 

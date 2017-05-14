@@ -2,10 +2,11 @@
 import logging
 
 import discord
+
 from homura.lib.structure import Message
+from homura.lib.util import sanitize
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command
-from homura.util import sanitize
 
 log = logging.getLogger(__name__)
 

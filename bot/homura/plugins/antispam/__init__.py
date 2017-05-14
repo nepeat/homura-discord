@@ -3,12 +3,13 @@ import logging
 import re
 
 import discord
+
 from homura.lib.structure import Message
+from homura.lib.util import validate_regex
 from homura.plugins.antispam import images
 from homura.plugins.antispam.signals import Delete, Warning
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command
-from homura.util import validate_regex
 
 log = logging.getLogger(__name__)
 

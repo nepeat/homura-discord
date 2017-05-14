@@ -2,13 +2,14 @@
 import json
 import logging
 import os
+from typing import Optional
 
 import aiohttp
 import discord
+
+from homura.lib.util import sanitize
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command
-from homura.util import sanitize
-from typing import Optional
 
 log = logging.getLogger(__name__)
 

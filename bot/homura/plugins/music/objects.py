@@ -1,12 +1,12 @@
 # coding=utf-8
+import asyncio
 import json
 import logging
 import os
 import traceback
 
-import asyncio
+from homura.lib.util import get_header, md5_file
 from homura.plugins.music.exceptions import ExtractionError
-from homura.util import get_header, md5_file
 
 log = logging.getLogger(__name__)
 
