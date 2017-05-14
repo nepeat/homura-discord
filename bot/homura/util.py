@@ -39,11 +39,22 @@ async def get_header(session, url, headerfield=None, *, timeout=5):
                 return response.headers
 
 
-def md5sum(filename, limit=0):
+def md5_file(filename, limit=0):
     fhash = hashlib.md5()
     with open(filename, "rb") as f:
         for chunk in iter(lambda: f.read(8192), b""):
             fhash.update(chunk)
+    return fhash.hexdigest()[-limit:]
+
+
+def md5_string(string, limit=0):
+    try:
+        string = string.encode("utf8")
+    except (AttributeError):
+        pass
+
+    fhash = hashlib.md5()
+    fhash.update(string)
     return fhash.hexdigest()[-limit:]
 
 

@@ -6,7 +6,7 @@ import traceback
 
 import asyncio
 from homura.plugins.music.exceptions import ExtractionError
-from homura.util import get_header, md5sum
+from homura.util import get_header, md5_file
 
 log = logging.getLogger(__name__)
 
@@ -234,7 +234,7 @@ class URLPlaylistEntry(BasePlaylistEntry):
 
         if hash:
             # insert the 8 last characters of the file hash to the file name to ensure uniqueness
-            self.filename = md5sum(unhashed_fname, 8).join('-.').join(unhashed_fname.rsplit('.', 1))
+            self.filename = md5_file(unhashed_fname, 8).join('-.').join(unhashed_fname.rsplit('.', 1))
 
             if os.path.isfile(self.filename):
                 # Oh bother it was actually there.

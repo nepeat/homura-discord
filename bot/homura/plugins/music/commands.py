@@ -326,7 +326,8 @@ class MusicCommands(MusicBase):
             return Message(embed=self.create_voice_embed(
                 title="Skip",
                 description=f"Your skip for **{player.current_entry.title}** has been successful.\n"
-                            f"Playing the next song!" if player.playlist.peek() else "No more songs left in queue!"
+            ).set_footer(
+                text=f"The next song is coming up!" if player.playlist.peek() else "No more songs left in queue!"
             ))
         else:
             return Message(embed=self.create_voice_embed(
@@ -416,7 +417,7 @@ class MusicCommands(MusicBase):
             ))
         elif new_volume >= 200:
             if not message.author.server_permissions.administrator:
-                return CommandError("You must be an administrator to set the volume beyond 200%")
+                raise CommandError("You must be an administrator to set the volume beyond 200%")
 
             embed = self.create_voice_embed(
                 title="ARE YOU FUCKING SURE?" if new_volume >= 1000 else "Are you sure?",
@@ -442,7 +443,9 @@ class MusicCommands(MusicBase):
                 ))
             else:
                 return Message(embed=self.create_voice_embed(
-                    description="15 seconds has passed without a response. Timing out."
+                    description="15 seconds has passed without a response. {timing}".format(
+                        timing="Thank fucking god." if new_volume > 500 else "Timing out."
+                    )
                 ))
         else:
             if relative:

@@ -4,7 +4,7 @@ import logging
 import operator
 
 import discord
-from homura.lib.structure import Message
+from homura.lib.structure import Message, CommandError
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command
 
@@ -12,7 +12,8 @@ log = logging.getLogger(__name__)
 
 
 class GeneralPlugin(PluginBase):
-    def get_all_commands(self, owner=False) -> dict:
+    def get_all_commands(self, filter_plugin="all", owner=False) -> dict:
+        filter_plugin = filter_plugin.strip().lower()
         output = {}
 
         for plugin in self.bot.plugins:
@@ -20,6 +21,9 @@ class GeneralPlugin(PluginBase):
                 continue
 
             plugin_name = plugin.__class__.__name__.replace("Plugin", "")
+            if filter_plugin not in ("all", "permissions") and plugin_name.lower() != filter_plugin:
+                continue
+
             if plugin_name not in output:
                 output[plugin_name] = []
 
@@ -30,6 +34,7 @@ class GeneralPlugin(PluginBase):
                 output[plugin_name].append({
                     "name": name,
                     "description": description,
+                    "global": command_func.info.get("global", False),
                     "permission": command_func.info.get("permission")
                 })
 
@@ -39,23 +44,46 @@ class GeneralPlugin(PluginBase):
         return output
 
     @command(
-        "help",
+        patterns=[
+            "help (.+)",
+            "help$"
+        ],
         permission_name="general.help",
         description="Help command.",
-        global_command=True
+        global_command=True,
+        usage="help [section|permissions]"
     )
-    async def help(self, message, is_owner):
-        em = discord.Embed(title='Bot commands', colour=discord.Colour.blue())
+    async def help(self, message, is_owner, permissions, args):
+        section = "all"
 
-        for plugin_name, commands in self.get_all_commands(is_owner).items():
+        if args:
+            section = args[0]
+
+        em = discord.Embed(title='Bot commands available to you', colour=discord.Colour.blue())
+
+        for plugin_name, commands in self.get_all_commands(section, is_owner).items():
             listed_commands = ""
 
             for command in commands:
-                listed_commands += f"{command['name']} - {command['description']}\n"
+                can_use = permissions.can(command["permission"], blacklist_only=command["global"]) or is_owner
 
-            em.add_field(
-                name=plugin_name,
-                value=listed_commands
-            )
+                if not can_use and section != "permissions":
+                    continue
+
+                if section ==  "permissions":
+                    description = command["permission"]
+                else:
+                    description = command["description"]
+
+                listed_commands += f"{command['name']} - {description}\n"
+
+            if listed_commands:
+                em.add_field(
+                    name=plugin_name,
+                    value=listed_commands
+                )
+
+        if not em.fields:
+            raise CommandError(f"No commands were found for section '{section}.'")
 
         return Message(embed=em)

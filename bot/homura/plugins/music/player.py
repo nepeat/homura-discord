@@ -97,7 +97,7 @@ class Player(EventEmitter):
             entry.seek = time
             entry.quiet = True
             self.playlist.entries.appendleft(entry)
-            self.loop.create_task(self.plugin.bot.redis.lpush("music:queue:" + self.voice_client.server.id, [entry.to_json()]))
+            self.loop.create_task(self.plugin.bot.redis.lpush(self.playlist.queue_key, [entry.to_json()]))
             self._kill_current_player()
 
     def skip(self):
