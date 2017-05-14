@@ -64,7 +64,7 @@ class AnimalAPI(object):
             raise AnimalException("Zero pictures were given in the data. " + str(reply))
 
         image = random.choice(reply["data"])
-        # Keep cycling for another link if we picked an album. 
+        # Keep cycling for another link if we picked an album.
         while "/a/" in image["link"]:
             image = random.choice(reply["data"])
 

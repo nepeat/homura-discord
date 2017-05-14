@@ -7,6 +7,7 @@ from homura.plugins.antispam.signals import Delete
 
 url_regex = re.compile(r"(https?://\S+)")
 
+
 async def validate_url(session, url):
     with aiohttp.Timeout(10):
         try:

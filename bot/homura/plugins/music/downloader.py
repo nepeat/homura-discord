@@ -37,7 +37,7 @@ class Downloader(object):
         self.thread_pool = ThreadPoolExecutor(max_workers=4)
 
     @property
-    def ytdl(self):
+    def ytdl(self) -> youtube_dl.YoutubeDL:
         ytdl = youtube_dl.YoutubeDL(YOUTUBEDL_ARGS)
 
         if self.download_folder:
@@ -46,14 +46,14 @@ class Downloader(object):
 
         return ytdl
 
-    async def set_cache(self, url, data, **kwargs):
+    async def set_cache(self, url: str, data: dict, **kwargs) -> None:
         """
         Sets cached data into Redis for extract_info for one day.
 
         :param url: URL of the video to set in the cache
         :param data: Data to cache
-        :param kwargs: extract_info kwargs. process is True = ":processed" appended to cache key 
-        :return: 
+        :param kwargs: extract_info kwargs. process is True = ":processed" appended to cache key
+        :return:
         """
         cachekey = "musicbot:cache:" + md5_string(url)
 
@@ -69,14 +69,13 @@ class Downloader(object):
         except TypeError:
             pass
 
-    async def get_cache(self, url, **kwargs):
+    async def get_cache(self, url: str, **kwargs) -> dict:
         """
-        Gets cached data from Redis for extract_info 
+        Gets cached data from Redis for extract_info
 
         :param url: URL of the video to grab from the cache
         :param kwargs: extract_info kwargs. download is True = no fetch;
-                       process is True = ":processed" appended to cache key 
-        :return: 
+                       process is True = ":processed" appended to cache key
         """
         cachekey = "musicbot:cache:" + md5_string(url)
 

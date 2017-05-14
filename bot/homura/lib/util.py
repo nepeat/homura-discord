@@ -50,7 +50,7 @@ def md5_file(filename, limit=0):
 def md5_string(string, limit=0):
     try:
         string = string.encode("utf8")
-    except (AttributeError):
+    except AttributeError:
         pass
 
     fhash = hashlib.md5()

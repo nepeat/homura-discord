@@ -2,6 +2,7 @@
 import asyncio
 import collections
 import traceback
+from typing import Callable
 
 
 class EventEmitter:
@@ -9,7 +10,7 @@ class EventEmitter:
         self._events = collections.defaultdict(list)
         self.loop = asyncio.get_event_loop()
 
-    def emit(self, event, *args, **kwargs):
+    def emit(self, event: str, *args, **kwargs):
         if event not in self._events:
             return
 
@@ -23,11 +24,11 @@ class EventEmitter:
             except:
                 traceback.print_exc()
 
-    def on(self, event, cb):
+    def on(self, event: str, cb: Callable):
         self._events[event].append(cb)
         return self
 
-    def off(self, event, cb):
+    def off(self, event: str, cb: Callable):
         self._events[event].remove(cb)
 
         if not self._events[event]:

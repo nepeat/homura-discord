@@ -39,7 +39,7 @@ class Permissions(object):
     def redis(self):
         return self.bot.redis
 
-    async def alter(self, permission, remove, serverwide=False):
+    async def alter(self, permission: str, remove: bool, serverwide: bool=False):
         permission = permission.strip().lower()
 
         if remove:
@@ -71,10 +71,10 @@ class Permissions(object):
         except aiohttp.errors.ClientError:
             pass
 
-    async def add(self, permission, serverwide=False):
+    async def add(self, permission: str, serverwide: bool=False):
         await self.alter(permission, False, serverwide)
 
-    async def remove(self, permission, serverwide=False):
+    async def remove(self, permission: str, serverwide: bool=False):
         await self.alter(permission, True, serverwide)
 
     async def get_all(self):
@@ -92,7 +92,7 @@ class Permissions(object):
 
         self.perms = await self.get_perms()
 
-    async def get_perms(self, channel_id=None, serveronly=False) -> Optional[List[str]]:
+    async def get_perms(self, channel_id: str=None, serveronly: bool=False) -> Optional[List[str]]:
         if not channel_id:
             channel_id = self.channel.id
 

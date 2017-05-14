@@ -29,6 +29,7 @@ bot = NepeatBot()
 def escape(text):
     return text.replace("|", "\|")
 
+
 output = {}
 
 for plugin in bot.plugins:

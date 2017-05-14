@@ -11,7 +11,7 @@ class CachedHTTP(object):
     def __init__(self, bot, default_cache_time: int=300):
         self.bot = bot
         # 60 seconds * 5 minutes = 300 seconds
-        self.cache_time = 300
+        self.cache_time = default_cache_time
 
     @staticmethod
     def generate_cachekey(url: str, params: dict, **kwargs) -> str:

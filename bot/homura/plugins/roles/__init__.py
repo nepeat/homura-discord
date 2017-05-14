@@ -24,7 +24,7 @@ class RolesPlugin(PluginBase):
         if not role:
             return Message("Role does not exist.")
 
-        role_exists = await self.redis.sismember("server:%s:autoroles" % (server.id), role.id)
+        role_exists = await self.redis.sismember(f"server:%s:autoroles" % (server.id), role.id)
         action = self.redis.srem if role_exists else self.redis.sadd
         await action("server:%s:autoroles" % (server.id), [role.id])
 
