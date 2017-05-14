@@ -16,6 +16,10 @@ services:
         REDIS_PORT: 6379
         BOT_WEB: http://backend:5000
         AUDIO_CACHE_PATH: /audio_cache
+      read_only: true
+      tmpfs:
+        - /run
+        - /tmp
       volumes:
         - audio_cache:/audio_cache
       env_file: .env
@@ -30,6 +34,10 @@ services:
       environment:
         REDIS_HOST: redis
         REDIS_PORT: 6379
+      read_only: true
+      tmpfs:
+        - /run
+        - /tmp
       env_file: .env
       depends_on:
         - redis
