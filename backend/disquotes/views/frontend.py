@@ -1,11 +1,9 @@
-from flask import Blueprint, g, jsonify, redirect, render_template, request, session, url_for
+# coding=utf-8
+from flask import Blueprint, g, redirect, render_template, session, url_for
 from sqlalchemy.orm.exc import NoResultFound
 
-from disquotes.lib.cache import redis_cache
-from disquotes.lib.permissions import Permissions
-from disquotes.model import Channel, Event, Server
-from disquotes.model.auth import discord, get_servers, get_user_managed_servers, require_login
-from disquotes.model.types import EVENT_TYPES
+from disquotes.model import Event, Server
+from disquotes.model.auth import get_servers, get_user_managed_servers, require_login
 
 blueprint = Blueprint("frontend", __name__)
 

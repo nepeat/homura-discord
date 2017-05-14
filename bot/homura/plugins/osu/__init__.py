@@ -19,6 +19,7 @@ OSU_TYPES = [
     "mania"
 ]
 
+
 class OsuPlugin(PluginBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)

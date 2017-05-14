@@ -18,7 +18,7 @@ class PermissionsPlugin(PluginBase):
         description="Lists active permissions for a server or channel.",
         usage="permission list [server|channel]"
     )
-    async def list_permission(self, permissions, server, args):
+    async def list_permission(self, permissions, server):
         embed = discord.Embed(
             title="Permissions"
         )

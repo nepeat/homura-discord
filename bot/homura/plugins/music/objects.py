@@ -71,7 +71,6 @@ class BasePlaylistEntry(object):
 
             try:
                 cb(future)
-
             except:
                 traceback.print_exc()
 
@@ -242,6 +241,7 @@ class URLPlaylistEntry(BasePlaylistEntry):
             else:
                 # Move the temporary file to it's final location.
                 os.rename(unhashed_fname, self.filename)
+
 
 class StreamPlaylistEntry(BasePlaylistEntry):
     def __init__(self, playlist, url, title, *, destination=None, **meta):

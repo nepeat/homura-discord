@@ -1,3 +1,4 @@
+# coding=utf-8
 """API abstraction for getting animal pictures from Imgur, The Cat API, and other sites."""
 
 import os
@@ -60,7 +61,7 @@ class AnimalAPI(object):
         )
 
         if not reply["data"]:
-            raise AnimalException("Zero pictures were given in the data. " +  str(reply))
+            raise AnimalException("Zero pictures were given in the data. " + str(reply))
 
         image = random.choice(reply["data"])
         # Keep cycling for another link if we picked an album. 

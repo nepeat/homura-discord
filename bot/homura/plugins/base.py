@@ -67,6 +67,7 @@ class PluginBase(object):
     def cmd_prefix(self):
         return "!"
 
+    @staticmethod
     def create_image_embed(self, url, top_text: str=None, bottom_text: str=None, top_url: str=None,):
         embed = discord.Embed(color=discord.Colour.gold())
 
@@ -80,6 +81,7 @@ class PluginBase(object):
 
         return embed
 
+    @staticmethod
     def get_role(self, server, role_idx):
         role_idx = str(role_idx)
 

@@ -17,7 +17,7 @@ class OsuAPI(object):
         if not self.api_key:
             log.error("OSU_API is missing from the environment.")
 
-
+    @staticmethod
     def parse_mode(self, mode):
         if mode == "osu":
             return 0

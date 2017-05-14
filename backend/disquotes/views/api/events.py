@@ -1,10 +1,9 @@
-import json
+# coding=utf-8
 
 from flask import g, request
-from flask_restplus import Namespace, Resource, abort, fields
-from sqlalchemy.orm.exc import NoResultFound
+from flask_restplus import Namespace, abort, fields
 
-from disquotes.model import Channel, Event, Permission, Server
+from disquotes.model import Event
 from disquotes.model.types import EVENT_TYPES
 from disquotes.model.validators import validate_push
 from disquotes.views.api.base import ResourceBase

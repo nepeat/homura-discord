@@ -1,6 +1,5 @@
 # coding=utf-8
 import logging
-from itertools import zip_longest
 
 from homura.lib.structure import Message
 from homura.plugins.base import PluginBase

@@ -1,3 +1,4 @@
+# coding=utf-8
 import inspect
 import logging
 import re
@@ -19,10 +20,12 @@ def command(
     usage=None,
     requires_admin=False,
     owner_only=False,
-    patterns=[],
+    patterns=None,
     permission_name="",
     global_command=False,
 ):
+    if not patterns:
+        patterns = []
 
     if pattern and not pattern.startswith("^!"):
         _patterns = ["^!" + pattern]
@@ -192,7 +195,7 @@ def command(
                 return await self.bot.send_message(message.channel, embed=embed)
             except BackendError as e:
                 return await self.bot.send_message(message.channel, str(e))
-            except Exception as e:
+            except:
                 embed = discord.Embed(
                     title="Something happened",
                     description="An error happened running this command",

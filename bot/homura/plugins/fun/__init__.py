@@ -39,11 +39,11 @@ class FunPlugin(PluginBase):
         usage="[cat,dog]",
         global_command=True
     )
-    async def animal(self, channel, args):
+    async def animal(self, args):
         start = datetime.datetime.now()
         try:
             animal_url = await self.animal_api.get(args[0])
-        except Exception as e:
+        except:
             await self.bot.on_error("animal")
             return Message(f"Could not fetch your {args[0]}. :(")
 
@@ -62,7 +62,7 @@ class FunPlugin(PluginBase):
         description="TODO: REMOVE THIS COMMAND LOL",
         global_command=True
     )
-    async def egg(self, message):
+    async def egg(self):
         em = discord.Embed(title='EGG EGG EG', description='EGGEGEGEGEGEGEG.', colour=0x416600)
         em.set_author(name='EGGEGG', icon_url="https://i.imgur.com/yuesnwm.jpg")
         em.set_footer(text="Egg.", icon_url="https://i.imgur.com/7msZamU.png")

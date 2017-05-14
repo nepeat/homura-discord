@@ -1,8 +1,5 @@
 # coding=utf-8
 import logging
-from itertools import zip_longest
-
-import discord
 
 from homura.lib.structure import Message
 from homura.plugins.base import PluginBase
@@ -21,7 +18,7 @@ class RolesPlugin(PluginBase):
         description="Toggles a role that will be automatically given to new members.",
         usage="autorole <role_name>",
     )
-    async def cmd_autorole(self, message, server, args):
+    async def cmd_autorole(self, server, args):
         role = self.get_role(server, args[0])
 
         if not role:

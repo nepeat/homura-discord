@@ -1,3 +1,4 @@
+# coding=utf-8
 from disquotes.model.types import EVENT_TYPES
 
 

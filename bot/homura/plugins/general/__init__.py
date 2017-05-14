@@ -1,5 +1,4 @@
 # coding=utf-8
-import datetime
 import logging
 import operator
 
@@ -54,7 +53,7 @@ class GeneralPlugin(PluginBase):
         global_command=True,
         usage="help [section|permissions]"
     )
-    async def help(self, message, is_owner, permissions, args):
+    async def help(self, is_owner, permissions, args):
         section = "all"
 
         if args:
@@ -71,7 +70,7 @@ class GeneralPlugin(PluginBase):
                 if not can_use and section != "permissions":
                     continue
 
-                if section ==  "permissions":
+                if section == "permissions":
                     description = command["permission"]
                 else:
                     description = command["description"]

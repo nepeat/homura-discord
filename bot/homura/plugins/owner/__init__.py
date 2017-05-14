@@ -81,7 +81,7 @@ class OwnerPlugin(PluginBase):
             results = eval(args[0])
             if inspect.isawaitable(results):
                 results = await results
-        except Exception as e:
+        except:
             log.error(f"Error in eval '{args[0]}'")
             traceback.print_exc()
             return Message("```%s```" % (traceback.format_exc()))
@@ -97,7 +97,6 @@ class OwnerPlugin(PluginBase):
     )
     async def errortest(self):
         return Message(1 / 0)
-
 
     @command(
         patterns=[

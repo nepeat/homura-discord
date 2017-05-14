@@ -25,6 +25,7 @@ except ValueError as e:
 
 bot = NepeatBot()
 
+
 def escape(text):
     return text.replace("|", "\|")
 

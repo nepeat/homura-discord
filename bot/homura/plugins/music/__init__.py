@@ -8,6 +8,7 @@ log = logging.getLogger(__name__)
 
 # Thanks Rhino bot!
 
+
 class MusicPlugin(MusicCommands):
     # Discord events
 

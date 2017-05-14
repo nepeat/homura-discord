@@ -32,7 +32,7 @@ class MusicCommands(MusicBase):
         description="Music status",
         usage="music"
     )
-    async def music(self, message, args):
+    async def music(self, message):
         player = await self.get_player(message.server, message.author)
 
         embed = self.create_voice_embed()
@@ -196,8 +196,6 @@ class MusicCommands(MusicBase):
             value="Up next!" if (position == 1 and player.is_stopped) else position
         )
 
-
-
         if not (position == 1 and player.is_stopped):
             embed.add_field(
                 name="Time remaining",
@@ -288,7 +286,7 @@ class MusicCommands(MusicBase):
         description="Skips the current playing song.",
         usage="music skip"
     )
-    async def skip(self, message, args):
+    async def skip(self, message):
         player = await self.get_player(message.server, message.author)
 
         if player.is_stopped:
@@ -467,7 +465,7 @@ class MusicCommands(MusicBase):
         description="Makes the bot disconnect",
         usage="music leave"
     )
-    async def leave(self, message, args):
+    async def leave(self, message):
         if not message.server.voice_client:
             return Message(embed=self.create_voice_embed("The bot is not in the server!"))
 

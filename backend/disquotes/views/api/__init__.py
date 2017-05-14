@@ -1,3 +1,4 @@
+# coding=utf-8
 from flask import Blueprint, g, jsonify, request
 from flask_restplus import Api, Resource, abort, fields
 from sqlalchemy import or_

@@ -22,7 +22,7 @@ class NSFWPlugin(PluginBase):
         description="Fetches an image from gelbooru, rule34, and e621.",
         usage="nsfw <query>"
     )
-    async def rule34(self, channel, args):
+    async def rule34(self, args):
         image = await self.fetcher.random(args[0].strip())
         if not image:
             return Message(

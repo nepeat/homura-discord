@@ -89,7 +89,6 @@ class ImageFetcher(object):
             asjson=True
         )
 
-
         while images:
             image = self.safe_shuffle(images)
             images.remove(image)

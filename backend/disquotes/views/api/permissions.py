@@ -1,8 +1,9 @@
+# coding=utf-8
 from flask import g
 from flask_restplus import Namespace, abort, fields
 from sqlalchemy import and_, or_
 
-from disquotes.model import Channel, Permission, Server
+from disquotes.model import Permission
 from disquotes.views.api.base import ResourceBase
 
 ns = Namespace("permissions", "Permissions storage.")

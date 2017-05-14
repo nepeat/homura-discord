@@ -8,6 +8,8 @@ from concurrent.futures import ThreadPoolExecutor
 
 import youtube_dl
 
+from homura.lib.util import md5_string
+
 YOUTUBEDL_ARGS = {
     "format": "bestaudio/best",
     "extractaudio": True,
@@ -27,6 +29,7 @@ ONE_DAY_IN_SECONDS = 60 * 60 * 24
 
 youtube_dl.utils.bug_reports_message = lambda: ""
 
+
 class Downloader(object):
     def __init__(self, bot, download_folder=None):
         self.bot = bot
@@ -43,14 +46,6 @@ class Downloader(object):
 
         return ytdl
 
-    def hash_string(self, data):
-        if isinstance(data, str):
-            data = data.encode("utf8")
-
-        m = hashlib.md5()
-        m.update(data)
-        return m.hexdigest()
-
     async def set_cache(self, url, data, **kwargs):
         """
         Sets cached data into Redis for extract_info for one day.
@@ -60,7 +55,7 @@ class Downloader(object):
         :param kwargs: extract_info kwargs. process is True = ":processed" appended to cache key 
         :return: 
         """
-        cachekey = "musicbot:cache:" + self.hash_string(url)
+        cachekey = "musicbot:cache:" + md5_string(url)
 
         # Do not cache searches on YouTube.
         if "url" in data and data["url"].startswith("ytsearch"):
@@ -83,7 +78,7 @@ class Downloader(object):
                        process is True = ":processed" appended to cache key 
         :return: 
         """
-        cachekey = "musicbot:cache:" + self.hash_string(url)
+        cachekey = "musicbot:cache:" + md5_string(url)
 
         # Don't hit the cache if we are downloading the video.
         if "download" in kwargs and kwargs["download"] is True:

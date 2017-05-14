@@ -106,7 +106,6 @@ class NepeatBot(discord.Client):
                 count=float(delta)
             )
 
-
     async def plugin_dispatch(self, event, *args, **kwargs):
         method = "on_" + event
 
