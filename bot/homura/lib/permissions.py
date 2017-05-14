@@ -91,10 +91,13 @@ class Permissions(object):
 
         self.perms = await self.get_perms()
 
-    async def get_perms(self, serveronly=False) -> Optional[List[str]]:
+    async def get_perms(self, channel_id=None, serveronly=False) -> Optional[List[str]]:
+        if not channel_id:
+            channel_id = self.channel.id
+
         params = {
             "server": self.server.id,
-            "channel": self.channel.id if not serveronly else None
+            "channel": channel_id if not serveronly else None
         }
         try:
             async with self.bot.aiosession.get(

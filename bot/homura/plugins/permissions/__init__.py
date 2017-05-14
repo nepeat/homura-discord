@@ -1,6 +1,6 @@
 # coding=utf-8
 import logging
-
+from operator import sub
 import discord
 from homura.lib.structure import Message
 from homura.plugins.base import PluginBase
@@ -17,22 +17,26 @@ class PermissionsPlugin(PluginBase):
         description="Lists active permissions for a server or channel.",
         usage="permission list [server|channel]"
     )
-    async def list_permission(self, permissions, args):
+    async def list_permission(self, permissions, server, args):
         embed = discord.Embed(
             title="Permissions"
         )
 
-        channel_perms = await permissions.get_perms()
-        embed.add_field(
-            name="Channel",
-            value="\n".join(channel_perms if channel_perms else ["None!"])
-        )
-
-        server_perms = await permissions.get_perms(True)
+        server_perms = await permissions.get_perms(serveronly=True)
         embed.add_field(
             name="Server",
             value="\n".join(server_perms if server_perms else ["None!"])
         )
+
+        for channel in server.channels:
+            channel_perms = [x for x in await permissions.get_perms(channel.id) if x not in server_perms]
+            if not channel_perms:
+                continue
+
+            embed.add_field(
+                name=f"#{channel.name}",
+                value="\n".join(channel_perms if channel_perms else ["None!"])
+            )
 
         return Message(embed=embed)
 
