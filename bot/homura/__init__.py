@@ -168,9 +168,9 @@ class NepeatBot(discord.Client):
 
         return await super().delete_messages(messages)
 
-    async def logout(self):
+    async def close(self):
         await self.plugin_dispatch("logout")
-        return await super().logout()
+        return await super().close()
 
     # Events
 
