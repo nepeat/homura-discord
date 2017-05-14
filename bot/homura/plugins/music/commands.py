@@ -91,7 +91,7 @@ class MusicCommands(MusicBase):
             inline=False
         )
 
-        return Message(embed=embed)
+        return Message(embed)
 
     @command(
         "music (play|queue|prepend|stream) (.+)",
@@ -202,7 +202,7 @@ class MusicCommands(MusicBase):
                 value=await player.playlist.estimate_time_until(position, player)
             )
 
-        return Message(embed=embed)
+        return Message(embed)
 
     @command(
         patterns=[

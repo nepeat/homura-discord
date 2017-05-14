@@ -54,7 +54,7 @@ class FunPlugin(PluginBase):
         delta = end - start
         embed.set_footer(text="rendered in {}ms".format(int(delta.total_seconds() * 1000)))
 
-        return Message(embed=embed)
+        return Message(embed)
 
     @command(
         "egg",
@@ -69,4 +69,4 @@ class FunPlugin(PluginBase):
         em.add_field(name="EGG", value="ROLLS")
         em.add_field(name="ROLL", value="EGG")
         em.set_image(url="https://i.imgur.com/YFeZaoM.jpg")
-        return Message(embed=em)
+        return Message(em)

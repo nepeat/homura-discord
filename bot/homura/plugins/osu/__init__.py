@@ -77,4 +77,4 @@ class OsuPlugin(PluginBase):
             value="#" + format(int(info["pp_rank"] or "0"), ',d')
         )
 
-        return Message(embed=embed)
+        return Message(embed)

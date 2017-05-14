@@ -45,4 +45,4 @@ class MusicPlugin(MusicCommands):
                 inline=False
             )
 
-            await self.bot.send_message_object(Message(embed=embed), channel)
+            await self.bot.send_message_object(Message(embed), channel)

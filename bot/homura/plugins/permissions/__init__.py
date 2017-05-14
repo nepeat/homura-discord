@@ -39,7 +39,7 @@ class PermissionsPlugin(PluginBase):
                 value="\n".join(channel_perms if channel_perms else ["None!"])
             )
 
-        return Message(embed=embed)
+        return Message(embed)
 
     @command(
         "permission channel add (.+)",

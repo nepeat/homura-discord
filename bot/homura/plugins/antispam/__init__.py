@@ -35,7 +35,7 @@ class AntispamPlugin(PluginBase):
             value=await self.redis.scard("antispam:{}:warnlist".format(message.server.id)),
         )
 
-        return Message(embed=embed)
+        return Message(embed)
 
     @command(
         "antispam exclude$",
