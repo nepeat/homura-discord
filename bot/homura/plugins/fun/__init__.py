@@ -4,11 +4,11 @@ import logging
 
 import discord
 
+from homura.apis.animals import AnimalAPI
 from homura.lib.cached_http import CachedHTTP
 from homura.lib.structure import Message
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command
-from homura.plugins.fun.animal_api import AnimalAPI
 
 log = logging.getLogger(__name__)
 
