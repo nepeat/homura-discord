@@ -4,7 +4,7 @@ import re
 
 import discord
 from homura.lib.structure import Message
-from homura.plugins.antispam import images, nsfw
+from homura.plugins.antispam import images
 from homura.plugins.antispam.signals import Delete, Warning
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command
@@ -23,8 +23,6 @@ class AntispamPlugin(PluginBase):
         usage="antispam"
     )
     async def antispam_status(self, message):
-        nsfw_on = await self.redis.sismember("antispam:nsfwfilter", message.server.id)
-
         embed = discord.Embed(
             colour=discord.Colour.blue(),
             title="Antispam status"
@@ -34,9 +32,6 @@ class AntispamPlugin(PluginBase):
         ).add_field(
             name="Warnlist entries",
             value=await self.redis.scard("antispam:{}:warnlist".format(message.server.id)),
-        ).add_field(
-            name="NSFW Filter status",
-            value="on" if nsfw_on else "off",
         )
 
         return Message(embed=embed)
@@ -115,10 +110,7 @@ class AntispamPlugin(PluginBase):
             icon = "x_circle"
             colour = discord.Colour.red()
 
-        if event_type == "nsfw":
-            title = "That is NSF[W/L], do not click"
-        else:
-            title = f"{event_type.capitalize()} phrase"
+        title = f"{event_type.capitalize()} phrase"
 
         return discord.Embed(
             colour=colour,
@@ -150,9 +142,6 @@ class AntispamPlugin(PluginBase):
             return
 
         try:
-            if await self.redis.sismember("antispam:nsfwfilter", message.server.id):
-                await nsfw.check(self.bot.aiosession, message)
-
             if await self.redis.sismember("antispam:imagechannels", message.channel.id):
                 await images.check(self.bot.aiosession, message)
 

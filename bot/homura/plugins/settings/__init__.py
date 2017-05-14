@@ -34,18 +34,6 @@ class SettingsPlugin(PluginBase):
         return Message("Updated!")
 
     @command(
-        "settings nsfwfilter (enable|on|disable|off)$",
-        permission_name="settings.set.nsfwfilter",
-        description="Toggles the NSFW filter.",
-        usage="settings nsfwfilter [enable|disable]"
-    )
-    async def toggle_nsfw(self, message, args):
-        action = self.redis.sadd if args[0] in ("enable", "on") else self.redis.srem
-        await action("antispam:nsfwfilter", [message.server.id])
-
-        return Message("Updated!")
-
-    @command(
         "settings imagechannel (enable|on|disable|off)$",
         permission_name="settings.set.imagechannel",
         description="Toggles the image only mode.",
