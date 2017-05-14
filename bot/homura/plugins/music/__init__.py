@@ -1,5 +1,6 @@
 # coding=utf-8
 import logging
+import asyncio
 
 from homura.lib.structure import Message
 from homura.plugins.music.commands import MusicCommands
@@ -14,10 +15,15 @@ class MusicPlugin(MusicCommands):
 
     async def on_ready(self):
         for channel_id in await self.bot.redis.smembers_asset("music:reload"):
-            voice_channel = self.bot.get_channel(channel_id)
+            voice_channel = self.bot.get_channel(int(channel_id))
             if voice_channel:
-                await self.bot.join_voice_channel(voice_channel)
-                await self.get_player(voice_channel.server)
+                try:
+                    await voice_channel.connect(timeout=5)
+                except asyncio.TimeoutError:
+                    await asyncio.sleep(2)
+                    await voice_channel.connect(timeout=5)
+
+                await self.get_player(voice_channel.guild)
             await self.bot.redis.spop("music:reload")
 
     async def on_logout(self):

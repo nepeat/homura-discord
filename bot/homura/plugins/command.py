@@ -42,9 +42,8 @@ def command(
 
             match = None
             for prog in progs:
-                log.debug("prog %s" % prog)
                 match = prog.match(message.content)
-                log.debug("matching %s" % match)
+                log.debug("prog %s; matched %s" % (prog, match))
                 if match:
                     break
 
@@ -95,8 +94,8 @@ def command(
 
             try:
                 is_admin = (
-                    author.server_permissions.manage_server or
-                    author.server_permissions.administrator or
+                    author.guild_permissions.manage_guild or
+                    author.guild_permissions.administrator or
                     author.id in OWNER_IDS
                 )
             except AttributeError:
@@ -134,7 +133,7 @@ def command(
 
             log.info("{}#{}@{} >> {}".format(message.author.name,
                                              message.author.discriminator,
-                                             message.server.name if message.server else "PM",
+                                             message.guild.name if message.guild else "PM",
                                              message.clean_content))
 
             # Parameters for the command function.
@@ -159,14 +158,14 @@ def command(
             if params.pop('author', None):
                 handler_kwargs['author'] = message.author
 
-            if params.pop('server', None):
-                handler_kwargs['server'] = message.server
+            if params.pop('guild', None):
+                handler_kwargs['guild'] = message.guild
 
             if params.pop('user_mentions', None):
-                handler_kwargs['user_mentions'] = list(map(message.server.get_member, message.raw_mentions))
+                handler_kwargs['user_mentions'] = list(map(message.guild.get_member, message.raw_mentions))
 
             if params.pop('channel_mentions', None):
-                handler_kwargs['channel_mentions'] = list(map(message.server.get_channel, message.raw_channel_mentions))
+                handler_kwargs['channel_mentions'] = list(map(message.guild.get_channel, message.raw_channel_mentions))
 
             if params.pop('match', None):
                 handler_kwargs['match'] = match
@@ -192,9 +191,9 @@ def command(
                 ).set_thumbnail(
                     url="https://nepeat.github.io/assets/icons/error.png"
                 )
-                return await self.bot.send_message(message.channel, embed=embed)
+                return await message.channel.send(embed=embed)
             except BackendError as e:
-                return await self.bot.send_message(message.channel, str(e))
+                return await message.channel.send(str(e))
             except:
                 embed = discord.Embed(
                     title="Something happened",
@@ -206,7 +205,7 @@ def command(
 
                 # Add the Sentry code if it can be obtained
 
-                sentry_code = await self.bot.on_error("command:" + func.__name__)
+                sentry_code = self.bot.on_error("command:" + func.__name__)
                 if sentry_code:
                     embed.set_footer(text=sentry_code)
 
@@ -218,7 +217,7 @@ def command(
                         value=f"```{traceback.format_exc()}```"
                     )
 
-                return await self.bot.send_message(message.channel, embed=embed)
+                return await message.channel.send(embed=embed)
 
             if response and isinstance(response, Message):
                 await self.bot.send_message_object(response, message.channel, message.author, message)

@@ -21,7 +21,7 @@ class Permissions(object):
         self.backend_url = os.environ.get("BOT_WEB", "http://localhost:5000")
         self.bot = bot
         self.message = message
-        self.server = message.server
+        self.guild = message.guild
         self.channel = message.channel
         self.perms = []
 
@@ -39,7 +39,7 @@ class Permissions(object):
     def redis(self):
         return self.bot.redis
 
-    async def alter(self, permission: str, remove: bool, serverwide: bool=False):
+    async def alter(self, permission: str, remove: bool, guildwide: bool=False):
         permission = permission.strip().lower()
 
         if remove:
@@ -48,8 +48,8 @@ class Permissions(object):
             action = self.bot.aiosession.put
 
         payload = {
-            "server": self.server.id,
-            "channel": self.channel.id if (self.channel and not serverwide) else None,
+            "server": self.guild.id,
+            "channel": self.channel.id if (self.channel and not guildwide) else None,
             "perm": permission
         }
 
@@ -71,34 +71,34 @@ class Permissions(object):
         except aiohttp.errors.ClientError:
             pass
 
-    async def add(self, permission: str, serverwide: bool=False):
-        await self.alter(permission, False, serverwide)
+    async def add(self, permission: str, guildwide: bool=False):
+        await self.alter(permission, False, guildwide)
 
-    async def remove(self, permission: str, serverwide: bool=False):
-        await self.alter(permission, True, serverwide)
+    async def remove(self, permission: str, guildwide: bool=False):
+        await self.alter(permission, True, guildwide)
 
     async def get_all(self):
         channel_perms = await self.get_perms()
-        server_perms = await self.get_perms(serveronly=True)
+        guild_perms = await self.get_perms(guildonly=True)
 
         return {
-            "server": server_perms,
+            "server": guild_perms,
             "channel": channel_perms
         }
 
     async def load_perms(self) -> None:
-        if self.channel.is_private:
+        if isinstance(self.channel, discord.abc.PrivateChannel):
             return None
 
         self.perms = await self.get_perms()
 
-    async def get_perms(self, channel_id: str=None, serveronly: bool=False) -> Optional[List[str]]:
+    async def get_perms(self, channel_id: int=None, guildonly: bool=False) -> Optional[List[str]]:
         if not channel_id:
             channel_id = self.channel.id
 
         params = {
-            "server": self.server.id,
-            "channel": channel_id if not serveronly else None
+            "server": self.guild.id,
+            "channel": channel_id if not guildonly else None
         }
         try:
             async with self.bot.aiosession.get(
@@ -129,7 +129,7 @@ class Permissions(object):
             return True
 
         try:
-            if author and author.server_permissions.administrator:
+            if author and author.guild_permissions.administrator:
                 return True
         except AttributeError:
             pass

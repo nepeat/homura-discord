@@ -18,19 +18,19 @@ class PermissionsPlugin(PluginBase):
         description="Lists active permissions for a server or channel.",
         usage="permission list [server|channel]"
     )
-    async def list_permission(self, permissions, server):
+    async def list_permission(self, permissions, guild):
         embed = discord.Embed(
             title="Permissions"
         )
 
-        server_perms = await permissions.get_perms(serveronly=True)
+        guild_perms = await permissions.get_perms(guildonly=True)
         embed.add_field(
             name="Server",
-            value="\n".join(server_perms if server_perms else ["None!"])
+            value="\n".join(guild_perms if guild_perms else ["None!"])
         )
 
-        for channel in server.channels:
-            channel_perms = [x for x in await permissions.get_perms(channel.id) if x not in server_perms]
+        for channel in guild.channels:
+            channel_perms = [x for x in await permissions.get_perms(channel.id) if x not in guild_perms]
             if not channel_perms:
                 continue
 
@@ -71,8 +71,8 @@ class PermissionsPlugin(PluginBase):
         description="Adds permissions to a server.",
         usage="permission server add <permission>"
     )
-    async def server_add_permission(self, permissions, args):
-        await permissions.add(args[0], serverwide=True)
+    async def guild_add_permission(self, permissions, args):
+        await permissions.add(args[0], guildwide=True)
         return Message(
             f"`{sanitize(args[0])}` has been added serverwide!"
         )
@@ -83,8 +83,8 @@ class PermissionsPlugin(PluginBase):
         description="Removes permissions from a server.",
         usage="permission server remove <permission>"
     )
-    async def server_remove_permission(self, permissions, args):
-        await permissions.remove(args[0], serverwide=True)
+    async def guild_remove_permission(self, permissions, args):
+        await permissions.remove(args[0], guildwide=True)
         return Message(
             f"`{sanitize(args[0])}` has been removed serverwide!"
         )

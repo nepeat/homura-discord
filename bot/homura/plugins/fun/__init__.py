@@ -44,7 +44,7 @@ class FunPlugin(PluginBase):
         try:
             animal_url = await self.animal_api.get(args[0])
         except:
-            await self.bot.on_error("animal")
+            self.bot.on_error("animal")
             return Message(f"Could not fetch your {args[0]}. :(")
 
         embed = discord.Embed(color=discord.Colour.gold())

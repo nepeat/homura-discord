@@ -16,7 +16,7 @@ class SettingsPlugin(PluginBase):
         usage="settings get logchannel"
     )
     async def get_log_channel(self, message):
-        log_channel = await self.redis.hget(f"{message.server.id}:settings", "log_channel")
+        log_channel = await self.redis.hget(f"{message.guild.id}:settings", "log_channel")
         if log_channel:
             return Message(f"The log channel is <#{log_channel}>")
 
@@ -29,7 +29,7 @@ class SettingsPlugin(PluginBase):
         usage="settings set logchannel"
     )
     async def set_log_channel(self, message):
-        await self.redis.hset(f"{message.server.id}:settings", "log_channel", message.channel.id)
+        await self.redis.hset(f"{message.guild.id}:settings", "log_channel", message.channel.id)
         return Message("Updated!")
 
     @command(

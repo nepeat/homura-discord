@@ -3,8 +3,10 @@ import asyncio
 import logging
 from enum import Enum
 from typing import Optional
+import traceback
 
 import discord
+import functools
 
 import audioop
 from homura.lib.eventemitter import EventEmitter
@@ -24,24 +26,15 @@ class MusicPlayerState(Enum):
         return self.name
 
 
-class PatchedBuff(object):
-    """
-        PatchedBuff monkey patches a readable object, allowing you to vary what the volume is as the song is playing.
-    """
-
-    def __init__(self, buff, *args):
-        self.buff = buff
+class HellPCMVolumeTransformer(discord.PCMVolumeTransformer):
+    def __init__(self, *args, **kwargs):
         self.frame_count = 0
-        self.volume = 1.0
+        super().__init__(*args, **kwargs)
 
-    def read(self, frame_size):
+    def read(self):
         self.frame_count += 1
-        frame = self.buff.read(frame_size)
-
-        if self.volume != 1:
-            frame = audioop.mul(frame, 2, self.volume)
-
-        return frame
+        ret = self.original.read()
+        return audioop.mul(ret, 2, self._volume)
 
 
 class Player(EventEmitter):
@@ -57,7 +50,6 @@ class Player(EventEmitter):
         self.skip_state = SkipState()
 
         self._play_lock = asyncio.Lock()
-        self._current_player = None
         self._current_entry = None
         self.state = MusicPlayerState.STOPPED
 
@@ -71,8 +63,8 @@ class Player(EventEmitter):
             return
 
         self._volume = value
-        if self._current_player:
-            self._current_player.buff.volume = value
+        if self.voice_client.source:
+            self.voice_client.source.volume = value
 
     def on_entry_added(self, playlist, entry):
         if self.is_stopped:
@@ -98,24 +90,27 @@ class Player(EventEmitter):
             entry.quiet = True
             self.playlist.entries.appendleft(entry)
             self.loop.create_task(self.plugin.bot.redis.lpush(self.playlist.queue_key, [entry.to_json()]))
-            self._kill_current_player()
+            self.voice_client.stop()
 
     def skip(self):
-        self._kill_current_player()
+        if self.voice_client.is_playing():
+            self.voice_client.stop()
+        else:
+            self.after_callback()
 
     def stop(self):
         self.state = MusicPlayerState.STOPPED
-        self._kill_current_player()
+        self.voice_client.stop()
 
     def resume(self):
-        if self.is_paused and self._current_player:
-            self._current_player.resume()
+        if self.is_paused:
+            self.voice_client.resume()
             self.state = MusicPlayerState.PLAYING
             return
 
-        if self.is_paused and not self._current_player:
+        if self.is_paused and not self.voice_client.is_playing():
             self.state = MusicPlayerState.PLAYING
-            self._kill_current_player()
+            self.voice_client.stop()
             return
 
         raise ValueError("Cannot resume playback from state %s" % self.state)
@@ -123,9 +118,7 @@ class Player(EventEmitter):
     def pause(self):
         if self.is_playing:
             self.state = MusicPlayerState.PAUSED
-
-            if self._current_player:
-                self._current_player.pause()
+            self.voice_client.pause()
 
             return
 
@@ -143,33 +136,21 @@ class Player(EventEmitter):
         self.state = MusicPlayerState.DEAD
         self.playlist.clear(kill=True, last_entry=current)
         self._events.clear()
-        self._kill_current_player()
+        self.voice_client.stop()
 
-    def _playback_finished(self):
+    def after_callback(self, e=None):
+        if e and isinstance(e, Exception):
+            self.plugin.bot.on_error("music_thread")
+
         entry = self._current_entry
 
-        if self._current_player:
-            self._current_player.after = None
-            self._kill_current_player()
+        if self.voice_client._player:
+            self.voice_client._player.after = None
 
         self._current_entry = None
 
         if not self.is_stopped and not self.is_dead:
             self.play(_continue=True)
-
-    def _kill_current_player(self):
-        if self._current_player:
-            if self.is_paused:
-                self.resume()
-
-            try:
-                self._current_player.stop()
-            except OSError:
-                pass
-            self._current_player = None
-            return True
-
-        return False
 
     def play(self, _continue=False):
         self.loop.create_task(self._play(_continue=_continue))
@@ -190,46 +171,41 @@ class Player(EventEmitter):
                     return
 
                 # In-case there was a player, kill it. RIP.
-                self._kill_current_player()
+                if self.voice_client.is_playing():
+                    self.voice_client.stop()
 
                 # Set the player options.
-                before_options = "-nostdin -ss {seek}".format(
+                options = "-nostdin -ss {seek}".format(
                     seek=entry.seek
                 )
 
-                options = "-vn -b:a 128k"
-
-                self._current_player = self._monkeypatch_player(self.voice_client.create_ffmpeg_player(
-                    entry.filename,
-                    before_options=before_options,
+                self.voice_client.play(discord.FFmpegPCMAudio(
+                    source=entry.filename,
                     options=options,
+                ),
                     # Threadsafe call soon, b/c after will be called from the voice playback thread.
-                    after=lambda: self.loop.call_soon_threadsafe(self._playback_finished)
-                ))
-                self._current_player.setDaemon(True)
-                self._current_player.buff.volume = self.volume
+                    after=lambda e: self.loop.call_soon_threadsafe(functools.partial(self.after_callback, e))
+                )
+
+                self.voice_client.source = HellPCMVolumeTransformer(self.voice_client.source)
+                self.voice_client.volume = self.volume
 
                 self.state = MusicPlayerState.PLAYING
                 self._current_entry = entry
 
-                self._current_player.start()
                 if not entry.quiet:
                     self.emit("play", player=self, entry=entry)
 
                 if entry.seek:
-                    self._current_player.buff.frame_count += round(entry.seek / 0.02)
+                    self.voice_client.source.frame_count += round(entry.seek / 0.02)
 
-    def _monkeypatch_player(self, player):
-        original_buff = player.buff
-        player.buff = PatchedBuff(original_buff)
-        return player
 
     @property
-    def server(self) -> Optional[discord.Server]:
-        return self.voice_client.server
+    def guild(self) -> Optional[discord.Guild]:
+        return self.voice_client.guild
 
     @property
-    def channel(self) -> Optional[discord.Channel]:
+    def channel(self) -> Optional[discord.VoiceChannel]:
         return self.voice_client.channel
 
     @property
@@ -254,5 +230,7 @@ class Player(EventEmitter):
 
     @property
     def progress(self):
-        if self._current_player:
-            return round(self._current_player.buff.frame_count * 0.02)
+        if self.voice_client.source:
+            return round(self.voice_client.source.frame_count * 0.02)
+
+        return 0

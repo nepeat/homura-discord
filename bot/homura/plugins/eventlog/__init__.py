@@ -13,7 +13,7 @@ log = logging.getLogger(__name__)
 
 class EventLogPlugin(PluginBase):
     requires_admin = True
-    EVENTS = ["join", "leave", "server_rename", "member_rename", "message_edit", "message_delete"]
+    EVENTS = ["join", "leave", "guild_rename", "member_rename", "message_edit", "message_delete"]
 
     @command(
         "eventlog",
@@ -22,7 +22,7 @@ class EventLogPlugin(PluginBase):
         usage="eventlog"
     )
     async def eventlog(self, message):
-        enabled = await self.redis.smembers_asset("channellog:{}:enabled".format(message.server.id))
+        enabled = await self.redis.smembers_asset("channellog:{}:enabled".format(message.guild.id))
 
         return Message("**__Enabled__**\n{enabled}\n**__Disabled__**\n{disabled}".format(
             enabled="\n".join(enabled),
@@ -36,14 +36,14 @@ class EventLogPlugin(PluginBase):
         usage="eventlog [enable|disable]"
     )
     async def toggle_event(self, message, args):
-        enabled = await self.redis.smembers_asset("channellog:{}:enabled".format(message.server.id))
+        enabled = await self.redis.smembers_asset("channellog:{}:enabled".format(message.guild.id))
 
         action = self.redis.sadd if args[0] == "enable" else self.redis.srem
 
         if args[1] == "all":
-            await action("channellog:{}:enabled".format(message.server.id), EventLogPlugin.EVENTS)
+            await action("channellog:{}:enabled".format(message.guild.id), EventLogPlugin.EVENTS)
         else:
-            await action("channellog:{}:enabled".format(message.server.id), [args[1]])
+            await action("channellog:{}:enabled".format(message.guild.id), [args[1]])
 
         return Message("Done!")
 
@@ -53,7 +53,7 @@ class EventLogPlugin(PluginBase):
     async def on_member_remove(self, member):
         await self.log_member(member, False)
 
-    async def on_server_update(self, before, after):
+    async def on_guild_update(self, before, after):
         if before.name != after.name:
             embed = discord.Embed(
                 colour=discord.Colour.gold(),
@@ -67,7 +67,7 @@ class EventLogPlugin(PluginBase):
                 name="After",
                 value=sanitize(after.name)
             )
-            await self.log(embed, before, "server_rename")
+            await self.log(embed, before, "guild_rename")
 
     async def on_member_update(self, before, after):
         old = before.nick if before.nick else before.name
@@ -91,7 +91,7 @@ class EventLogPlugin(PluginBase):
             inline=False
         )
 
-        await self.log(embed, before.server, "member_rename")
+        await self.log(embed, before.guild, "member_rename")
 
     async def on_message_edit(self, before, after):
         # Ignore self messages.
@@ -123,13 +123,13 @@ class EventLogPlugin(PluginBase):
             value=(after.clean_content[:900] + '...') if len(after.clean_content) > 900 else after.clean_content
         )
 
-        await self.log(embed, before.server, "message_edit")
+        await self.log(embed, before.guild, "message_edit")
 
     async def on_message_delete(self, message):
         if message.author == self.bot.user:
             return
 
-        if await self.redis.sismember("ignored:{}".format(message.server.id), message.id):
+        if await self.redis.sismember("ignored:{}".format(message.guild.id), message.id):
             return
 
         # Check: Webhooks have no display name.
@@ -163,19 +163,19 @@ class EventLogPlugin(PluginBase):
             value=(message.clean_content[:900] + '...') if len(message.clean_content) > 900 else message.clean_content
         )
 
-        await self.log(embed, message.server, "message_delete")
+        await self.log(embed, message.guild, "message_delete")
 
-    async def log(self, message, server, event_type):
-        log_channel = self.bot.get_channel(await self.redis.hget(f"{server.id}:settings", "log_channel"))
+    async def log(self, message, guild, event_type):
+        log_channel = self.bot.get_channel(await self.redis.hget(f"{guild.id}:settings", "log_channel"))
         if not log_channel:
             return
 
-        enabled = await self.redis.sismember("channellog:{}:enabled".format(server.id), event_type)
+        enabled = await self.redis.sismember("channellog:{}:enabled".format(guild.id), event_type)
         if enabled:
             if isinstance(message, discord.Embed):
-                await self.bot.send_message(log_channel, embed=message)
+                await log_channel.send(embed=message)
             else:
-                await self.bot.send_message(log_channel, message)
+                await log_channel.send(message)
 
     async def log_member(self, member, joining):
         embed = discord.Embed(
@@ -188,4 +188,4 @@ class EventLogPlugin(PluginBase):
             value=member.mention
         )
 
-        await self.log(embed, member.server, "join" if joining else "leave")
+        await self.log(embed, member.guild, "join" if joining else "leave")

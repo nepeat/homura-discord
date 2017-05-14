@@ -40,7 +40,7 @@ class OwnerPlugin(PluginBase):
         description="creative description goes here."
     )
     async def set_name(self, args):
-        await self.bot.edit_profile(username=args[0])
+        await self.bot.user.edit(username=args[0])
         return Message("\N{OK HAND SIGN}")
 
     @command(
@@ -62,7 +62,7 @@ class OwnerPlugin(PluginBase):
         try:
             with aiohttp.Timeout(10):
                 async with self.bot.aiosession.get(thing) as res:
-                    await self.bot.edit_profile(avatar=await res.read())
+                    await self.bot.user.edit(avatar=await res.read())
         except Exception as e:
             return Message("Unable to change avatar: {}".format(e))
 
@@ -76,7 +76,7 @@ class OwnerPlugin(PluginBase):
         permission_name="owner.never.gonna.happen",
         description="According to all known laws of security, there is no way an eval should be secure."
     )
-    async def eval_code(self, args, permissions, message):  # NOQA
+    async def eval_code(self, args, guild, permissions, message):  # NOQA
         try:
             results = eval(args[0])
             if inspect.isawaitable(results):

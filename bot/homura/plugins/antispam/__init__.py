@@ -29,10 +29,10 @@ class AntispamPlugin(PluginBase):
             title="Antispam status"
         ).add_field(
             name="Blacklist entries",
-            value=await self.redis.scard("antispam:{}:blacklist".format(message.server.id)),
+            value=await self.redis.scard("antispam:{}:blacklist".format(message.guild.id)),
         ).add_field(
             name="Warnlist entries",
-            value=await self.redis.scard("antispam:{}:warnlist".format(message.server.id)),
+            value=await self.redis.scard("antispam:{}:warnlist".format(message.guild.id)),
         )
 
         return Message(embed)
@@ -44,8 +44,8 @@ class AntispamPlugin(PluginBase):
         usage="antispam exclude"
     )
     async def exclude_channel(self, message):
-        excluded = await self.redis.sismember("antispam:{}:excluded".format(message.server.id), message.channel.id)
-        await self._alter_list(message.server, message.channel.id, list_name="excluded", add=not excluded, validate=False)
+        excluded = await self.redis.sismember("antispam:{}:excluded".format(message.guild.id), message.channel.id)
+        await self._alter_list(message.guild, message.channel.id, list_name="excluded", add=not excluded, validate=False)
         return Message("Channel is {action} antispam!".format(
             action="added to" if excluded else "excluded from"
         ))
@@ -61,15 +61,15 @@ class AntispamPlugin(PluginBase):
     )
     async def alter_list(self, message, match):
         action = True if match.group("action") == "add" else False
-        return await self._alter_list(message.server, match.group("filter"), list_name=match.group("list"), add=action)
+        return await self._alter_list(message.guild, match.group("filter"), list_name=match.group("list"), add=action)
 
-    async def _alter_list(self, server, value, list_name="warnlist", add=True, validate=True):
+    async def _alter_list(self, guild, value, list_name="warnlist", add=True, validate=True):
         action = self.redis.sadd if add else self.redis.srem
 
         if validate and not validate_regex(value):
             return Message("invalid [make this user friendly l8r]")
 
-        await action("antispam:{}:{}".format(server.id, list_name), [value])
+        await action("antispam:{}:{}".format(guild.id, list_name), [value])
         return Message("List updated!")
 
     @command(
@@ -89,10 +89,10 @@ class AntispamPlugin(PluginBase):
         elif "warn" in args[0].lower():
             list_name = "warnlist"
 
-        return await self._list_list(message.server, list_name)
+        return await self._list_list(message.guild, list_name)
 
-    async def _list_list(self, server, list_name):
-        list_key = "antispam:{}:{}".format(server.id, list_name)
+    async def _list_list(self, guild, list_name):
+        list_key = "antispam:{}:{}".format(guild.id, list_name)
 
         contents = await self.redis.smembers_asset(list_key)
 
@@ -133,14 +133,14 @@ class AntispamPlugin(PluginBase):
     async def on_message(self, message):
         # We cannot run in PMs :(
 
-        if not message.server:
+        if not message.guild:
             return
 
-        log_channel = self.bot.get_channel(await self.redis.hget(f"{message.server.id}:settings", "log_channel"))
+        log_channel = self.bot.get_channel(await self.redis.hget(f"{message.guild.id}:settings", "log_channel"))
         if not log_channel:
             return
 
-        if await self.redis.sismember("antispam:{}:excluded".format(message.server.id), message.channel.id):
+        if await self.redis.sismember("antispam:{}:excluded".format(message.guild.id), message.channel.id):
             return
 
         try:
@@ -149,7 +149,7 @@ class AntispamPlugin(PluginBase):
 
             await self.check_lists(message)
         except Delete as e:
-            if not message.author.server_permissions.administrator:
+            if not message.author.guild_permissions.administrator:
                 await self.bot.delete_message(message)
 
             # Do not log quiet deletes
@@ -157,10 +157,10 @@ class AntispamPlugin(PluginBase):
                 return
 
             embed = self.create_antispam_embed(message, str(e))
-            await self.bot.send_message(log_channel, embed=embed)
+            await log_channel.send(embed=embed)
         except Warning:
             embed = self.create_antispam_embed(message, "warning")
-            await self.bot.send_message(log_channel, embed=embed)
+            await log_channel.send(embed=embed)
 
     async def check_lists(self, message):
         if await self.check_list(message, "blacklist"):
@@ -169,7 +169,7 @@ class AntispamPlugin(PluginBase):
             raise Warning("warning")
 
     async def check_list(self, message, list_name):
-        items = await self.redis.smembers_asset("antispam:{}:{}".format(message.server.id, list_name))
+        items = await self.redis.smembers_asset("antispam:{}:{}".format(message.guild.id, list_name))
 
         for item in items:
             if re.search(item, message.clean_content, (re.I | re.M)):

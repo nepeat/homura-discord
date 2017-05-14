@@ -9,8 +9,10 @@ from typing import Optional
 
 import aiohttp
 import asyncio_redis
+from asyncio_redis.encoders import UTF8Encoder
 import discord
 import raven
+import warnings
 
 from homura.lib.stats import CustomInfluxDBClient
 from homura.lib.structure import Message
@@ -20,12 +22,14 @@ from homura.plugins.manager import PluginManager
 OPUS_LIBS = ['opus', 'libopus.so.0']
 
 # Logging configuration
-
-if "DEBUG" in os.environ:
+if "DEBUG_FLOOD" in os.environ:
     logging.basicConfig(level=logging.DEBUG)
 else:
     logging.basicConfig(level=logging.INFO)
-    logging.getLogger("asyncio").setLevel(logging.DEBUG)
+logging.getLogger("asyncio").setLevel(logging.DEBUG)
+
+if "DEBUG" in os.environ:
+    logging.getLogger("homura").setLevel(level=logging.DEBUG)
 
 log = logging.getLogger(__name__)
 
@@ -43,6 +47,27 @@ if not discord.opus.is_loaded():
     if not discord.opus.is_loaded():
         raise Exception("Opus library could not be loaded.")
 
+
+class BotEncoder(UTF8Encoder):
+    """Modified encoder that converts integers to strings"""
+    def encode_from_native(self, data):
+        if isinstance(data, int):
+            data = ":py_int:" + str(data)
+
+        return super().encode_from_native(data)
+
+    def decode_to_native(self, data):
+        decoded = super().decode_to_native(data)
+
+        if decoded.startswith(":py_int:"):
+            return int(decoded.lstrip(":py_int:"))
+
+        return decoded
+
+
+class UncheckedRedisProtocol(asyncio_redis.RedisProtocol):
+    def __init__(self, *args, **kwargs):
+        return super().__init__(enable_typechecking=False, *args, **kwargs)
 
 class NepeatBot(discord.Client):
     def __init__(self):
@@ -65,14 +90,7 @@ class NepeatBot(discord.Client):
 
         super().__init__()
 
-        self.loop.create_task(self.create_redis())
         self.aiosession = aiohttp.ClientSession(loop=self.loop)
-        self.plugin_manager = PluginManager(self)
-        self.plugin_manager.load_all()
-
-        # Exit signal handlers
-        for signame in ('SIGINT', 'SIGTERM'):
-            self.loop.add_signal_handler(getattr(signal, signame), self.signal)
 
     async def create_redis(self):
         self.redis = await asyncio_redis.Pool.create(
@@ -80,8 +98,15 @@ class NepeatBot(discord.Client):
             port=int(os.environ.get("REDIS_PORT", 6379)),
             db=int(os.environ.get("REDIS_DB", 0)),
             loop=self.loop,
-            poolsize=5
+            poolsize=5,
+            encoder=BotEncoder(),
+            protocol_class=UncheckedRedisProtocol
         )
+
+    async def real_init(self):
+        await self.create_redis()
+        self.plugin_manager = PluginManager(self)
+        self.plugin_manager.load_all()
 
     async def _plugin_run_event(self, method, *args, **kwargs):
         start = time.time()
@@ -92,7 +117,7 @@ class NepeatBot(discord.Client):
             pass
         except Exception:
             try:
-                await self.on_error(method.__name__, *args, **kwargs)
+                self.on_error(method.__name__, *args, **kwargs)
             except asyncio.CancelledError:
                 pass
 
@@ -120,9 +145,9 @@ class NepeatBot(discord.Client):
     async def send_message_object(
         self,
         message: Message,
-        channel: discord.Channel,
+        channel: discord.abc.Messageable,
         author: Optional[discord.User]=None,
-        invoking: Optional[discord.Message]=None
+        invoking: Optional[discord.abc.Messageable]=None
     ):
         content = message.content
         if message.reply and author:
@@ -131,8 +156,7 @@ class NepeatBot(discord.Client):
             else:
                 content = '{}'.format(author.mention)
 
-        sentmsg = await self.send_message(
-            channel,
+        sentmsg = await channel.send(
             content,
             embed=message.embed
         )
@@ -145,26 +169,24 @@ class NepeatBot(discord.Client):
             await asyncio.sleep(message.delete_after)
             await self.delete_message(sentmsg)
 
-    def signal(self):
-        self.loop.create_task(self.logout())
-
     # Overloads
 
-    async def send_message(self, *args, **kwargs):
-        self.stats.count("message", type="send")
-        return await super().send_message(*args, **kwargs)
+    async def delete_message(self, message, reason=None):
+        await self.redis.sadd("ignored:{}".format(message.guild.id), [message.id])
+        await self.redis.expire("ignored:{}".format(message.guild.id), 120)
 
-    async def delete_message(self, message):
-        await self.redis.sadd("ignored:{}".format(message.server.id), [message.id])
-        await self.redis.expire("ignored:{}".format(message.server.id), 120)
-
-        return await super().delete_message(message)
+        return await message.delete(reason)
 
     async def delete_messages(self, messages):
-        await self.redis.sadd("ignored:{}".format(messages[0].server.id), [m.id for m in messages])
-        await self.redis.expire("ignored:{}".format(messages[0].server.id), 120)
+        last_guild = messages[0].guild.id
+        for m in messages:
+            if last_guild != m.guild.id:
+                raise Exception("Mismatching guild id given for delete_messages")
 
-        return await super().delete_messages(messages)
+        await self.redis.sadd("ignored:{}".format(messages[0].guild.id), [m.id for m in messages])
+        await self.redis.expire("ignored:{}".format(messages[0].guild.id), 120)
+
+        return await messages[0].guild.delete_messages(messages)
 
     async def close(self):
         await self.plugin_dispatch("logout")
@@ -172,7 +194,7 @@ class NepeatBot(discord.Client):
 
     # Events
 
-    async def on_error(self, event_method, *args, **kwargs):
+    def on_error(self, event_method, *args, **kwargs):
         self.stats.count("error", method=event_method)
         log.error("Exception in %s", event_method)
         log.error(traceback.format_exc())
@@ -181,6 +203,8 @@ class NepeatBot(discord.Client):
     async def on_ready(self):
         self.stats.count("ready")
         log.info("Bot ready!")
+
+        await self.real_init()
 
         if hasattr(self, "shard_id") and self.shard_id:
             msg = "Shard {}/{} restarted".format(
@@ -191,12 +215,12 @@ class NepeatBot(discord.Client):
             msg = "Bot restarted!"
 
         log.info(msg)
-        log.info("Server count: {}".format(len(self.servers)))
+        log.info("Server count: {}".format(len(self.guilds)))
 
         await self.plugin_dispatch("ready")
 
-    async def on_server_join(self, server):
-        await self.plugin_dispatch("server_join", server)
+    async def on_guild_join(self, guild):
+        await self.plugin_dispatch("guild_join", guild)
 
     async def on_message(self, message):
         # Why. http://i.imgur.com/iQSuVnV.png
@@ -207,42 +231,32 @@ class NepeatBot(discord.Client):
 
         if message.content == "!shard?":
             if hasattr(self, 'shard_id'):
-                await self.send_message(
-                    message.channel,
+                await message.channel.send(
                     "shard {}/{}".format(self.shard_id + 1, self.shard_count)
                 )
 
         await self.plugin_dispatch("message", message)
 
     async def on_message_edit(self, before, after):
-        if before.channel.is_private:
+        if isinstance(before.channel, discord.abc.PrivateChannel):
             return
 
         await self.plugin_dispatch("message_edit", before, after)
 
     async def on_message_delete(self, message):
-        if message.channel.is_private:
+        if isinstance(message.channel, discord.abc.PrivateChannel):
             return
 
         await self.plugin_dispatch("message_delete", message)
 
-    async def on_channel_create(self, channel):
-        if channel.is_private:
-            return
+    async def on_guild_channel_create(self, channel):
+        await self.plugin_dispatch("guild_channel_create", channel)
 
-        await self.plugin_dispatch("channel_create", channel)
+    async def on_guild_channel_update(self, before, after):
+        await self.plugin_dispatch("guild_channel_update", before, after)
 
-    async def on_channel_update(self, before, after):
-        if before.is_private:
-            return
-
-        await self.plugin_dispatch("channel_update", before, after)
-
-    async def on_channel_delete(self, channel):
-        if channel.is_private:
-            return
-
-        await self.plugin_dispatch("channel_delete", channel)
+    async def on_guild_channel_delete(self, channel):
+        await self.plugin_dispatch("guild_channel_delete", channel)
 
     async def on_member_join(self, member):
         await self.plugin_dispatch("member_join", member)
@@ -253,29 +267,29 @@ class NepeatBot(discord.Client):
     async def on_member_update(self, before, after):
         await self.plugin_dispatch("member_update", before, after)
 
-    async def on_server_update(self, before, after):
-        await self.plugin_dispatch("server_update", before, after)
+    async def on_guild_update(self, before, after):
+        await self.plugin_dispatch("guild_update", before, after)
 
-    async def on_server_role_create(self, role):
-        await self.plugin_dispatch("server_role_create", role)
+    async def on_guild_role_create(self, role):
+        await self.plugin_dispatch("guild_role_create", role)
 
-    async def on_server_role_delete(self, role):
-        await self.plugin_dispatch("server_role_delete", role)
+    async def on_guild_role_delete(self, role):
+        await self.plugin_dispatch("guild_role_delete", role)
 
-    async def on_server_role_update(self, before, after):
-        await self.plugin_dispatch("server_role_update", before, after)
+    async def on_guild_role_update(self, before, after):
+        await self.plugin_dispatch("guild_role_update", before, after)
 
-    async def on_voice_state_update(self, before, after):
-        await self.plugin_dispatch("voice_state_update", before, after)
+    async def on_voice_state_update(self, member, before, after):
+        await self.plugin_dispatch("voice_state_update", member, before, after)
 
     async def on_member_ban(self, member):
         await self.plugin_dispatch("member_ban", member)
 
-    async def on_member_unban(self, server, member):
-        await self.plugin_dispatch("member_unban", server, member)
+    async def on_member_unban(self, guild, member):
+        await self.plugin_dispatch("member_unban", guild, member)
 
     async def on_typing(self, channel, user, when):
-        if channel.is_private:
+        if isinstance(channel, discord.abc.PrivateChannel):
             return
 
         await self.plugin_dispatch("typing", channel, user, when)

@@ -6,7 +6,7 @@ import discord
 
 log = logging.getLogger(__name__)
 OWNER_IDS = [
-    "66153853824802816"
+    66153853824802816
 ]
 
 
@@ -23,20 +23,24 @@ class PluginBase(object):
         .. function:: on_reaction_add(reaction, user)
         .. function:: on_reaction_remove(reaction, user)
         .. function:: on_reaction_clear(message, reactions)
-        .. function:: on_channel_delete(channel)
-        .. function:: on_channel_update(before, after)
+        .. function:: on_guild_channel_delete(channel)
+        .. function:: on_guild_channel_create(channel)
+        .. function:: on_guild_channel_update(before, after)
+        .. function:: on_private_channel_delete(channel)
+        .. function:: on_private_channel_create(channel)
+        .. function:: on_private_channel_update(before, after)
         .. function:: on_member_join(member)
         .. function:: on_member_update(before, after)
-        .. function:: on_server_join(server)
-        .. function:: on_server_remove(server)
-        .. function:: on_server_update(before, after)
-        .. function:: on_server_role_create(role)
-        .. function:: on_server_role_update(before, after)
-        .. function:: on_server_emojis_update(before, after)
-        .. function:: on_server_available(server)
-        .. function:: on_voice_state_update(before, after)
+        .. function:: on_guild_join(guild)
+        .. function:: on_guild_remove(guild)
+        .. function:: on_guild_update(before, after)
+        .. function:: on_guild_role_create(role)
+        .. function:: on_guild_role_update(before, after)
+        .. function:: on_guild_emojis_update(guild, before, after)
+        .. function:: on_guild_available(guild)
+        .. function:: on_voice_state_update(member, before, after)
         .. function:: on_member_ban(member)
-        .. function:: on_member_unban(server, user)
+        .. function:: on_member_unban(guild, user)
         .. function:: on_typing(channel, user, when)
         .. function:: on_group_join(channel, user)
     """
@@ -82,15 +86,15 @@ class PluginBase(object):
         return embed
 
     @staticmethod
-    def get_role(server, role_idx):
+    def get_role(guild, role_idx):
         role_idx = str(role_idx)
 
         return discord.utils.find(
             lambda role: (
                 role.name.strip().lower() == role_idx.strip().lower() or
-                role.id == role_idx
+                str(role.id) == role_idx
             ),
-            server.roles
+            guild.roles
         )
 
     # Events
@@ -100,8 +104,8 @@ class PluginBase(object):
 
     async def _on_message(self, message):
         if message.author.id != self.bot.user.id:
-            if message.channel.is_private and message.author.id not in OWNER_IDS:
-                self.bot.send_message(message.channel, "This bot cannot be used in private messages.")
+            if isinstance(message.channel, discord.abc.PrivateChannel) and message.author.id not in OWNER_IDS:
+                message.channel.send("This bot cannot be used in private messages.")
                 return
 
             for command_name, func in self.commands.items():
@@ -117,13 +121,22 @@ class PluginBase(object):
     async def on_message_delete(self, message):
         pass
 
-    async def on_channel_create(self, channel):
+    async def on_guild_channel_create(self, channel):
         pass
 
-    async def on_channel_update(self, before, after):
+    async def on_guild_channel_update(self, before, after):
         pass
 
-    async def on_channel_delete(self, channel):
+    async def on_guild_channel_delete(self, channel):
+        pass
+
+    async def on_private_channel_create(self, channel):
+        pass
+
+    async def on_private_channel_update(self, before, after):
+        pass
+
+    async def on_private_channel_delete(self, channel):
         pass
 
     async def on_member_join(self, member):
@@ -135,28 +148,28 @@ class PluginBase(object):
     async def on_member_update(self, before, after):
         pass
 
-    async def on_server_join(self, server):
+    async def on_guild_join(self, guild):
         pass
 
-    async def on_server_update(self, before, after):
+    async def on_guild_update(self, before, after):
         pass
 
-    async def on_server_role_create(self, role):
+    async def on_guild_role_create(self, role):
         pass
 
-    async def on_server_role_delete(self, role):
+    async def on_guild_role_delete(self, role):
         pass
 
-    async def on_server_role_update(self, server, role):
+    async def on_guild_role_update(self, guild, role):
         pass
 
-    async def on_voice_state_update(self, before, after):
+    async def on_voice_state_update(self, member, before, after):
         pass
 
     async def on_member_ban(self, member):
         pass
 
-    async def on_member_unban(self, server, member):
+    async def on_member_unban(self, guild, member):
         pass
 
     async def on_typing(self, channel, user, when):

@@ -23,22 +23,22 @@ class MusicBase(PluginBase):
         checks = {}
 
         while True:
-            for server_id, player in self.players.copy().items():
-                if server_id not in checks:
-                    checks[server_id] = 0
+            for guild_id, player in self.players.copy().items():
+                if guild_id not in checks:
+                    checks[guild_id] = 0
 
                 # Nobody has joined for almost two minutes, bye client!
-                if checks[server_id] == 3:
-                    checks[server_id] = 0
+                if checks[guild_id] == 3:
+                    checks[guild_id] = 0
                     await self.cleanup_player(player)
                     continue
 
-                if len(player.voice_client.channel.voice_members) == 1:
+                if len(player.voice_client.channel.members) == 1:
                     # We are the only one in the channel, strike!
-                    checks[server_id] += 1
+                    checks[guild_id] += 1
                 else:
                     # Reset the counter if there is more people than us.
-                    checks[server_id] = 0
+                    checks[guild_id] = 0
 
             await asyncio.sleep(60)
 
@@ -55,30 +55,30 @@ class MusicBase(PluginBase):
             description=description
         )
 
-    async def get_voice_client(self, server: discord.Server, member: discord.Member=None):
-        if server.voice_client:
-            return server.voice_client
+    async def get_voice_client(self, guild: discord.Guild, member: discord.Member=None):
+        if guild.voice_client:
+            return guild.voice_client
         else:
             if not member:
                 raise CommandError("Bot is not in a voice channel.")
 
-            if not member.voice_channel:
+            if not member.voice:
                 raise CommandError("You must be in a channel to summon the bot!")
 
-            voice_client = await self.bot.join_voice_channel(member.voice_channel)
+            voice_client = await member.voice.channel.connect()
 
         return voice_client
 
-    async def get_player(self, server: discord.Server, caller: discord.Member=None):
-        if server.id in self.players:
-            return self.players[server.id]
+    async def get_player(self, guild: discord.Guild, caller: discord.Member=None):
+        if guild.id in self.players:
+            return self.players[guild.id]
         else:
-            voice_client = await self.get_voice_client(server, caller)
+            voice_client = await self.get_voice_client(guild, caller)
 
-            playlist = Playlist(self, server)
+            playlist = Playlist(self, guild)
             player = Player(self, playlist, voice_client)\
                 .on("play", self.on_player_play)
-            self.players[server.id] = player
+            self.players[guild.id] = player
 
             return player
 
@@ -90,7 +90,7 @@ class MusicBase(PluginBase):
             player.kill()
             await player.voice_client.disconnect()
         finally:
-            del self.players[player.server.id]
+            del self.players[player.guild.id]
 
     async def cleanup_players(self):
         for player in self.players.copy().values():

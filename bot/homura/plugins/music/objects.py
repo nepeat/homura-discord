@@ -110,11 +110,11 @@ class URLPlaylistEntry(BasePlaylistEntry):
 
         # TODO: Better [name] fallbacks
         if 'channel' in data['meta']:
-            ch = playlist.bot.get_channel(data['meta']['channel']['id'])
+            ch = playlist.bot.get_channel(int(data['meta']['channel']['id']))
             meta['channel'] = ch or data['meta']['channel']['name']
 
         if 'author' in data['meta']:
-            meta['author'] = meta['channel'].server.get_member(data['meta']['author']['id'])
+            meta['author'] = meta['channel'].guild.get_member(int(data['meta']['author']['id']))
 
         return cls(playlist, url, title, duration, expected_filename, seek, **meta)
 
@@ -274,7 +274,7 @@ class StreamPlaylistEntry(BasePlaylistEntry):
             meta['channel'] = ch or data['meta']['channel']['name']
 
         if 'author' in data['meta']:
-            meta['author'] = meta['channel'].server.get_member(data['meta']['author']['id'])
+            meta['author'] = meta['channel'].guild.get_member(data['meta']['author']['id'])
 
         entry = cls(playlist, url, title, destination=destination, **meta)
         if not destination and filename:

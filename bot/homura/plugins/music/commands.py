@@ -33,7 +33,7 @@ class MusicCommands(MusicBase):
         usage="music"
     )
     async def music(self, message):
-        player = await self.get_player(message.server, message.author)
+        player = await self.get_player(message.guild, message.author)
 
         embed = self.create_voice_embed()
 
@@ -101,7 +101,7 @@ class MusicCommands(MusicBase):
         usage="music [play|prepend|queue]"
     )
     async def play(self, message, args):
-        player = await self.get_player(message.server, message.author)
+        player = await self.get_player(message.guild, message.author)
         url = args[1].strip()
 
         if url.startswith("prepend:"):
@@ -128,7 +128,7 @@ class MusicCommands(MusicBase):
                 download=False,
                 process=True,
                 on_error=lambda e: asyncio.ensure_future(
-                    self.bot.send_message(message.channel, "```\n%s\n```" % e), loop=self.bot.loop)
+                    message.channel.send("```\n%s\n```" % e), loop=self.bot.loop)
             )
 
             if not info or not info.get("entries", []):
@@ -153,8 +153,7 @@ class MusicCommands(MusicBase):
             # Different playlists might download at different speeds though
             wait_per_song = 1.2
 
-            procmesg = await self.bot.send_message(
-                message.channel,
+            procmesg = await message.channel.send(
                 embed=self.create_voice_embed(
                     title="Processing",
                     description='Gathering playlist information for {} songs{}'.format(
@@ -214,7 +213,7 @@ class MusicCommands(MusicBase):
         usage="music shuffle"
     )
     async def shuffle(self, message, args):
-        player = await self.get_player(message.server, message.author)
+        player = await self.get_player(message.guild, message.author)
 
         if player.is_stopped:
             raise CommandError("Can't shuffle! The player is not playing!")
@@ -236,7 +235,7 @@ class MusicCommands(MusicBase):
         usage="music seek 4:20"
     )
     async def seek(self, message, args):
-        player = await self.get_player(message.server, message.author)
+        player = await self.get_player(message.guild, message.author)
 
         if player.is_stopped:
             raise CommandError("Can't seek! The player is not playing!")
@@ -248,7 +247,7 @@ class MusicCommands(MusicBase):
 
         if not (
             message.author == player.current_entry.meta.get("author", None)
-            or message.author.server_permissions.administrator
+            or message.author.guild_permissions.administrator
         ):
             raise CommandError("You cannot seek the video unless you have added the video or are a server admin.")
 
@@ -287,7 +286,7 @@ class MusicCommands(MusicBase):
         usage="music skip"
     )
     async def skip(self, message):
-        player = await self.get_player(message.server, message.author)
+        player = await self.get_player(message.guild, message.author)
 
         if player.is_stopped:
             raise CommandError("You cannot skip when there are no songs playing!")
@@ -298,18 +297,19 @@ class MusicCommands(MusicBase):
 
         if (
             message.author == player.current_entry.meta.get("author", None)
-            or message.author.server_permissions.administrator
+            or message.author.guild_permissions.administrator
         ):
+            skipped_title = player.current_entry.title
             player.skip()
             return Message(embed=self.create_voice_embed(
                 title="Skip",
-                description=f"**{player.current_entry.title}** been skipped. (instantly)"
+                description=f"**{skipped_title}** been skipped. (instantly)"
             ))
 
-        num_voice = sum(1 for m in player.voice_client.channel.voice_members if not (
+        num_voice = sum(1 for m in player.voice_client.channel.members if not (
             m.deaf or
             m.self_deaf or
-            m.server_permissions.administrator or
+            m.guild_permissions.administrator or
             m.id == self.bot.user.id
         ))
 
@@ -343,20 +343,20 @@ class MusicCommands(MusicBase):
         usage="music summon"
     )
     async def summon(self, author):
-        if not author.voice_channel:
+        if not author.voice:
             raise CommandError("You must be in a channel to summon the bot!")
 
-        voice_client = await self.get_voice_client(author.server, author)
+        voice_client = await self.get_voice_client(author.guild, author)
 
-        if author.voice_channel and (voice_client.channel != author.voice_channel):
-            perms = author.voice_channel.permissions_for(author.voice_channel.server.me)
+        if voice_client.channel != author.voice.channel:
+            perms = author.voice.channel.permissions_for(author.voice.channel.guild.me)
 
             if not perms.connect:
-                raise CommandError(f"I do not have permissions to connect to \"{sanitize(author.voice_channel.name)}\"!")
+                raise CommandError(f"I do not have permissions to connect to \"{sanitize(author.voice.channel.name)}\"!")
             elif not perms.speak:
-                raise CommandError(f"I do not have permissions to speak in \"{sanitize(author.voice_channel.name)}\"!")
+                raise CommandError(f"I do not have permissions to speak in \"{sanitize(author.voice.channel.name)}\"!")
 
-            await voice_client.move_to(author.voice_channel)
+            await voice_client.move_to(author.voice.channel)
 
         return Message(embed=self.create_voice_embed("Bot summoned!"))
 
@@ -367,7 +367,7 @@ class MusicCommands(MusicBase):
         usage="music clear"
     )
     async def clear(self, message):
-        player = await self.get_player(message.server, message.author)
+        player = await self.get_player(message.guild, message.author)
         player.playlist.clear()
         return Message(embed=self.create_voice_embed(
             title="Queue cleared",
@@ -384,7 +384,7 @@ class MusicCommands(MusicBase):
         usage="music volume"
     )
     async def volume(self, message, args):
-        player = await self.get_player(message.server, message.author)
+        player = await self.get_player(message.guild, message.author)
 
         if not args:
             return Message(embed=self.create_voice_embed(
@@ -415,14 +415,14 @@ class MusicCommands(MusicBase):
                 description='Volume has been updated from %d%% to %d%%' % (old_volume, new_volume)
             ))
         elif new_volume >= 200:
-            if not message.author.server_permissions.administrator:
+            if not message.author.guild_permissions.administrator:
                 raise CommandError("You must be an administrator to set the volume beyond 200%")
 
             embed = self.create_voice_embed(
                 title="ARE YOU FUCKING SURE?" if new_volume >= 1000 else "Are you sure?",
                 description="Are you sure you would like to set the volume to {volume}%?\n"
                             "Setting the volume beyond this level gives no benefit to the volume or quality at all.\n"
-                            "You have 15 seconds to say \"yes\" to confirm this.{danger}".format(
+                            "You have 15 seconds to confirm this.{danger}".format(
                     volume=new_volume,
                     danger="\n**RIP HEADPHONE USERS OH GOD**" if new_volume > 500 else ""
                 )
@@ -431,8 +431,18 @@ class MusicCommands(MusicBase):
             if new_volume >= 1000:
                 embed.set_thumbnail(url="https://i.imgur.com/lWUsTOR.jpg")
 
-            temp_confirm = await self.bot.send_message(message.channel, embed=embed)
-            confirmed = await self.bot.wait_for_message(timeout=15, author=message.author, channel=message.channel, content="yes")
+            temp_confirm = await message.channel.send(embed=embed)
+            await temp_confirm.add_reaction("\N{THUMBS UP SIGN}")
+
+            confirmed = await self.bot.wait_for(
+                "reaction_add",
+                timeout=15,
+                check=lambda reaction, author: (
+                    reaction.message == temp_confirm and
+                    author == message.author and
+                    reaction.emoji == "\N{THUMBS UP SIGN}"
+                )
+            )
             await self.bot.delete_message(temp_confirm)
             if confirmed:
                 player.volume = new_volume / 100.0
@@ -466,10 +476,10 @@ class MusicCommands(MusicBase):
         usage="music leave"
     )
     async def leave(self, message):
-        if not message.server.voice_client:
+        if not message.guild.voice_client:
             return Message(embed=self.create_voice_embed("The bot is not in the server!"))
 
-        player = await self.get_player(message.server, message.author)
+        player = await self.get_player(message.guild, message.author)
         await self.cleanup_player(player)
 
         return Message(embed=self.create_voice_embed("Bot has left the server!"))
@@ -501,7 +511,7 @@ class MusicCommands(MusicBase):
         num_songs = sum(1 for _ in info['entries'])
         t0 = time.time()
 
-        busymsg = await self.bot.send_message(channel, embed=self.create_voice_embed(
+        busymsg = await channel.send(embed=self.create_voice_embed(
             title="Processing",
             description="Processing %s songs..." % num_songs
         ))

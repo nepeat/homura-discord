@@ -26,12 +26,12 @@ class ModerationPlugin(PluginBase):
 
         deleted = 0
 
-        for channel in message.server.channels:
+        for channel in message.guild.channels:
             removed = []
             if str(channel.type) != "text":
                 continue
 
-            async for msg in self.bot.logs_from(channel, limit=200):
+            async for msg in channel.history(limit=200):
                 if msg.author.id in mentions:
                     removed.append(msg)
 
@@ -69,7 +69,7 @@ class ModerationPlugin(PluginBase):
             limit = 100
 
         removed = []
-        async for msg in self.bot.logs_from(message.channel, limit=limit):
+        async for msg in message.channel.history(limit=limit):
             removed.append(msg)
 
         for messages in zip_longest(*(iter(removed),) * 100):
@@ -85,6 +85,6 @@ class ModerationPlugin(PluginBase):
         usage="remove <message id>"
     )
     async def cmd_remove(self, message, args):
-        message = await self.bot.get_message(message.channel, args[0])
+        messages = await message.channel.get_message(args[0])
         if message:
             await self.bot.delete_message(message)

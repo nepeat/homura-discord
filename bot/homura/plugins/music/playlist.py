@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 
 
 class Playlist(EventEmitter):
-    def __init__(self, plugin, server):
+    def __init__(self, plugin, guild):
         super().__init__()
 
         self.plugin = plugin
@@ -27,10 +27,10 @@ class Playlist(EventEmitter):
         self.loop = plugin.bot.loop
         self.redis = plugin.bot.redis
         self.downloader = plugin.downloader
-        self.server = server
+        self.guild = guild
         self.entries = deque()
 
-        self.queue_key = "music:queue:" + self.server.id
+        self.queue_key = "music:queue:%s" % (self.guild.id)
 
         self.loop.create_task(self.load_saved())
 
