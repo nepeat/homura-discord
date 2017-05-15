@@ -94,14 +94,7 @@ class EventLogPlugin(PluginBase):
         await self.log(embed, before.guild, "member_rename")
 
     async def on_message_edit(self, before, after):
-        # Ignore self messages.
-        if before.author == self.bot.user:
-            return
-
         if before.content == after.content:
-            return
-
-        if before.author.bot:
             return
 
         embed = discord.Embed(
@@ -126,25 +119,8 @@ class EventLogPlugin(PluginBase):
         await self.log(embed, before.guild, "message_edit")
 
     async def on_message_delete(self, message):
-        if message.author == self.bot.user:
-            return
-
-        if await self.redis.sismember("ignored:{}".format(message.guild.id), message.id):
-            return
-
-        # Check: Webhooks have no display name.
-
-        if not message.author.display_name:
-            return
-
         # Check: There must be a message text.
-
         if not message.clean_content:
-            return
-
-        # Check: This is not a bot user.
-
-        if message.author.bot:
             return
 
         embed = discord.Embed(

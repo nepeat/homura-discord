@@ -68,7 +68,7 @@ class Permissions(object):
                             await response.text()
                         ))
                         raise BackendError("Unknown error updating permissions")
-        except aiohttp.errors.ClientError:
+        except aiohttp.ClientError:
             pass
 
     async def add(self, permission: str, guildwide: bool=False):
@@ -119,7 +119,7 @@ class Permissions(object):
                     log.error("Error parsing JSON.")
                     log.error(await response.text())
                     pass
-        except aiohttp.errors.ClientError:
+        except aiohttp.ClientError:
             pass
 
         return []

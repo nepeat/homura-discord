@@ -16,7 +16,7 @@ async def validate_url(session, url):
                     return True
 
                 return False
-        except aiohttp.errors.ClientError:
+        except aiohttp.ClientError:
             return False
 
 

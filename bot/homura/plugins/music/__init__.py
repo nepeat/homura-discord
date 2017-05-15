@@ -15,18 +15,19 @@ class MusicPlugin(MusicCommands):
     # Discord events
 
     async def on_ready(self):
+        await self.reload_channels()
+
+    async def reload_channels(self, backoff: int=2):
         for channel_id in await self.bot.redis.smembers_asset("music:reload"):
             voice_channel = self.bot.get_channel(int(channel_id))
             if voice_channel:
                 try:
                     await voice_channel.connect(timeout=5)
                 except asyncio.TimeoutError:
-                    await asyncio.sleep(2)
-                    await voice_channel.connect(timeout=5)
+                    await asyncio.sleep(backoff)
+                    return await self.reload_channels(backoff + 1)
                 except discord.ClientException as e:
-                    if "Already connected" in str(e):
-                        pass
-                    else:
+                    if "Already connected" not in str(e):
                         raise e
 
                 await self.get_player(voice_channel.guild)

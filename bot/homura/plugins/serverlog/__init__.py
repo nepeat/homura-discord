@@ -117,9 +117,6 @@ class ServerLogPlugin(PluginBase):
         })
 
     async def on_message_delete(self, message):
-        if message.author == self.bot.user:
-            return
-
         await self.push_event("delete", message.guild, message.channel, {
             "sender": {
                 "id": str(message.author.id),
@@ -155,7 +152,7 @@ class ServerLogPlugin(PluginBase):
                 except ValueError:
                     log.error("Error parsing JSON.")
                     log.error(await response.text())
-        except aiohttp.errors.ClientError:
+        except aiohttp.ClientError:
             return False
 
     async def get_events(self, event_type, guild, channel=None):
@@ -185,7 +182,7 @@ class ServerLogPlugin(PluginBase):
                     log.error("Error parsing JSON.")
                     log.error(await response.text())
                     pass
-        except aiohttp.errors.ClientError:
+        except aiohttp.ClientError:
             pass
 
         return None

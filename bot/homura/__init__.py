@@ -218,10 +218,34 @@ class NepeatBot(discord.Client):
         if isinstance(before.channel, discord.abc.PrivateChannel):
             return
 
+        # Ignore self edits.
+        if before.author == self.user:
+            return
+
+        # Check: This is not a bot user.
+        if before.author.bot:
+            return
+
         await self.plugin_dispatch("message_edit", before, after)
 
     async def on_message_delete(self, message):
         if isinstance(message.channel, discord.abc.PrivateChannel):
+            return
+
+        # Check: Ignore self deletes.
+        if message.author == self.user:
+            return
+
+        # Check: Ignore messages that we have deleted.
+        if await self.redis.sismember("ignored:{}".format(message.guild.id), message.id):
+            return
+
+        # Check: Webhooks have no display name.
+        if not message.author.display_name:
+            return
+
+        # Check: This is not a bot user.
+        if message.author.bot:
             return
 
         await self.plugin_dispatch("message_delete", message)
