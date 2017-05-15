@@ -1,6 +1,7 @@
 # coding=utf-8
 import asyncio
 import logging
+import discord
 
 from homura.lib.structure import Message
 from homura.plugins.music.commands import MusicCommands
@@ -22,6 +23,11 @@ class MusicPlugin(MusicCommands):
                 except asyncio.TimeoutError:
                     await asyncio.sleep(2)
                     await voice_channel.connect(timeout=5)
+                except discord.ClientException as e:
+                    if "Already connected" in str(e):
+                        pass
+                    else:
+                        raise e
 
                 await self.get_player(voice_channel.guild)
             await self.bot.redis.spop("music:reload")

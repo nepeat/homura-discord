@@ -152,7 +152,7 @@ class NepeatBot(discord.Client):
         await self.redis.sadd("ignored:{}".format(message.guild.id), [message.id])
         await self.redis.expire("ignored:{}".format(message.guild.id), 120)
 
-        return await message.delete(reason)
+        return await message.delete(reason=reason)
 
     async def delete_messages(self, messages):
         last_guild = messages[0].guild.id

@@ -13,6 +13,7 @@ from homura.lib.structure import CommandError, Message
 from homura.lib.util import sane_round_int, sanitize
 from homura.plugins.command import command
 from homura.plugins.music.base import MusicBase
+from homura.plugins.music.objects import URLPlaylistEntry, StreamPlaylistEntry
 
 DISCORD_FIELD_CHAR_LIMIT = 1000
 MIN_SKIPS = 4
@@ -39,7 +40,9 @@ class MusicCommands(MusicBase):
 
         if player.current_entry:
             embed.add_field(
-                name="Now playing",
+                name="Now {action}".format(
+                    action="streaming" if isinstance(player.current_entry, StreamPlaylistEntry) else "playing"
+                ),
                 value=player.current_entry.title
             )
 
@@ -49,10 +52,16 @@ class MusicCommands(MusicBase):
                     value=player.current_entry.meta["author"].mention
                 )
 
-            prog_str = '{progress}{extra}'.format(
-                progress=str(timedelta(seconds=player.progress)).lstrip('0').lstrip(':'),
-                extra="/" + str(timedelta(seconds=player.current_entry.duration)).lstrip('0').lstrip(':')
-            )
+            if isinstance(player.current_entry, StreamPlaylistEntry):
+                prog_str = "Streaming! {progress}".format(
+                    progress=str(timedelta(seconds=player.progress)).lstrip('0').lstrip(':')
+                )
+            else:
+                prog_str = '{progress}{extra}'.format(
+                    progress=str(timedelta(seconds=player.progress)).lstrip('0').lstrip(':'),
+                    extra="/" + str(timedelta(seconds=player.current_entry.duration)).lstrip('0').lstrip(':')
+                )
+
             embed.add_field(
                 name="Progress",
                 value=prog_str
@@ -307,8 +316,8 @@ class MusicCommands(MusicBase):
             ))
 
         num_voice = sum(1 for m in player.voice_client.channel.members if not (
-            m.deaf or
-            m.self_deaf or
+            m.voice.deaf or
+            m.voice.self_deaf or
             m.guild_permissions.administrator or
             m.id == self.bot.user.id
         ))
@@ -434,28 +443,30 @@ class MusicCommands(MusicBase):
             temp_confirm = await message.channel.send(embed=embed)
             await temp_confirm.add_reaction("\N{THUMBS UP SIGN}")
 
-            confirmed = await self.bot.wait_for(
-                "reaction_add",
-                timeout=15,
-                check=lambda reaction, author: (
-                    reaction.message == temp_confirm and
-                    author == message.author and
-                    reaction.emoji == "\N{THUMBS UP SIGN}"
+            try:
+                confirmed = await self.bot.wait_for(
+                    "reaction_add",
+                    timeout=15,
+                    check=lambda reaction, author: (
+                        reaction.message.id == temp_confirm.id and
+                        author.id == message.author.id and
+                        reaction.emoji == "\N{THUMBS UP SIGN}"
+                    )
                 )
-            )
-            await self.bot.delete_message(temp_confirm)
-            if confirmed:
-                player.volume = new_volume / 100.0
-                return Message(embed=self.create_voice_embed(
-                    title="Volume",
-                    description='Volume has been updated from %d%% to %d%%' % (old_volume, new_volume)
-                ))
-            else:
+            except asyncio.TimeoutError:
                 return Message(embed=self.create_voice_embed(
                     description="15 seconds has passed without a response. {timing}".format(
                         timing="Thank fucking god." if new_volume > 500 else "Timing out."
                     )
                 ))
+            finally:
+                await self.bot.delete_message(temp_confirm)
+
+            player.volume = new_volume / 100.0
+            return Message(embed=self.create_voice_embed(
+                title="Volume",
+                description='Volume has been updated from %d%% to %d%%' % (old_volume, new_volume)
+            ))
         else:
             if relative:
                 raise CommandError(
