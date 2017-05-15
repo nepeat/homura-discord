@@ -1,12 +1,13 @@
 # coding=utf-8
 import datetime
 import logging
+import random
 
 import discord
 
 from homura.apis.animals import AnimalAPI
 from homura.lib.cached_http import CachedHTTP
-from homura.lib.structure import Message
+from homura.lib.structure import Message, CommandError
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command
 
@@ -70,3 +71,87 @@ class FunPlugin(PluginBase):
         em.add_field(name="ROLL", value="EGG")
         em.set_image(url="https://i.imgur.com/YFeZaoM.jpg")
         return Message(em)
+
+    @command(
+        "coin",
+        permission_name="fun.coin",
+        description="Flips a coin!",
+        global_command=True
+    )
+    async def coin(self):
+        landing = "The coin lands on {land}".format(
+            land=random.choices(["heads", "tails", "its side"], [49, 49, 2])[0]
+        )
+
+        embed = discord.Embed(
+            title="Coin flip!",
+            colour=discord.Colour.gold(),
+            description=landing
+        )
+
+        return Message(embed)
+
+    @command(
+        patterns=[
+            r"dice (?P<dice>\d+)[d,](?P<sides>\d+)",
+            r"dice (?P<dice>\d+) dice (?P<sides>\d+) sides",
+            r"dice (?P<sides>\d+) sides (?P<dice>\d+) dice",
+            "dice$",
+        ],
+        permission_name="fun.dice",
+        description="Rolls dice!",
+        global_command=True
+    )
+    async def dice(self, match):
+        try:
+            sides = int(match.group("sides"))
+            die = int(match.group("dice"))
+        except IndexError:
+            sides = 6
+            die = 2
+
+        if sides > 10000:
+            raise CommandError(f"Seriously? {sides} sides?")
+
+        if die > 1000:
+            raise CommandError(f"Seriously? {die} dice?")
+
+        landing = "The coin lands on {land}".format(
+            land=random.choices(["heads", "tails", "on its side"], [49.5, 49.5, 1])
+        )
+
+        embed = discord.Embed(
+            title=f"Rolling {die} dice with {sides} sides",
+            colour=discord.Colour.dark_blue(),
+        )
+
+        die_values = [random.randint(1, sides) for x in range(0, die)]
+        die_counts = ""
+
+        for index, value in enumerate(die_values):
+            if index == len(die_values) - 1:
+                die_append = f"{value}"
+            else:
+                die_append = f"{value} + "
+
+            max_len = len(die_append) + len(die_counts) + len("... + " + str(die_values[-1]))
+            if max_len > 1000:
+                die_counts += f"... + {die_values[-1]}"
+                break
+
+            die_counts += die_append
+
+        embed.add_field(
+            name="Rolls",
+            value=die_counts
+        )
+
+        total = 0
+        for x in die_values:
+            total += x
+        embed.add_field(
+            name="Total",
+            value=str(total)
+        )
+
+        return Message(embed)

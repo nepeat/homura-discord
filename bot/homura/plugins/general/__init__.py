@@ -86,4 +86,37 @@ class GeneralPlugin(PluginBase):
         if not em.fields:
             raise CommandError(f"No commands were found for section '{section}.'")
 
-        return Message(embed=em)
+        return Message(em)
+
+    @command(
+        "serverinfo",
+        permission_name="general.info",
+        description="Gets information of your server.",
+        usage="serverinfo",
+        global_command=True
+    )
+    async def serverinfo(self, guild):
+        embed = discord.Embed(
+            title=f"{guild.name}",
+            color=discord.Colour.blue(),
+        )
+
+        embed.set_author(icon_url=guild.icon_url)
+        embed.set_thumbnail(url=guild.icon_url)
+
+        fields = [
+            ["Owner", guild.owner.name],
+            ["Members", guild.member_count],
+            ["Roles", len(guild.roles)],
+            ["Creation date", guild.created_at.strftime("%B %d, %Y %I:%M %p UTC")]
+        ]
+
+        for group in fields:
+            embed.add_field(
+                name=group[0],
+                value=group[1]
+            )
+
+        embed.set_footer(text=f"ID: {guild.id}")
+
+        return Message(embed)
