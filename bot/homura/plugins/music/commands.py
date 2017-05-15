@@ -13,7 +13,7 @@ from homura.lib.structure import CommandError, Message
 from homura.lib.util import sane_round_int, sanitize
 from homura.plugins.command import command
 from homura.plugins.music.base import MusicBase
-from homura.plugins.music.objects import URLPlaylistEntry, StreamPlaylistEntry
+from homura.plugins.music.objects import StreamPlaylistEntry, URLPlaylistEntry
 
 DISCORD_FIELD_CHAR_LIMIT = 1000
 MIN_SKIPS = 4

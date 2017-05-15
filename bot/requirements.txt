@@ -8,3 +8,7 @@ youtube-dl
 pytimeparse
 influxdb
 pyyaml
+pytest
+pytest-runner
+pytest-asyncio
+pytest-catchlog

@@ -24,36 +24,36 @@ def command(
     permission_name="",
     global_command=False,
 ):
-    if not patterns:
-        patterns = []
-
-    if pattern and not pattern.startswith("^!"):
-        _patterns = ["^!" + pattern]
-    elif patterns:
-        _patterns = [("^!" + x) if x else x for x in patterns]
+    if not patterns and pattern:
+        patterns = [pattern]
 
     def actual_decorator(func):
-        progs = [re.compile(p) for p in _patterns]
-
         @wraps(func)
         async def wrapper(self, message):
 
             # Command match
 
             match = None
-            for prog in progs:
-                match = prog.match(message.content)
-                log.debug("prog %s; matched %s" % (prog, match))
+            for pattern in patterns:
+                match = re.match("^!" + pattern, message.content)
+                log.debug("prog %s; matched %s" % (pattern, match))
                 if match:
                     break
 
             if not match:
-                # Fallback with the bot's mention tag
-                match = re.match("<[!@]{{1,2}}{userid}> {pattern}".format(
-                    userid=self.bot.user.id,
-                    pattern=pattern
-                ), message.content)
+                for pattern in patterns:
+                    # Fallback with the bot's mention tag
+                    fallback_regex = "<[!@]{{1,2}}{userid}> {pattern}".format(
+                        userid=self.bot.user.id,
+                        pattern=pattern
+                    )
+
+                    match = re.match(fallback_regex, message.content)
+                    if match:
+                        break
+
                 if not match:
+                    log.debug("Fallback match failed.")
                     return
 
             # Analytics and setup

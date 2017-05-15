@@ -21,13 +21,10 @@ class PermissionResource(ResourceBase):
         server, channel = self.get_server_channel()
 
         if channel:
-            query = g.db.query(Permission.permission).filter(or_(
-                and_(
-                    Permission.server_id == server.id,
-                    Permission.channel_id == channel.id
-                ),
-                and_(
-                    Permission.server_id == server.id,
+            query = g.db.query(Permission.permission).filter(and_(
+                Permission.server_id == server.id,
+                or_(
+                    Permission.channel_id == channel.id,
                     Permission.channel_id == None
                 )
             ))
