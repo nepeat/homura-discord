@@ -43,14 +43,15 @@ class PermissionResource(ResourceBase):
         server, channel = self.get_server_channel(create=True)
 
         if channel:
-            query = g.db.query(Permission.permission).filter(or_(
+            query = g.db.query(Permission.permission).filter(and_(
                 Permission.server_id == server.id,
                 Permission.channel_id == channel.id
             ))
         else:
-            query = g.db.query(Permission.permission).filter(
-                Permission.server_id == server.id
-            )
+            query = g.db.query(Permission.permission).filter(and_(
+                Permission.server_id == server.id,
+                Permission.channel_id == None
+            ))
 
         if query.filter(Permission.permission == self.get_field("perm")).scalar():
             abort(400, "Permission already exists for this channel/server.")

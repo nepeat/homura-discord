@@ -85,6 +85,7 @@ class ModerationPlugin(PluginBase):
         usage="remove <message id>"
     )
     async def cmd_remove(self, message, args):
-        messages = await message.channel.get_message(args[0])
-        if message:
-            await self.bot.delete_message(message)
+        message_to_delete = await message.channel.get_message(args[0])
+        if message_to_delete:
+            await self.bot.delete_message(message_to_delete)
+        await self.bot.delete_message(message)

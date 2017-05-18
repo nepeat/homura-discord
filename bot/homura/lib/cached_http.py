@@ -6,6 +6,9 @@ from homura.lib.util import md5_string
 
 USER_AGENT = "github.com/nepeat/homura-discord | nepeat#6071 | This is discord bot. This is mistake."
 
+class CachedHTTPException(Exception):
+    pass
+
 
 class CachedHTTP(object):
     def __init__(self, bot, default_cache_time: int=300):
@@ -68,6 +71,9 @@ class CachedHTTP(object):
                 reply = await response.json()
             else:
                 reply = await response.text()
+
+        if response.status == 429:
+            raise CachedHTTPException("We are rate limited.")
 
         await self.bot.redis.setex(cache_key, cache_time, json.dumps(reply))
         return reply

@@ -213,7 +213,12 @@ def command(
 
                 if author.id in OWNER_IDS:
                     embed.add_field(
-                        name="How you fucked up",
+                        name=random.choice([
+                            "How you fucked up",
+                            "Blame nepeat",
+                            "Hellback (Most recent failure last)",
+                            "lol"
+                        ]),
                         value=f"```{traceback.format_exc()}```"
                     )
 

@@ -96,11 +96,10 @@ class GeneralPlugin(PluginBase):
     )
     async def serverinfo(self, guild):
         embed = discord.Embed(
-            title=f"{guild.name}",
             color=discord.Colour.blue(),
         )
 
-        embed.set_author(icon_url=guild.icon_url)
+        embed.set_author(name=f"{guild.name}", icon_url=guild.icon_url)
         embed.set_thumbnail(url=guild.icon_url)
 
         fields = [

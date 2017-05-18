@@ -20,26 +20,11 @@ class PluginBase(object):
         .. function:: on_socket_raw_send(payload)
         .. function:: on_message_delete(message)
         .. function:: on_message_edit(before, after)
-        .. function:: on_reaction_add(reaction, user)
-        .. function:: on_reaction_remove(reaction, user)
-        .. function:: on_reaction_clear(message, reactions)
-        .. function:: on_guild_channel_delete(channel)
-        .. function:: on_guild_channel_create(channel)
-        .. function:: on_guild_channel_update(before, after)
-        .. function:: on_private_channel_delete(channel)
-        .. function:: on_private_channel_create(channel)
-        .. function:: on_private_channel_update(before, after)
-        .. function:: on_member_join(member)
-        .. function:: on_member_update(before, after)
-        .. function:: on_guild_join(guild)
-        .. function:: on_guild_remove(guild)
-        .. function:: on_guild_update(before, after)
-        .. function:: on_guild_role_create(role)
-        .. function:: on_guild_role_update(before, after)
+        .. function:: on_reaction_add(reaction, use2)
         .. function:: on_guild_emojis_update(guild, before, after)
         .. function:: on_guild_available(guild)
         .. function:: on_voice_state_update(member, before, after)
-        .. function:: on_member_ban(member)
+        .. function:: on_member_ban(guild, member)
         .. function:: on_member_unban(guild, user)
         .. function:: on_typing(channel, user, when)
         .. function:: on_group_join(channel, user)
@@ -166,7 +151,7 @@ class PluginBase(object):
     async def on_voice_state_update(self, member, before, after):
         pass
 
-    async def on_member_ban(self, member):
+    async def on_member_ban(self, guild, member):
         pass
 
     async def on_member_unban(self, guild, member):
