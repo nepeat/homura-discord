@@ -353,3 +353,40 @@ class Playlist(EventEmitter):
             estimated_time += player.current_entry.duration - player.progress
 
         return datetime.timedelta(seconds=estimated_time)
+
+    def format_discord(self, max_length=DISCORD_FIELD_CHAR_LIMIT, formatted=True):
+        queue_lines = []
+        queue_unlisted = 0
+        if formatted:
+            andmoretext = '* ... and %s more*' % ('x' * len(self.entries))
+        else:
+            andmoretext = '... and %s more' % ('x' * len(self.entries))
+
+        for i, item in enumerate(self, 1):
+            if item.meta.get("author", ""):
+                if formatted:
+                    nextline = f"{i}. **{item.title}** added by {item.meta['author'].mention}".strip()
+                else:
+                    nextline = f"{i}. {item.title} added by {item.meta['author'].name}".strip()
+            else:
+                if formatted:
+                    nextline = f"{i}. **{item.title}**".strip()
+                else:
+                    nextline = f"{i}. {item.title}".strip()
+
+            currentlinesum = sum(len(x) + 1 for x in queue_lines)
+
+            if max_length and (currentlinesum + len(nextline) + len(andmoretext) > max_length):
+                if currentlinesum + len(andmoretext):
+                    queue_unlisted += 1
+                    continue
+
+            queue_lines.append(nextline)
+
+        if queue_unlisted:
+            queue_lines.append("\n*... and %s more*" % queue_unlisted)
+
+        if not queue_lines:
+            queue_lines.append("There are no songs queued! Queue something with !music play.")
+
+        return "\n".join(queue_lines)

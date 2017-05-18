@@ -24,15 +24,16 @@ log = logging.getLogger(__name__)
 class MusicCommands(MusicBase):
     @command(
         patterns=[
+            r"music (queue file)",
+            r"music (queue|np|now playing)$",
             r"music$",
-            r"music queue"
         ],
         permission_name="music.info",
         global_command=True,
         description="Music status",
         usage="music"
     )
-    async def music(self, message):
+    async def music(self, message, args):
         player = await self.get_player(message.guild, message.author)
 
         embed = self.create_voice_embed()
@@ -69,40 +70,27 @@ class MusicCommands(MusicBase):
                 value=player.current_entry.url
             )
 
-        queue_lines = []
-        queue_unlisted = 0
-        andmoretext = '* ... and %s more*' % ('x' * len(player.playlist.entries))
-        for i, item in enumerate(player.playlist, 1):
-            if item.meta.get("author", ""):
-                nextline = f"{i}. **{item.title}** added by {item.meta['author'].mention}".strip()
-            else:
-                nextline = f"{i}. **{item.title}**".strip()
-
-            currentlinesum = sum(len(x) + 1 for x in queue_lines)
-
-            if currentlinesum + len(nextline) + len(andmoretext) > DISCORD_FIELD_CHAR_LIMIT:
-                if currentlinesum + len(andmoretext):
-                    queue_unlisted += 1
-                    continue
-
-            queue_lines.append(nextline)
-
-        if queue_unlisted:
-            queue_lines.append("\n*... and %s more*" % queue_unlisted)
-
-        if not queue_lines:
-            queue_lines.append("There are no songs queued! Queue something with !music play.")
-
         embed.add_field(
             name="Queue",
-            value="\n".join(queue_lines),
+            value=player.playlist.format_discord(),
             inline=False
         )
 
-        return Message(embed)
+        message_to_send = Message(embed)
+
+        if args and args[0].strip().lower() == "queue file":
+            data = BytesIO()
+            data.writelines(x.encode("utf8") for x in player.playlist.format_discord(None, formatted=False))
+            data.seek(0)
+            message_to_send.file = discord.File(
+                data,
+                filename=f"{int(time.time())}-music-queue-{message.guild.id}.txt"
+            )
+
+        return message_to_send
 
     @command(
-        "music (play|queue|prepend|stream) (.+)",
+        "music (play|prepend|stream) (.+)",
         permission_name="music.queue",
         global_command=True,
         description="Queues a URL for playback.",
@@ -240,7 +228,8 @@ class MusicCommands(MusicBase):
         ],
         permission_name="music.seek",
         description="Seeks the current song.",
-        usage="music seek 4:20"
+        usage="music seek 4:20",
+        global_command=True
     )
     async def seek(self, message, args):
         player = await self.get_player(message.guild, message.author)

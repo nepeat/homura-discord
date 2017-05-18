@@ -135,8 +135,12 @@ class NepeatBot(discord.Client):
 
         sentmsg = await channel.send(
             content,
-            embed=message.embed
+            embed=message.embed,
+            file=message.file
         )
+
+        if message.file:
+            message.file.close()
 
         if message.delete_invoking and invoking:
             await asyncio.sleep(message.delete_invoking)

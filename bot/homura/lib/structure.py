@@ -11,7 +11,7 @@ class CommandError(Exception):
 
 
 class Message(object):
-    def __init__(self, content=None, embed=None, reply=False, delete_after=0, delete_invoking=0):
+    def __init__(self, content=None, embed=None, reply=False, delete_after=0, delete_invoking=0, file=None):
         if isinstance(content, discord.Embed):
             self.content = None
             self.embed = content
@@ -21,3 +21,4 @@ class Message(object):
         self.reply = reply
         self.delete_after = delete_after
         self.delete_invoking = delete_invoking
+        self.file = file

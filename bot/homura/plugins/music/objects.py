@@ -114,7 +114,10 @@ class URLPlaylistEntry(BasePlaylistEntry):
             meta['channel'] = ch or data['meta']['channel']['name']
 
         if 'author' in data['meta']:
-            meta['author'] = meta['channel'].guild.get_member(int(data['meta']['author']['id']))
+            try:
+                meta['author'] = meta['channel'].guild.get_member(int(data['meta']['author']['id']))
+            except AttributeError:
+                meta['author'] = None
 
         return cls(playlist, url, title, duration, expected_filename, seek, **meta)
 

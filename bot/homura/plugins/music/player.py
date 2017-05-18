@@ -59,9 +59,6 @@ class Player(EventEmitter):
 
     @volume.setter
     def volume(self, value):
-        if value == self._volume:
-            return
-
         self._volume = value
         if self.voice_client.source:
             self.voice_client.source.volume = value
@@ -188,7 +185,7 @@ class Player(EventEmitter):
                 )
 
                 self.voice_client.source = HellPCMVolumeTransformer(self.voice_client.source)
-                self.voice_client.volume = self.volume
+                self.voice_client.source.volume = self.volume
 
                 self.state = MusicPlayerState.PLAYING
                 self._current_entry = entry
