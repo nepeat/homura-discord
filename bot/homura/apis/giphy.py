@@ -17,9 +17,6 @@ class GiphyAPI(object):
         self.http = http
         self.giphy_api_key = os.environ.get("GIPHY_API", giphy_api_key) or "dc6zaTOxFJmzC"
 
-        if not giphy_api_key or self.giphy_api_key == "dc6zaTOxFJmzC":
-            warnings.warn("Giphy development key is in use. Please get a real key if this is production.")
-
     async def get(self, tag: str) -> Optional[str]:
         """
         Gets a single image from Giphy given a tag.
