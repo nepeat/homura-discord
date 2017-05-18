@@ -1,9 +1,8 @@
 # coding=utf-8
-import asyncio
 import os
 
+import asyncio
 import discord
-
 from homura.lib.structure import CommandError
 from homura.plugins.base import PluginBase
 from homura.plugins.music.downloader import Downloader

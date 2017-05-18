@@ -1,21 +1,20 @@
 # coding=utf-8
-import asyncio
 import logging
 import random
 import time
 import traceback
 from datetime import timedelta
+from io import BytesIO
 
+import asyncio
 import discord
 import pytimeparse
-
 from homura.lib.structure import CommandError, Message
 from homura.lib.util import sane_round_int, sanitize
 from homura.plugins.command import command
 from homura.plugins.music.base import MusicBase
 from homura.plugins.music.objects import StreamPlaylistEntry, URLPlaylistEntry
 
-DISCORD_FIELD_CHAR_LIMIT = 1000
 MIN_SKIPS = 4
 SKIP_RATIO = 0.5
 

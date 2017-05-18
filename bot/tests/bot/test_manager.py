@@ -1,5 +1,4 @@
 import pytest
-
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command
 from homura.plugins.manager import PluginManager

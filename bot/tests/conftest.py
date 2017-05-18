@@ -1,17 +1,17 @@
-import asyncio
+import logging
 import os
 import random
-import aiohttp
-import asyncio_redis
-import pytest
-import discord
 import traceback
-import logging
 
-from homura.lib.structure import Message
-
+import aiohttp
+import asyncio
+import asyncio_redis
+import discord
+import pytest
 from homura.lib.redis_mods import BotEncoder, UncheckedRedisProtocol
+from homura.lib.structure import Message
 from homura.lib.util import Dummy
+
 from . import create_unique_id
 
 log = logging.getLogger(__name__)

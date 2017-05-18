@@ -1,9 +1,9 @@
-import os
-
-import pytest
 import datetime
-import discord
+import os
 import random
+
+import discord
+import pytest
 
 slow = pytest.mark.skipif(
     "NOSLOW" in os.environ,

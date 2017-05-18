@@ -1,11 +1,12 @@
 # coding=utf-8
 import datetime
 import logging
+import os
 import random
 
 import discord
-
 from homura.apis.animals import AnimalAPI
+from homura.apis.giphy import GiphyAPI
 from homura.lib.cached_http import CachedHTTP
 from homura.lib.structure import CommandError, Message
 from homura.plugins.base import PluginBase

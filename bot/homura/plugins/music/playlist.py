@@ -8,13 +8,14 @@ from collections import deque
 from itertools import islice
 from urllib.error import URLError
 
-from youtube_dl.utils import DownloadError, UnsupportedError
-
+import discord
 from homura.lib.eventemitter import EventEmitter
 from homura.lib.util import get_header
 from homura.plugins.music.exceptions import ExtractionError, WrongEntryTypeError
 from homura.plugins.music.objects import StreamPlaylistEntry, URLPlaylistEntry
+from youtube_dl.utils import DownloadError, UnsupportedError
 
+DISCORD_FIELD_CHAR_LIMIT = 1000
 log = logging.getLogger(__name__)
 
 
