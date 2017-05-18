@@ -19,6 +19,7 @@ class FunPlugin(PluginBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.animal_api = AnimalAPI(CachedHTTP(self.bot))
+        self.giphy_api = GiphyAPI(CachedHTTP(self.bot))
 
     @command(
         "fart$",
@@ -55,6 +56,27 @@ class FunPlugin(PluginBase):
         end = datetime.datetime.now()
         delta = end - start
         embed.set_footer(text="rendered in {}ms".format(int(delta.total_seconds() * 1000)))
+
+        return Message(embed)
+
+    @command(
+        "(?:gif|giphy) (.+)",
+        permission_name="fun.gif",
+        description="Fetches a random gif with Giphy.",
+        usage="gif <tag>",
+        global_command=True
+    )
+    async def gif(self, args):
+        try:
+            gif = await self.giphy_api.get(args[0])
+        except:
+            self.bot.on_error("gif")
+            return Message("Could not fetch a GIF from Giphy.")
+
+        embed = discord.Embed(color=discord.Colour.gold())
+        embed.set_author(name=f"Giphy results for '{args[0]}'", url=gif["permalink"])
+        embed.set_image(url=gif["image"])
+        embed.set_footer(text="Results powered by Giphy.")
 
         return Message(embed)
 
