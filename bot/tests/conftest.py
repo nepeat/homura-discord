@@ -8,6 +8,7 @@ import asyncio
 import asyncio_redis
 import discord
 import pytest
+from homura.plugins.manager import PluginManager
 from homura.lib.redis_mods import BotEncoder, UncheckedRedisProtocol
 from homura.lib.structure import Message
 from homura.lib.util import Dummy
@@ -39,7 +40,7 @@ class MinimalBot(object):
         self._log = []
 
         # Plugin manager holdings
-        self.plugins = []
+        self.plugins = PluginManager(self)
         self.all_permissions = set()
 
         # Other mocks

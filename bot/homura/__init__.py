@@ -48,7 +48,7 @@ if not discord.opus.is_loaded():
 
 class NepeatBot(discord.Client):
     def __init__(self):
-        self.plugins = []
+        self.plugins = PluginManager(self)
         self.all_permissions = set()
 
         self.sentry = raven.Client(
@@ -82,8 +82,7 @@ class NepeatBot(discord.Client):
 
     async def real_init(self):
         await self.create_redis()
-        self.plugin_manager = PluginManager(self)
-        self.plugin_manager.load_all()
+        self.plugins.load_all()
 
     async def _plugin_run_event(self, method, *args, **kwargs):
         start = time.time()

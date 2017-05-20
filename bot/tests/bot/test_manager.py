@@ -14,11 +14,10 @@ class DummyPlugin(PluginBase):
 @pytest.mark.asyncio
 async def test_manager_load_all(bot):
     bot = await bot
-    manager = PluginManager(bot)
 
     assert len(bot.plugins) == 0
     assert len(bot.all_permissions) == 0
-    manager.load_all()
+    bot.plugins.load_all()
     assert len(bot.all_permissions) > 0
     assert len(bot.plugins) > 0
 
@@ -26,12 +25,21 @@ async def test_manager_load_all(bot):
 @pytest.mark.asyncio
 async def test_manager_get_plugins(bot, caplog):
     bot = await bot
-    manager = PluginManager(bot)
-    manager.load_all()
+    bot.plugins.load_all()
 
-    assert manager.get("Settings")
-    assert manager.get("   SeTtIngS   ")
-    assert not manager.get("lol fake plugin")
+    # Getting plugins with get() method.
+    assert bot.plugins.get("Settings")
+    assert bot.plugins.get("   SeTtIngS   ")
+    assert not bot.plugins.get("lol fake plugin")
+
+    # Getting plugins with attributes.
+    assert bot.plugins.settings
+    assert bot.plugins.Settings
+    assert not bot.plugins.lol_fake_plugin
+
+    # Getting plugins with indexes.
+    assert bot.plugins["SEttings "]
+    assert not bot.plugins["FAKEEE"]
 
     for log in caplog.records:
         assert "missing a description" not in log.msg
@@ -41,11 +49,9 @@ async def test_manager_get_plugins(bot, caplog):
 @pytest.mark.asyncio
 async def test_manager_load_dummy(bot, caplog):
     bot = await bot
-    manager = PluginManager(bot)
+    bot.plugins.load(DummyPlugin)
 
-    manager.load(DummyPlugin)
-
-    dummy_init = manager.get("dummy")
+    dummy_init = bot.plugins.get("dummy")
 
     assert dummy_init
 

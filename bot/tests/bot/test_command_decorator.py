@@ -59,10 +59,9 @@ class DummyPlugin(PluginBase):
 @pytest.fixture
 async def dummy_plugin(bot):
     bot = await bot
-    manager = PluginManager(bot)
-    manager.load(DummyPlugin)
+    bot.plugins.load(DummyPlugin)
 
-    return manager.get("dummy")
+    return bot.plugins.get("dummy")
 
 
 """

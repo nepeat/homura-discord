@@ -9,14 +9,26 @@ log = logging.getLogger(__name__)
 class PluginManager:
     def __init__(self, bot):
         self.bot = bot
-        self.bot.plugins = []
+        self.plugins = []
+
+    def __len__(self):
+        return len(self.plugins)
+
+    def __getattr__(self, name):
+        return self.get(name)
+
+    def __getitem__(self, name):
+        return self.get(name)
+
+    def __iter__(self):
+        return iter(self.plugins)
 
     def load(self, plugin):
         log.info('Loading {}.'.format(plugin.__name__))
 
         plugin_instance = plugin(self.bot)
 
-        self.bot.plugins.append(plugin_instance)
+        self.plugins.append(plugin_instance)
         for command_name, command_func in plugin_instance.commands.items():
             if not command_func.info["description"]:
                 log.warning(f"Command {command_name} of {plugin.__name__} is missing a description")
@@ -41,7 +53,7 @@ class PluginManager:
         if not name.endswith("plugin"):
             name += "plugin"
 
-        for plugin in self.bot.plugins:
+        for plugin in self.plugins:
             if plugin.__class__.__name__.lower() == name:
                 return plugin
 
