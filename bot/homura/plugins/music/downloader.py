@@ -3,6 +3,7 @@ import functools
 import hashlib
 import json
 import os
+import urllib.parse
 
 import asyncio
 import youtube_dl
@@ -24,7 +25,8 @@ YOUTUBEDL_ARGS = {
     "source_address": "0.0.0.0"
 }
 
-ONE_DAY_IN_SECONDS = 60 * 60 * 24
+CACHE_TIME = 60 * 60 * 24  # 60s * 60m * 24h = 1 day
+LIVE_CACHE_TIME = 60 * 60   # 60s * 60m = 1 hour
 
 youtube_dl.utils.bug_reports_message = lambda: ""
 
@@ -45,7 +47,7 @@ class Downloader(object):
 
         return ytdl
 
-    async def set_cache(self, url: str, data: dict, **kwargs) -> None:
+    async def set_cache(self, url: str, data: dict, is_live: bool=False, **kwargs) -> None:
         """
         Sets cached data into Redis for extract_info for one day.
 
@@ -64,7 +66,11 @@ class Downloader(object):
             cachekey += ":processed"
 
         try:
-            await self.bot.redis.setex(cachekey, ONE_DAY_IN_SECONDS, json.dumps(data))
+            await self.bot.redis.setex(
+                cachekey,
+                (LIVE_CACHE_TIME if is_live else CACHE_TIME),
+                json.dumps(data)
+            )
         except TypeError:
             pass
 
@@ -98,6 +104,21 @@ class Downloader(object):
         if data:
             return data
 
+    @staticmethod
+    def is_live(url: str, info: dict):
+        pieces = urllib.parse.urlparse(url)
+
+        if "twitch.tv" in pieces.netloc:
+            return True
+
+        if not info:
+            return False
+
+        if info.get("is_live", False):
+            return True
+
+        return False
+
     async def extract_info(self, loop, *args, on_error=None, **kwargs):
         """
             Runs ytdl.extract_info within the threadpool. Returns a future that will fire when it's done.
@@ -111,7 +132,13 @@ class Downloader(object):
 
         try:
             info = await loop.run_in_executor(self.thread_pool, functools.partial(self.ytdl.extract_info, *args, **kwargs))
-            await self.set_cache(args[0], info, **kwargs)
+
+            await self.set_cache(
+                args[0],
+                info,
+                is_live=self.is_live(args[0], info),
+                **kwargs
+            )
             return info
         except Exception as e:
             if callable(on_error):

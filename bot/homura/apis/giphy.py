@@ -40,7 +40,7 @@ class GiphyAPI(object):
 
         image = random.choice(images["data"])
         image_url = image["images"]["original"]["url"]
-        
+
         return {
             "permalink": image["url"],
             "image": image_url.replace("http:", "https:")

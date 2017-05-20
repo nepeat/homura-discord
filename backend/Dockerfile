@@ -1,4 +1,4 @@
-FROM python:3.6.0-alpine
+FROM python:3.6.1-alpine
 
 # Update packages and install setup requirements.
 RUN apk --no-cache upgrade && \

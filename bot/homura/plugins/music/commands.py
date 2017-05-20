@@ -53,17 +53,19 @@ class MusicCommands(MusicBase):
                 )
 
             if isinstance(player.current_entry, StreamPlaylistEntry):
-                prog_str = "Streaming! {progress}".format(
+                prog_name = "Streaming"
+                prog_str = "{progress}".format(
                     progress=str(timedelta(seconds=player.progress)).lstrip('0').lstrip(':')
                 )
             else:
+                prog_name = "Progress"
                 prog_str = '{progress}{extra}'.format(
                     progress=str(timedelta(seconds=player.progress)).lstrip('0').lstrip(':'),
                     extra="/" + str(timedelta(seconds=player.current_entry.duration)).lstrip('0').lstrip(':')
                 )
 
             embed.add_field(
-                name="Progress",
+                name=prog_name,
                 value=prog_str
             ).add_field(
                 name="Permalink",
@@ -112,7 +114,6 @@ class MusicCommands(MusicBase):
 
         if not info:
             return Message(embed=self.create_voice_embed(
-                title="Play error",
                 colour=discord.Colour.red(),
                 description="This URL could not be played."
             ))
@@ -420,9 +421,9 @@ class MusicCommands(MusicBase):
                 description="Are you sure you would like to set the volume to {volume}%?\n"
                             "Setting the volume beyond this level gives no benefit to the volume or quality at all.\n"
                             "You have 15 seconds to confirm this.{danger}".format(
-                    volume=new_volume,
-                    danger="\n**RIP HEADPHONE USERS OH GOD**" if new_volume > 500 else ""
-                )
+                                volume=new_volume,
+                                danger="\n**RIP HEADPHONE USERS OH GOD**" if new_volume > 500 else ""
+                            )
             )
 
             if new_volume >= 1000:

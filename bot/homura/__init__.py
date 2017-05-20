@@ -287,7 +287,7 @@ class NepeatBot(discord.Client):
     async def on_voice_state_update(self, member, before, after):
         await self.plugin_dispatch("voice_state_update", member, before, after)
 
-    async def on_member_ban(self, guid, member):
+    async def on_member_ban(self, guild, member):
         await self.plugin_dispatch("member_ban", guild, member)
 
     async def on_member_unban(self, guild, member):
