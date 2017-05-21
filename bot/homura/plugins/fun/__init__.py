@@ -73,6 +73,9 @@ class FunPlugin(PluginBase):
             self.bot.on_error("gif")
             return Message("Could not fetch a GIF from Giphy.")
 
+        if not gif:
+            raise CommandError(f"No results were found for '{args[0]}'.")
+
         embed = discord.Embed(color=discord.Colour.gold())
         embed.set_author(name=f"Giphy results for '{args[0]}'", url=gif["permalink"])
         embed.set_image(url=gif["image"])
