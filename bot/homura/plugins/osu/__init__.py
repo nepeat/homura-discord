@@ -5,7 +5,7 @@ import math
 from discord import Colour, Embed
 from homura.apis.osu import OsuAPI
 from homura.lib.cached_http import CachedHTTP
-from homura.lib.structure import Message
+from homura.lib.structure import CommandError, Message
 from homura.lib.util import sanitize
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command

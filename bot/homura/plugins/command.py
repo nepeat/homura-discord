@@ -7,6 +7,7 @@ import traceback
 from functools import wraps
 
 import discord
+from homura.apis import APIError
 from homura.lib.permissions import Permissions
 from homura.lib.structure import BackendError, CommandError, Message
 from homura.plugins.base import OWNER_IDS
@@ -183,7 +184,7 @@ def command(
 
             try:
                 response = await func(**handler_kwargs)
-            except CommandError as e:
+            except (CommandError, APIError) as e:
                 embed = discord.Embed(
                     title="Command error",
                     description=str(e),

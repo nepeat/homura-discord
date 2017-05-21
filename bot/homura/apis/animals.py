@@ -6,15 +6,12 @@ import random
 import urllib.parse
 import xml.etree.ElementTree
 
+from homura.apis import APIError
+
 IMGUR_MULTISUBS = {
     "cat": "CatsStandingUp+MEOW_IRL+StuffOnCats+cat+catReddit+catpics+cats+kitties+kitty",
     "dog": "dogpictures+dogs+lookatmydog+shiba+shibe"
 }
-
-
-class AnimalException(Exception):
-    """This exception class is for environmental related problems relating to API keys or developer error."""
-    pass
 
 
 class AnimalAPI(object):
@@ -41,7 +38,7 @@ class AnimalAPI(object):
             :param animal: Name of the animal to fetch. (Choice of cat, dog)
         """
         if "IMGUR_ID" not in os.environ:
-            raise AnimalException("Imgur API key missing from environment!")
+            raise APIError("Imgur API key missing from environment!")
 
         if animal == "cat":
             use_catapi = random.choice([True, False])
@@ -61,7 +58,7 @@ class AnimalAPI(object):
         )
 
         if not reply["data"]:
-            raise AnimalException("Zero pictures were given in the data. " + str(reply))
+            raise APIError("Zero pictures were given in the data. " + str(reply))
 
         image = random.choice(reply["data"])
         # Keep cycling for another link if we picked an album.

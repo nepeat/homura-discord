@@ -2,7 +2,7 @@
 import logging
 from itertools import zip_longest
 
-from homura.lib.structure import Message, CommandError
+from homura.lib.structure import CommandError, Message
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command
 

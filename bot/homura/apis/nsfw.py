@@ -3,6 +3,8 @@ import logging
 import random
 import xml.etree.ElementTree
 
+from homura.apis import APIError
+
 log = logging.getLogger(__name__)
 
 API_ENDPOINTS = [
@@ -121,9 +123,9 @@ class ImageFetcher(object):
         if isinstance(images, dict) and not images.get("success", True):
             fail_reason = images.get("reason", "")
             if fail_reason:
-                raise FetchException(fail_reason)
+                raise APIError(fail_reason)
 
-            raise FetchException("An unknown error occured fetching these tags.")
+            raise APIError("An unknown error occured fetching these tags.")
 
         while images:
             image = self.safe_shuffle(images)

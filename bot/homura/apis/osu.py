@@ -3,7 +3,7 @@ import logging
 import os
 import urllib.parse
 
-from homura.lib.structure import CommandError
+from homura.apis import APIError
 
 log = logging.getLogger(__name__)
 OSU_API_BASE = "https://osu.ppy.sh/api/"
@@ -32,7 +32,7 @@ class OsuAPI(object):
 
     async def get_user(self, username, mode="osu"):
         if not self.api_key:
-            raise CommandError("Bot is missing OSU API key.")
+            raise APIError("Bot is missing OSU API key.")
 
         params = {
             "k": self.api_key,

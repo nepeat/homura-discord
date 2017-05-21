@@ -1,9 +1,9 @@
 # coding=utf-8
 import logging
 
-from homura.apis.nsfw import ImageFetcher, FetchException
+from homura.apis.nsfw import ImageFetcher
 from homura.lib.cached_http import CachedHTTP
-from homura.lib.structure import Message, CommandError
+from homura.lib.structure import CommandError, Message
 from homura.lib.util import sanitize
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command
@@ -23,10 +23,7 @@ class NSFWPlugin(PluginBase):
         usage="nsfw <query>"
     )
     async def rule34(self, args):
-        try:
-            image = await self.fetcher.random(args[0].strip())
-        except FetchException as e:
-            raise CommandError(str(e))
+        image = await self.fetcher.random(args[0].strip())
 
         if not image:
             raise CommandError(f"No posts tagged '{sanitize(args[0])}' were found.")
