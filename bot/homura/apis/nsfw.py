@@ -33,6 +33,10 @@ API_ENDPOINTS = [
 ]
 
 
+class FetchException(Exception):
+    pass
+
+
 class ImageFetcher(object):
     def __init__(self, http):
         self.http = http
@@ -113,6 +117,13 @@ class ImageFetcher(object):
             params=params,
             asjson=True
         )
+
+        if isinstance(images, dict) and not images.get("success", True):
+            fail_reason = images.get("reason", "")
+            if fail_reason:
+                raise FetchException(fail_reason)
+
+            raise FetchException("An unknown error occured fetching these tags.")
 
         while images:
             image = self.safe_shuffle(images)

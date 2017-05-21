@@ -2,7 +2,7 @@
 import logging
 
 import discord
-from homura.lib.structure import Message
+from homura.lib.structure import Message, CommandError
 from homura.lib.util import sanitize
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command
@@ -35,17 +35,18 @@ class EventLogPlugin(PluginBase):
         usage="eventlog [enable|disable]"
     )
     async def toggle_event(self, message, args):
+        event_type = args[1].strip().lower()
         enabled = await self.redis.smembers_asset("channellog:{}:enabled".format(message.guild.id))
 
         action = self.redis.sadd if args[0] == "enable" else self.redis.srem
 
-        if args[1] not in EventLogPlugin.EVENTS:
-            raise CommandError(f"'{args[1]}' is not a valid event.")
+        if event_type not in EventLogPlugin.EVENTS and event_type != "all":
+            raise CommandError(f"'{event_type}' is not a valid event.")
 
-        if args[1] == "all":
+        if event_type == "all":
             await action("channellog:{}:enabled".format(message.guild.id), EventLogPlugin.EVENTS)
         else:
-            await action("channellog:{}:enabled".format(message.guild.id), [args[1]])
+            await action("channellog:{}:enabled".format(message.guild.id), [event_type])
 
         return Message("Done!")
 
