@@ -6,7 +6,7 @@ import discord
 from homura.lib.structure import Message
 from homura.lib.util import validate_regex
 from homura.plugins.antispam import images
-from homura.plugins.antispam.signals import AntispamDelete, AntispamWarning
+from homura.plugins.antispam.signals import AntispamDelete, AntispamWarning, AntispamKick, AntispamBan
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command
 
@@ -105,13 +105,21 @@ class AntispamPlugin(PluginBase):
     @staticmethod
     def create_antispam_embed(message: discord.Message, event_type):
         if event_type == "warning":
-            icon = "warning"
+            icon = event_type.lower()
+            colour = discord.Colour.gold()
+        elif event_type == "kick" or event_type.endswith("_kick"):
+            event_type = event_type.rstrip("_kick")
+            icon = "kick"
             colour = discord.Colour.gold()
         else:
-            icon = "x_circle"
+            if event_type == "ban" or event_type.endswith("_ban"):
+                event_type = event_type.rstrip("_ban")
+                icon = "ban"
+            else:
+                icon = "x_circle"
             colour = discord.Colour.red()
 
-        title = f"{event_type.capitalize()} phrase"
+        title = f"Antispam - {event_type.capitalize()}"
 
         return discord.Embed(
             colour=colour,
@@ -139,7 +147,7 @@ class AntispamPlugin(PluginBase):
         if not log_channel:
             return
 
-        embed = self.create_antispam_embed(message, str(e))
+        embed = self.create_antispam_embed(message, reason)
         await log_channel.send(embed=embed)
 
     async def check_lists(self, message):
@@ -157,6 +165,34 @@ class AntispamPlugin(PluginBase):
 
         return False
 
+    async def check_mention_spam(self, message: discord.Message):
+        if not message.mentions:
+            return False
+
+        user_mentions_key = "antispam:{}:{}:mentions".format(
+            message.guild.id,
+            message.author.id
+        )
+        channel_mentions_key = "antispam:{}:{}:mentions".format(
+            message.guild.id,
+            message.channel.id
+        )
+
+        # Increment and expire keys.
+        user_mentions_total = await self.redis.incrby(user_mentions_key, len(message.mentions))
+        await self.redis.expire(user_mentions_key, 5)
+        channel_mentions_total = await self.redis.incrby(channel_mentions_key, len(message.mentions))
+        await self.redis.expire(channel_mentions_key, 5)
+
+
+        if user_mentions_total > 15:
+            raise AntispamBan("mentions")
+        elif user_mentions_total > 25:
+            raise AntispamKick("mentions")
+
+        if channel_mentions_total > 25:
+            raise AntispamDelete("mentions")
+
     async def on_message(self, message):
         # We cannot run in PMs :(
         if not message.guild:
@@ -167,6 +203,9 @@ class AntispamPlugin(PluginBase):
             return
 
         try:
+            # Mention checking
+            await self.check_mention_spam(message)
+
             # Image only channel checking
             if await self.redis.sismember("antispam:imagechannels", message.channel.id):
                 await images.check(self.bot.aiosession, message)
@@ -180,3 +219,15 @@ class AntispamPlugin(PluginBase):
             await self.log_event(message, str(e))
         except AntispamWarning:
             await self.log_event(message, "warning")
+        except AntispamBan as e:
+            await self.bot.delete_message(message)
+            await message.author.ban(
+                reason=f"Automated ban. Ban criteria was `{str(e)}`"
+            )
+            await self.log_event(message, str(e) + "_ban")
+        except AntispamKick as e:
+            await self.bot.delete_message(message)
+            await message.author.kick(
+                reason=f"Automated kick. Kick criteria was `{str(e)}`"
+            )
+            await self.log_event(message, str(e) + "_kick")
