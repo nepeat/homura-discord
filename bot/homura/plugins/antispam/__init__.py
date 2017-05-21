@@ -6,7 +6,7 @@ import discord
 from homura.lib.structure import Message
 from homura.lib.util import validate_regex
 from homura.plugins.antispam import images
-from homura.plugins.antispam.signals import AntispamDelete, AntispamWarning, AntispamKick, AntispamBan
+from homura.plugins.antispam.signals import AntispamBan, AntispamDelete, AntispamKick, AntispamWarning
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command
 
