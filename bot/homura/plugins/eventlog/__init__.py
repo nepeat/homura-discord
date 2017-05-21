@@ -39,6 +39,9 @@ class EventLogPlugin(PluginBase):
 
         action = self.redis.sadd if args[0] == "enable" else self.redis.srem
 
+        if args[1] not in EventLogPlugin.EVENTS:
+            raise CommandError(f"'{args[1]}' is not a valid event.")
+
         if args[1] == "all":
             await action("channellog:{}:enabled".format(message.guild.id), EventLogPlugin.EVENTS)
         else:

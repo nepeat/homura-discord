@@ -6,7 +6,7 @@ import discord
 from homura.lib.structure import Message
 from homura.lib.util import validate_regex
 from homura.plugins.antispam import images
-from homura.plugins.antispam.signals import Delete, Warning
+from homura.plugins.antispam.signals import AntispamDelete, AntispamWarning
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command
 
@@ -129,43 +129,24 @@ class AntispamPlugin(PluginBase):
             value=(message.clean_content[:900] + '...') if len(message.clean_content) > 900 else message.clean_content
         )
 
-    async def on_message(self, message):
-        # We cannot run in PMs :(
-
-        if not message.guild:
+    async def log_event(self, message, reason):
+        # Do not log quiet deletes
+        if reason == "quiet":
             return
 
         log_channel = self.bot.get_channel(await self.redis.hget(f"{message.guild.id}:settings", "log_channel"))
+
         if not log_channel:
             return
 
-        if await self.redis.sismember("antispam:{}:excluded".format(message.guild.id), message.channel.id):
-            return
-
-        try:
-            if await self.redis.sismember("antispam:imagechannels", message.channel.id):
-                await images.check(self.bot.aiosession, message)
-
-            await self.check_lists(message)
-        except Delete as e:
-            if not message.author.guild_permissions.administrator:
-                await self.bot.delete_message(message)
-
-            # Do not log quiet deletes
-            if str(e) == "quiet":
-                return
-
-            embed = self.create_antispam_embed(message, str(e))
-            await log_channel.send(embed=embed)
-        except Warning:
-            embed = self.create_antispam_embed(message, "warning")
-            await log_channel.send(embed=embed)
+        embed = self.create_antispam_embed(message, str(e))
+        await log_channel.send(embed=embed)
 
     async def check_lists(self, message):
         if await self.check_list(message, "blacklist"):
-            raise Delete("blacklist")
+            raise AntispamDelete("blacklist")
         elif await self.check_list(message, "warnlist"):
-            raise Warning("warning")
+            raise AntispamWarning("warning")
 
     async def check_list(self, message, list_name):
         items = await self.redis.smembers_asset("antispam:{}:{}".format(message.guild.id, list_name))
@@ -175,3 +156,27 @@ class AntispamPlugin(PluginBase):
                 return True
 
         return False
+
+    async def on_message(self, message):
+        # We cannot run in PMs :(
+        if not message.guild:
+            return
+
+        # Ignore messages that we have excluded.
+        if await self.redis.sismember("antispam:{}:excluded".format(message.guild.id), message.channel.id):
+            return
+
+        try:
+            # Image only channel checking
+            if await self.redis.sismember("antispam:imagechannels", message.channel.id):
+                await images.check(self.bot.aiosession, message)
+
+            # Blacklist / Warning checking
+            await self.check_lists(message)
+        except AntispamDelete as e:
+            if not message.author.guild_permissions.administrator:
+                await self.bot.delete_message(message)
+
+            await self.log_event(message, str(e))
+        except AntispamWarning:
+            await self.log_event(message, "warning")

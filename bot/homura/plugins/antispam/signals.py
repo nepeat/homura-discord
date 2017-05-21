@@ -1,7 +1,7 @@
 # coding=utf-8
-class Delete(Exception):
+class AntispamDelete(Exception):
     pass
 
 
-class Warning(Exception):
+class AntispamWarning(Exception):
     pass

@@ -2,7 +2,7 @@
 import re
 
 import aiohttp
-from homura.plugins.antispam.signals import Delete
+from homura.plugins.antispam.signals import AntispamDelete
 
 url_regex = re.compile(r"(https?://\S+)")
 
@@ -28,6 +28,6 @@ async def check(session, message):
     elif urls:
         for url in urls.groups():
             if not await validate_url(session, url):
-                raise Delete("quiet")
+                raise AntispamDelete("quiet")
     else:
-        raise Delete("quiet")
+        raise AntispamDelete("quiet")
