@@ -29,7 +29,7 @@ class Message(object):
             self.file.close()
 
     @classmethod
-    def from_file(cls, data, filename: str, **args, **kwargs):
+    def from_file(cls, data, filename: str, *args, **kwargs):
         """
         Initializes a Message object from file data.
 

@@ -3,10 +3,13 @@ import datetime
 import logging
 import os
 import random
+import time
 
 import discord
+from subprocess import CalledProcessError
 from homura.apis.animals import AnimalAPI
 from homura.apis.giphy import GiphyAPI
+from homura.apis.imagemagick import MagickAbstract
 from homura.lib.cached_http import CachedHTTP
 from homura.lib.structure import CommandError, Message
 from homura.plugins.base import PluginBase
@@ -18,8 +21,11 @@ log = logging.getLogger(__name__)
 class FunPlugin(PluginBase):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
-        self.animal_api = AnimalAPI(CachedHTTP(self.bot))
-        self.giphy_api = GiphyAPI(CachedHTTP(self.bot))
+
+        self.cached_http = CachedHTTP(self.bot)
+        self.animal_api = AnimalAPI(self.cached_http)
+        self.giphy_api = GiphyAPI(self.cached_http)
+        self.magick = MagickAbstract(self.loop)
 
     @command(
         "fart$",
@@ -181,3 +187,41 @@ class FunPlugin(PluginBase):
         )
 
         return Message(embed)
+
+    @command(
+        patterns=[
+            "morejpg (\d+)",
+            "morejpg$",
+        ],
+        permission_name="fun.morejpg",
+        description="Corrupts a JPG.",
+        global_command=True
+    )
+    async def morejpg(self, message, args):
+        try:
+            quality = int(args[0])
+            if quality < 1 or quality > 100:
+                raise ValueError()
+        except (IndexError, ValueError):
+            quality = 10
+
+        if not message.attachments:
+            raise CommandError("Please attach an image to corrupt.")
+
+        image_url = message.attachments[0]["url"]
+        async with self.bot.aiosession.get(
+            url=image_url,
+        ) as response:
+            image_data = await response.read()
+
+        try:
+            await self.magick.validate(image_data)
+        except CalledProcessError:
+            raise CommandError("Image uploaded is not a valid image.")
+
+        filename = "morejpg-" + str(int(time.time())) + "-" + image_url.split("/")[-1]
+
+        return Message.from_file(
+            data=await self.magick.jpg_compress(image_data, quality),
+            filename=filename
+        )
