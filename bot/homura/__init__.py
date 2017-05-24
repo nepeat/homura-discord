@@ -138,9 +138,6 @@ class NepeatBot(discord.Client):
             file=message.file
         )
 
-        if message.file:
-            message.file.close()
-
         if message.delete_invoking and invoking:
             await asyncio.sleep(message.delete_invoking)
             await self.delete_message(invoking)

@@ -81,11 +81,8 @@ class MusicCommands(MusicBase):
         message_to_send = Message(embed)
 
         if args and args[0].strip().lower() == "queue file":
-            data = BytesIO()
-            data.writelines(x.encode("utf8") for x in player.playlist.format_discord(None, formatted=False))
-            data.seek(0)
-            message_to_send.file = discord.File(
-                data,
+            message_to_send.set_file(
+                data=[x.encode("utf8") for x in player.playlist.format_discord(None, formatted=False)],
                 filename=f"{int(time.time())}-music-queue-{message.guild.id}.txt"
             )
 
