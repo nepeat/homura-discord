@@ -1,1 +1,9 @@
-../.dockerignore
+env/
+venv/
+.env
+__pycache__/
+*.pyc
+*.egg-info/
+node_modules/
+web/
+.idea/
