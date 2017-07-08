@@ -33,10 +33,11 @@ def command(
         async def wrapper(self, message):
 
             # Command match
+            log.debug("Attempting match for '%s'", message.content)
 
             match = None
             for pattern in patterns:
-                match = re.match("^!" + pattern, message.content)
+                match = re.match(f"^{self.cmd_prefix}{pattern}", message.content)
                 log.debug("prog %s; matched %s" % (pattern, match))
                 if match:
                     break

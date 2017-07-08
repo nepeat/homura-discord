@@ -48,9 +48,13 @@ class Permissions(object):
 
         payload = {
             "server": self.guild.id,
-            "channel": self.channel.id if (self.channel and not guildwide) else None,
             "perm": permission
         }
+
+        if self.channel and not guildwide:
+            payload.update(
+                channel=self.channel.id
+            )
 
         try:
             async with action(
@@ -96,9 +100,14 @@ class Permissions(object):
             channel_id = self.channel.id
 
         params = {
-            "server": self.guild.id,
-            "channel": channel_id if not guildonly else None
+            "server": self.guild.id
         }
+
+        if not guildonly:
+            params.update(
+                channel=channel_id
+            )
+
         try:
             async with self.bot.aiosession.get(
                 url=self.backend_url + "/api/permissions/",

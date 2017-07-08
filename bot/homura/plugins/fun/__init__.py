@@ -208,7 +208,7 @@ class FunPlugin(PluginBase):
         if not message.attachments:
             raise CommandError("Please attach an image to corrupt.")
 
-        image_url = message.attachments[0]["url"]
+        image_url = message.attachments[0].url
         async with self.bot.aiosession.get(
             url=image_url,
         ) as response:

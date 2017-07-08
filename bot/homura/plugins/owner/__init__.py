@@ -52,7 +52,7 @@ class OwnerPlugin(PluginBase):
     )
     async def set_avatar(self, message, args):
         if message.attachments:
-            thing = message.attachments[0]["url"]
+            thing = message.attachments[0].url
         else:
             if not args:
                 return

@@ -10,4 +10,6 @@ EVENT_TYPES = [
     "rename_channel",
     "rename_server",
     "server_join",
+    "rename_guild",
+    "guild_join",
 ]

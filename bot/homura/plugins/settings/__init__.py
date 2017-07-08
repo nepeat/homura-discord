@@ -43,3 +43,21 @@ class SettingsPlugin(PluginBase):
         await action("antispam:imagechannels", [message.channel.id])
 
         return Message("Updated!")
+
+    @command(
+        "settings get prefix",
+        permission_name="settings.get.prefix",
+        description="Gets the current bot calling prefix for the server.",
+        usage="settings set prefix <prefix>"
+    )
+    async def set_prefix(self, guild, args):
+        raise NotImplementedError()
+
+    @command(
+        "settings set prefix (.+)",
+        permission_name="settings.set.prefix",
+        description="Sets the bot calling prefix for the server.",
+        usage="settings get prefix"
+    )
+    async def get_prefix(self, guild):
+        raise NotImplementedError()
