@@ -273,6 +273,7 @@ class MusicCommands(MusicBase):
 
     @command(
         patterns=[
+            "music (vote)skip",
             "music skip$",
         ],
         permission_name="music.skip",
@@ -280,8 +281,9 @@ class MusicCommands(MusicBase):
         description="Skips the current playing song.",
         usage="music skip"
     )
-    async def skip(self, message):
+    async def skip(self, message, args):
         player = await self.get_player(message.guild, message.author)
+        force_vote = args and args[0].lower() == "vote"
 
         if player.is_stopped:
             raise CommandError("You cannot skip when there are no songs playing!")
@@ -293,7 +295,7 @@ class MusicCommands(MusicBase):
         if (
             message.author == player.current_entry.meta.get("author", None)
             or message.author.guild_permissions.administrator
-        ):
+        ) and not force_vote:
             skipped_title = player.current_entry.title
             player.skip()
             return Message(embed=self.create_voice_embed(
@@ -304,7 +306,6 @@ class MusicCommands(MusicBase):
         num_voice = sum(1 for m in player.voice_client.channel.members if not (
             m.voice.deaf or
             m.voice.self_deaf or
-            m.guild_permissions.administrator or
             m.id == self.bot.user.id
         ))
 
