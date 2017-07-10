@@ -70,6 +70,9 @@ class NepeatBot(discord.Client):
         self.aiosession = aiohttp.ClientSession(loop=self.loop)
 
     async def create_redis(self):
+        if hasattr(self, "redis"):
+            return
+
         self.redis = await asyncio_redis.Pool.create(
             host=os.environ.get("REDIS_HOST", "localhost"),
             port=int(os.environ.get("REDIS_PORT", 6379)),

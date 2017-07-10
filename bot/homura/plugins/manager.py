@@ -44,6 +44,9 @@ class PluginManager:
         log.info('{} loaded.'.format(plugin.__name__))
 
     def load_all(self):
+        if self.plugins:
+            return
+
         for plugin in ALL_PLUGINS:
             self.load(plugin)
 
