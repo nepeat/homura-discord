@@ -1,20 +1,26 @@
-version: '2'
+version: '2.3'
 services:
   redis:
-    image: redis:3.2.9-alpine
+    image: redis:4.0.2-alpine
     volumes:
       - redis:/data
     restart: always
     command: "redis-server --appendonly yes"
+    environment:
+      SERVICE_NAME: discordbot_redis
+    expose:
+      - 6379
+    network_mode: bridge
+    dns: "172.17.0.1"
 
   bot:
       build:
           context: bot
       restart: always
       environment:
-        REDIS_HOST: redis
+        REDIS_HOST: discordbot_redis.dev01.docker
         REDIS_PORT: 6379
-        BOT_WEB: http://backend:5000
+        BOT_WEB: http://discordbot_backend.dev01.docker:5000
         AUDIO_CACHE_PATH: /audio_cache
       read_only: true
       tmpfs:
@@ -26,14 +32,17 @@ services:
       depends_on:
         - redis
         - backend
+      network_mode: bridge
+      dns: "172.17.0.1"
 
   backend:
       build:
           context: backend
       restart: always
       environment:
-        REDIS_HOST: redis
+        REDIS_HOST: discordbot_redis.dev01.docker
         REDIS_PORT: 6379
+        SERVICE_NAME: discordbot_backend
       read_only: true
       tmpfs:
         - /run
@@ -41,6 +50,8 @@ services:
       env_file: .env
       depends_on:
         - redis
+      network_mode: bridge
+      dns: "172.17.0.1"
 volumes:
   redis:
     driver: local

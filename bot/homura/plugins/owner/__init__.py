@@ -75,7 +75,7 @@ class OwnerPlugin(PluginBase):
         permission_name="owner.never.gonna.happen",
         description="According to all known laws of security, there is no way an eval should be secure."
     )
-    async def eval_code(self, args, guild, permissions, message):  # NOQA
+    async def eval_code(self, args, permissions, message, settings):  # NOQA
         try:
             results = eval(args[0])
             if inspect.isawaitable(results):

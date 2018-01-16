@@ -1,4 +1,5 @@
 import asyncio_redis
+import json
 from asyncio_redis.encoders import UTF8Encoder
 
 
@@ -7,6 +8,8 @@ class BotEncoder(UTF8Encoder):
     def encode_from_native(self, data):
         if isinstance(data, int):
             data = ":py_int:" + str(data)
+        elif isinstance(data, dict):
+            data = ":py_dict:" + json.dumps(data)
 
         return super().encode_from_native(data)
 
@@ -15,6 +18,8 @@ class BotEncoder(UTF8Encoder):
 
         if decoded.startswith(":py_int:"):
             return int(decoded.lstrip(":py_int:"))
+        elif decoded.startswith(":py_dict:"):
+            return json.loads(decoded.lstrip(":py_dict:"))
 
         return decoded
 

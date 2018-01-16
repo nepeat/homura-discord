@@ -43,7 +43,7 @@ class MusicCommands(MusicBase):
                 name="Now {action}".format(
                     action="streaming" if isinstance(player.current_entry, StreamPlaylistEntry) else "playing"
                 ),
-                value=player.current_entry.title
+                value=f"[{player.current_entry.title}]({player.current_entry.url})"
             )
 
             if player.current_entry.meta.get("author", ""):
@@ -62,15 +62,7 @@ class MusicCommands(MusicBase):
                 prog_str = '{progress}{extra}'.format(
                     progress=str(timedelta(seconds=player.progress)).lstrip('0').lstrip(':'),
                     extra="/" + str(timedelta(seconds=player.current_entry.duration)).lstrip('0').lstrip(':')
-                )
-
-            embed.add_field(
-                name=prog_name,
-                value=prog_str
-            ).add_field(
-                name="Permalink",
-                value=player.current_entry.url
-            )
+                ) 
 
         embed.add_field(
             name="Queue",
@@ -468,7 +460,7 @@ class MusicCommands(MusicBase):
                 )
 
     @command(
-        "music (disconnect|leave)$",
+        "music (disconnect|leave|kill)$",
         permission_name="music.leave",
         description="Makes the bot disconnect",
         usage="music leave"
