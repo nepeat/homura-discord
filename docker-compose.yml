@@ -3,7 +3,7 @@ services:
   redis:
     image: redis:4.0.2-alpine
     volumes:
-      - redis:/data
+      - /mnt/nfs/discordbot/redis:/data
     restart: always
     command: "redis-server --appendonly yes"
     environment:
@@ -27,7 +27,7 @@ services:
         - /run
         - /tmp
       volumes:
-        - audio_cache:/audio_cache
+        - /mnt/nfs/discordbot/audio_cache:/audio_cache
       env_file: .env
       depends_on:
         - redis
@@ -52,8 +52,3 @@ services:
         - redis
       network_mode: bridge
       dns: "172.17.0.1"
-volumes:
-  redis:
-    driver: local
-  audio_cache:
-    driver: local
