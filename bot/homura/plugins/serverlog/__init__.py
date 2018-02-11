@@ -42,14 +42,31 @@ class ServerLogPlugin(PluginBase):
 
     @command(
         "archivechannel",
-        permission_name="serverlog.archive",
+        permission_name="serverlog.archive.channel",
         description="Does a full archival of a channel.",
         requires_admin=True,
         usage="archivechannel"
     )
     async def cmd_archivechannel(self, message, bot):
+        await self.archive_channel(message.channel)
+        await message.channel.send("Complete!")
+
+    @command(
+        "archiveserver",
+        permission_name="serverlog.archive.server",
+        description="Does a full archival of the whole server.",
+        requires_admin=True,
+        usage="archiveserver"
+    )
+    async def cmd_archiveserver(self, message, bot):
+        for channel in message.guild.channels:
+            await self.archive_channel(channel)
+            await message.channel.send("Completed archiving #{channel.name}!")
+        await message.channel.send("Full archive complete!")
+
+    async def archive_channel(self, channel: discord.abc.Messageable):
         # Grab the before date from Redis if it exists.
-        stored_date = await self.redis.get(f"archive:{message.channel.id}")
+        stored_date = await self.redis.get(f"archive:{channel.id}")
 
         try:
             before_date = datetime.datetime.utcfromtimestamp(float(stored_date))
@@ -58,7 +75,7 @@ class ServerLogPlugin(PluginBase):
 
         i = 0
         payload = []
-        async for message in message.channel.history(before=before_date, limit=None):
+        async for message in channel.history(before=before_date, limit=None):
             i += 1
 
             # Add the message to the payload queue.
@@ -73,27 +90,25 @@ class ServerLogPlugin(PluginBase):
             })
 
             # Set the latest message if we are on the first message.
-            await self.redis.hset("archive:state", message.channel.id, message.id)
+            await self.redis.hset("archive:state", channel.id, message.id)
 
             # Upload the buffer every 200 messages.
             if i % 200 == 0:
                 status = await self.push_event("bulk_channel", data=payload)
                 if not status:
                     date_to_store = float(time.time())
-                    await self.redis.sadd(f"archive:fails:{message.channel.id}", date_to_store)
+                    await self.redis.sadd(f"archive:fails:{channel.id}", date_to_store)
                 payload.clear()
 
             # Store the timestamp every 400 messages.
             if i % 400 == 0:
-                log.info(f"Processed {i} messages for channel {message.channel.id}")
+                log.info(f"Processed {i} messages for channel {channel.id}")
                 date_to_store = float(time.time())
-                await self.redis.set(f"archive:{message.channel.id}", date_to_store)
+                await self.redis.set(f"archive:{channel.id}", date_to_store)
 
         # Finish the upload if we still have a payload.
         if payload:
             await self.push_event("bulk_channel", data=payload)
-
-        await message.channel.send("Complete!")
 
     async def on_ready(self):
         await self.add_all_guilds()
