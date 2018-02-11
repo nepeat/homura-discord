@@ -1,5 +1,6 @@
 # coding=utf-8
 import datetime
+import time
 import json
 import logging
 import os
@@ -75,14 +76,14 @@ class ServerLogPlugin(PluginBase):
             if i % 200 == 0:
                 status = await self.push_event("bulk_channel", data=payload)
                 if not status:
-                    date_to_store = datetime.datetime.replace(tzinfo=datetime.timezone.utc).timestamp()
+                    date_to_store = float(time.gmtime())
                     await self.redis.sadd(f"archive:fails:{message.channel.id}", date_to_store)
                 payload.clear()
 
             # Store the timestamp every 400 messages.
             if i % 400 == 0:
                 log.info(f"Processed {i} messages for channel {message.channel.id}")
-                date_to_store = datetime.datetime.replace(tzinfo=datetime.timezone.utc).timestamp()
+                date_to_store = float(time.gmtime())
                 await self.redis.set(f"archive:{message.channel.id}", date_to_store)
 
         # Finish the upload if we still have a payload.
