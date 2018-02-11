@@ -97,15 +97,13 @@ class ServerLogPlugin(PluginBase):
             if i % 200 == 0:
                 status = await self.push_event("bulk_channel", data=payload)
                 if not status:
-                    date_to_store = float(time.time())
-                    await self.redis.sadd(f"archive:fails:{channel.id}", date_to_store)
+                    await self.redis.sadd(f"archive:fails:{channel.id}", str(time.time()))
                 payload.clear()
 
             # Store the timestamp every 400 messages.
             if i % 400 == 0:
                 log.info(f"Processed {i} messages for channel {channel.id}")
-                date_to_store = float(time.time())
-                await self.redis.set(f"archive:{channel.id}", date_to_store)
+                await self.redis.set(f"archive:{channel.id}", message.created_at.timestamp())
 
         # Finish the upload if we still have a payload.
         if payload:
