@@ -1,6 +1,8 @@
 # coding=utf-8
 import logging
+import re
 import random
+import math
 import time
 import traceback
 from datetime import timedelta
@@ -10,7 +12,7 @@ import asyncio
 import discord
 import pytimeparse
 from homura.lib.structure import CommandError, Message
-from homura.lib.util import sane_round_int, sanitize
+from homura.lib.util import sanitize
 from homura.plugins.command import command
 from homura.plugins.music.base import MusicBase
 from homura.plugins.music.objects import StreamPlaylistEntry, URLPlaylistEntry
@@ -98,6 +100,11 @@ class MusicCommands(MusicBase):
         else:
             prepend = args[0].lower() == "prepend"
             stream = args[0].lower() == "stream"
+
+        url_regex = re.compile(r'((http(s)*:[/][/]|www.)([a-z]|[A-Z]|[0-9]|[/.]|[~])*)')
+        matched_url = url_regex.match(url)
+        if matched_url is None:
+            url = url.replace('/', '%2F')
 
         info = await self.downloader.extract_info(player.playlist.loop, url, download=False, process=False)
 
@@ -305,7 +312,7 @@ class MusicCommands(MusicBase):
 
         skips_remaining = min(
             MIN_SKIPS,
-            sane_round_int(num_voice * SKIP_RATIO)
+            math.ceil(self.config.skip_ratio_required / (1 / num_voice)) # Number of skips from config ratio
         ) - num_skips
 
         if skips_remaining <= 0:

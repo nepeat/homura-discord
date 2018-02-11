@@ -56,7 +56,3 @@ def md5_string(string, limit=0):
     fhash = hashlib.md5()
     fhash.update(string)
     return fhash.hexdigest()[-limit:]
-
-
-def sane_round_int(x):
-    return int(decimal.Decimal(x).quantize(1, rounding=decimal.ROUND_HALF_UP))

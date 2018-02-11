@@ -109,9 +109,9 @@ class Playlist(EventEmitter):
                 if content_type.startswith(("application/", "image/")):
                     if "/ogg" not in content_type:  # How does a server say `application/ogg` what the actual fuck
                         raise ExtractionError("Invalid content type \"%s\" for url %s" % (content_type, song_url))
-                elif content_type.startswith('text/html'):
-                    log.warning("Got text/html for content-type, this might be a stream")
-                    pass  # TODO: Check for shoutcast/icecast
+                elif content_type.startswith('text/html') and info['extractor'] == 'generic':
+                    log.warning("Got text/html for content-type, this might be a stream.")
+                    return await self.add_stream_entry(song_url, info=info, **meta)  # TODO: Check for shoutcast/icecast
                 elif not content_type.startswith(("audio/", "video/")):
                     log.warning("Questionable content type \"%s\" for url %s", content_type, song_url)
 
