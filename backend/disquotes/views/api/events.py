@@ -48,11 +48,11 @@ class BulkChannelResource(ResourceBase):
         server_cache = {}
         channel_cache = {}
 
-        for message in data.items():
+        for message in data:
             server_id = message["server_id"]
             channel_id = message["channel_id"]
 
-            if server_id not in server_cache or channel_id not in channel_id:
+            if server_id not in server_cache or channel_id not in channel_cache:
                 server, channel = self.get_server_channel(create=True, server=server_id, channel=channel_id)
                 server_cache[server_id] = server
                 channel_cache[channel_id] = channel

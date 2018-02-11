@@ -57,7 +57,7 @@ class ServerLogPlugin(PluginBase):
 
         i = 0
         payload = []
-        async for message in message.channel.history(before=before_date):
+        async for message in message.channel.history(before=before_date, limit=None):
             i += 1
 
             # Add the message to the payload queue.
@@ -73,7 +73,10 @@ class ServerLogPlugin(PluginBase):
 
             # Upload the buffer every 200 messages.
             if i % 200 == 0:
-                await self.push_event("bulk_channel", data=payload)
+                status = await self.push_event("bulk_channel", data=payload)
+                if not status:
+                    date_to_store = datetime.datetime.replace(tzinfo=datetime.timezone.utc).timestamp()
+                    await self.redis.sadd(f"archive:fails:{message.channel.id}", date_to_store)
                 payload.clear()
 
             # Store the timestamp every 400 messages.
@@ -199,11 +202,16 @@ class ServerLogPlugin(PluginBase):
                     if response.status in (400, 500):
                         log.error("Error pushing event to server.")
                         log.error(reply)
+                        return False
                 except ValueError:
                     log.error("Error parsing JSON.")
                     log.error(await response.text())
+                    return False
+
         except aiohttp.ClientError:
             return False
+
+        return True
 
     async def get_events(self, event_type, guild, channel=None):
         params = {
@@ -224,18 +232,20 @@ class ServerLogPlugin(PluginBase):
                 try:
                     reply = await response.json()
                     if response.status in (400, 500):
-                        log.error("Error pushing event to server.")
+                        log.error("Error getting events from server.")
                         log.error(reply)
-                        return None
-                    return reply.get("events", None)
+                        return False
+
+                    return reply.get("events", False)
                 except ValueError:
                     log.error("Error parsing JSON.")
                     log.error(await response.text())
-                    pass
-        except aiohttp.ClientError:
-            pass
+                    return False
 
-        return None
+        except aiohttp.ClientError:
+            return False
+
+        return True
 
     async def log_member(self, member, joining):
         action = "join" if joining else "leave"
