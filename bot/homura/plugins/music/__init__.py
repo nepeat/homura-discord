@@ -1,8 +1,9 @@
 # coding=utf-8
+import asyncio
 import logging
 
-import asyncio
 import discord
+
 from homura.lib.structure import Message
 from homura.plugins.music.commands import MusicCommands
 

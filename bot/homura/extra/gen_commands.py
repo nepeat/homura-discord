@@ -6,6 +6,7 @@ import os
 import sys
 
 import yaml
+
 from homura import NepeatBot
 
 # Argument parsing

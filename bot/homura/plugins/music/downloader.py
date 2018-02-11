@@ -1,13 +1,14 @@
 # coding=utf-8
+import asyncio
 import functools
 import hashlib
 import json
 import os
 import urllib.parse
-
-import asyncio
-import youtube_dl
 from concurrent.futures import ThreadPoolExecutor
+
+import youtube_dl
+
 from homura.lib.util import md5_string
 
 YOUTUBEDL_ARGS = {

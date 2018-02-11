@@ -4,9 +4,10 @@ import logging
 import os
 import random
 import time
+from subprocess import CalledProcessError
 
 import discord
-from subprocess import CalledProcessError
+
 from homura.apis.animals import AnimalAPI
 from homura.apis.giphy import GiphyAPI
 from homura.apis.imagemagick import MagickAbstract

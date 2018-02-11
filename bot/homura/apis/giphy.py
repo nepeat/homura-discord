@@ -2,9 +2,9 @@ import os
 import random
 import urllib.parse
 import warnings
+from typing import Optional
 
 from homura.lib.cached_http import CachedHTTP
-from typing import Optional
 
 GIPHY_API_ENDPOINT = "https://api.giphy.com"
 

@@ -1,7 +1,6 @@
+import asyncio
 import functools
 import subprocess
-
-import asyncio
 from concurrent.futures import ThreadPoolExecutor
 
 

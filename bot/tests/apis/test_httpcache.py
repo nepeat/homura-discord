@@ -1,7 +1,8 @@
+import asyncio
 import time
 
-import asyncio
 import pytest
+
 from homura.lib.cached_http import CachedHTTP
 
 from .. import slow

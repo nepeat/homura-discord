@@ -1,12 +1,13 @@
 # coding=utf-8
+import asyncio
 import inspect
 import logging
 import random
 import traceback
 
 import aiohttp
-import asyncio
 from discord import Game
+
 from homura.lib.structure import Message
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command

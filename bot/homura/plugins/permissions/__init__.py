@@ -2,6 +2,7 @@
 import logging
 
 import discord
+
 from homura.lib.structure import Message
 from homura.lib.util import sanitize
 from homura.plugins.base import PluginBase

@@ -5,13 +5,15 @@
     05/15/17, 1:11 AM - The conftest.py is becoming godawful but it works and sorta mocks out what I need?
 '''
 
+from typing import List, Tuple
+
 import discord
 import pytest
+
 from homura.lib.structure import Message
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command
 from homura.plugins.manager import PluginManager
-from typing import List, Tuple
 
 from .. import create_unique_id
 

@@ -3,6 +3,7 @@ import logging
 import operator
 
 import discord
+
 from homura.lib.structure import CommandError, Message
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command

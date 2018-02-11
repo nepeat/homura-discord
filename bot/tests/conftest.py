@@ -1,13 +1,14 @@
+import asyncio
 import logging
 import os
 import random
 import traceback
 
 import aiohttp
-import asyncio
 import asyncio_redis
 import discord
 import pytest
+
 from homura.lib.redis_mods import BotEncoder, UncheckedRedisProtocol
 from homura.lib.structure import Message
 from homura.lib.util import Dummy

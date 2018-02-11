@@ -1,5 +1,6 @@
-import asyncio_redis
 import json
+
+import asyncio_redis
 from asyncio_redis.encoders import UTF8Encoder
 
 

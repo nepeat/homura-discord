@@ -2,11 +2,12 @@
 import json
 import logging
 import os
+from typing import Any, List, Optional, Union
 
 import aiohttp
 import discord
+
 from homura.lib.structure import BackendError
-from typing import List, Optional, Any, Union
 
 log = logging.getLogger(__name__)
 
