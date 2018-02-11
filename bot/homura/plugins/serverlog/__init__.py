@@ -61,7 +61,7 @@ class ServerLogPlugin(PluginBase):
     async def cmd_archiveserver(self, message, bot):
         for channel in message.guild.text_channels:
             await self.archive_channel(channel)
-            await message.channel.send("Completed archiving #{channel.name}!")
+            await message.channel.send(f"Completed archiving #{channel.name}!")
         await message.channel.send("Full archive complete!")
 
     async def archive_channel(self, channel: discord.abc.Messageable):
