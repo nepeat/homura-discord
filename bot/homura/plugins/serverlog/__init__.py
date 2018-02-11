@@ -72,18 +72,21 @@ class ServerLogPlugin(PluginBase):
                 "message": message.content
             })
 
+            # Set the latest message if we are on the first message.
+            await self.redis.hset("archive:state", message.channel.id, message.id)
+
             # Upload the buffer every 200 messages.
             if i % 200 == 0:
                 status = await self.push_event("bulk_channel", data=payload)
                 if not status:
-                    date_to_store = float(time.gmtime())
+                    date_to_store = float(time.time())
                     await self.redis.sadd(f"archive:fails:{message.channel.id}", date_to_store)
                 payload.clear()
 
             # Store the timestamp every 400 messages.
             if i % 400 == 0:
                 log.info(f"Processed {i} messages for channel {message.channel.id}")
-                date_to_store = float(time.gmtime())
+                date_to_store = float(time.time())
                 await self.redis.set(f"archive:{message.channel.id}", date_to_store)
 
         # Finish the upload if we still have a payload.
@@ -150,6 +153,23 @@ class ServerLogPlugin(PluginBase):
                     "after": after.name,
                 }
             })
+
+    async def on_message(self, message):
+        # Set the latest message.
+        await self.redis.hset("archive:state", message.channel.id, message.id)
+
+        # XXX: Deduplicate this later in the morning.
+        payload = []
+        payload.append({
+            "id": message.id,
+            "author_id": message.author.id,
+            "server_id": message.guild.id,
+            "channel_id": message.channel.id,
+            "pinned": message.pinned,
+            "attachments": self.dump_attachments(message),
+            "message": message.content
+        })
+        await self.push_event("bulk_channel", data=payload)
 
     async def on_message_edit(self, before, after):
         # Ignore self messages.
