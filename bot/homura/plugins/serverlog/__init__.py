@@ -1,14 +1,16 @@
 # coding=utf-8
+import datetime
 import json
 import logging
 import os
+from typing import Optional
 
 import aiohttp
 import discord
+
 from homura.lib.util import sanitize
 from homura.plugins.base import PluginBase
 from homura.plugins.command import command
-from typing import Optional
 
 log = logging.getLogger(__name__)
 
@@ -36,6 +38,55 @@ class ServerLogPlugin(PluginBase):
         ) for event in messages])
 
         await message.channel.send(output)
+
+    @command(
+        "archivechannel",
+        permission_name="serverlog.archive",
+        description="Does a full archival of a channel.",
+        requires_admin=True,
+        usage="archivechannel"
+    )
+    async def cmd_archivechannel(self, message, bot):
+        # Grab the before date from Redis if it exists.
+        stored_date = await self.redis.get(f"archive:{message.channel.id}")
+
+        try:
+            before_date = datetime.datetime.utcfromtimestamp(float(stored_date))
+        except (ValueError, TypeError):
+            before_date = datetime.datetime.utcnow()
+
+        i = 0
+        payload = []
+        async for message in message.channel.history(before=before_date):
+            i += 1
+
+            # Add the message to the payload queue.
+            payload.append({
+                "id": message.id,
+                "author_id": message.author.id,
+                "server_id": message.guild.id,
+                "channel_id": message.channel.id,
+                "pinned": message.pinned,
+                "attachments": self.dump_attachments(message),
+                "message": message.content
+            })
+
+            # Upload the buffer every 200 messages.
+            if i % 200 == 0:
+                await self.push_event("bulk_channel", data=payload)
+                payload.clear()
+
+            # Store the timestamp every 400 messages.
+            if i % 400 == 0:
+                log.info(f"Processed {i} messages for channel {message.channel.id}")
+                date_to_store = datetime.datetime.replace(tzinfo=datetime.timezone.utc).timestamp()
+                await self.redis.set(f"archive:{message.channel.id}", date_to_store)
+
+        # Finish the upload if we still have a payload.
+        if payload:
+            await self.push_event("bulk_channel", data=payload)
+
+        await message.channel.send("Complete!")
 
     async def on_ready(self):
         await self.add_all_guilds()
@@ -207,3 +258,17 @@ class ServerLogPlugin(PluginBase):
                 payload[str(guild.id)]["channels"][str(channel.id)] = channel.name
 
         await self.push_event("bulk", data=payload)
+
+    def dump_attachments(self, message: discord.Message):
+        if not message.attachments:
+            return []
+
+        attachments = []
+        for attachment in message.attachments:
+            attachments.append({
+                "id": attachment.id,
+                "filename": attachment.filename,
+                "url": attachment.url
+            })
+
+        return attachments

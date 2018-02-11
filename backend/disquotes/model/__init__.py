@@ -2,7 +2,7 @@
 import datetime
 import os
 
-from sqlalchemy import BigInteger, Column, DateTime, ForeignKey, Integer, String, Unicode, create_engine
+from sqlalchemy import BigInteger, Boolean, Column, DateTime, ForeignKey, Integer, String, Unicode, create_engine
 from sqlalchemy.dialects.postgresql import JSONB
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship, scoped_session, sessionmaker, validates
@@ -72,6 +72,23 @@ class Event(Base):
     def validate_type(self, _key, event_type):
         assert event_type in EVENT_TYPES
         return event_type
+
+
+class Message(Base):
+    __tablename__ = 'messages'
+    id = Column(Integer, primary_key=True)
+
+    message_id = Column(BigInteger, nullable=False, unique=True)
+    server_id = Column(ForeignKey("servers.id"), nullable=False)
+    channel_id = Column(ForeignKey("channels.id"), nullable=False)
+    author_id = Column(BigInteger, nullable=False)
+    pinned = Column(Boolean, default=False, server_default='f')
+    attachments = Column(JSONB, default=[])
+
+    message = Column(Unicode, nullable=False)
+
+    server = relationship("Server")
+    channel = relationship("Channel")
 
 
 class Permission(Base):

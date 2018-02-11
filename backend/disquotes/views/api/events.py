@@ -2,8 +2,9 @@
 
 from flask import g, request
 from flask_restplus import Namespace, abort, fields
+from sqlalchemy.dialects.postgresql import insert
 
-from disquotes.model import Event
+from disquotes.model import Event, Message
 from disquotes.model.types import EVENT_TYPES
 from disquotes.model.validators import validate_push
 from disquotes.views.api.base import ResourceBase
@@ -36,6 +37,39 @@ class BulkEventsResource(ResourceBase):
                 _, channel = self.get_server_channel(create=True, server=server_id, channel=channel_id)
 
             g.db.flush()
+
+
+@ns.route("/bulk_channel")
+class BulkChannelResource(ResourceBase):
+    @ns.param("data", "JSON list of many messages")
+    def put(self):
+        data = self.get_field("data", asjson=True)
+
+        server_cache = {}
+        channel_cache = {}
+
+        for message in data.items():
+            server_id = message["server_id"]
+            channel_id = message["channel_id"]
+
+            if server_id not in server_cache or channel_id not in channel_id:
+                server, channel = self.get_server_channel(create=True, server=server_id, channel=channel_id)
+                server_cache[server_id] = server
+                channel_cache[channel_id] = channel
+            else:
+                server = server_cache[server_id]
+                channel = channel_cache[channel_id]
+
+            new_statement = insert(Message).values(
+                message_id=message["id"],
+                server_id=server.id,
+                channel_id=channel.id,
+                author_id=message["author_id"],
+                pinned=message["pinned"],
+                attachments=message["attachments"],
+                message=message["message"]
+            ).on_conflict_do_nothing(index_elements=["message_id"])
+            g.db.execute(new_statement)
 
 
 @ns.route("/<event_type>")
