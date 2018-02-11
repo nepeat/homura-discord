@@ -8,6 +8,8 @@ class BotEncoder(UTF8Encoder):
     def encode_from_native(self, data):
         if isinstance(data, int):
             data = ":py_int:" + str(data)
+        elif isinstance(data, float):
+            data = ":py_float:" + str(data)
         elif isinstance(data, dict):
             data = ":py_dict:" + json.dumps(data)
 
@@ -18,6 +20,8 @@ class BotEncoder(UTF8Encoder):
 
         if decoded.startswith(":py_int:"):
             return int(decoded.lstrip(":py_int:"))
+        elif decoded.startswith(":py_float:"):
+            return float(decoded.lstrip(":py_float:"))
         elif decoded.startswith(":py_dict:"):
             return json.loads(decoded.lstrip(":py_dict:"))
 
