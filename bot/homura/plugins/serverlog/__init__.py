@@ -90,7 +90,8 @@ class ServerLogPlugin(PluginBase):
             })
 
             # Set the latest message if we are on the first message.
-            await self.redis.hset("archive:state", channel.id, message.id)
+            if i == 1:
+                await self.redis.hset("archive:state", channel.id, message.id)
 
             # Upload the buffer every 200 messages.
             if i % 200 == 0:
