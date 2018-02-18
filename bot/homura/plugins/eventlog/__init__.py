@@ -66,10 +66,10 @@ class EventLogPlugin(PluginBase):
                 icon_url="https://nepeat.github.io/assets/icons/edit.png",
             ).add_field(
                 name="Before",
-                value=sanitize(before.name)
+                value=sanitize(before.name),
             ).add_field(
                 name="After",
-                value=sanitize(after.name)
+                value=sanitize(after.name),
             )
             await self.log(embed, before, "guild_rename")
 
@@ -88,12 +88,12 @@ class EventLogPlugin(PluginBase):
         ).add_field(
             name="Before",
             value=sanitize(old),
-            inline=False
         ).add_field(
             name="After",
             value=sanitize(new),
-            inline=False
         )
+
+        embed.set_footer(text=f"User {after.id}")
 
         await self.log(embed, before.guild, "member_rename")
 
@@ -105,7 +105,7 @@ class EventLogPlugin(PluginBase):
             colour=discord.Colour.blue(),
         ).set_author(
             name=f"Message has been edited",
-            url="https://nepeat.github.io/assets/icons/edit.png",
+            icon_url="https://nepeat.github.io/assets/icons/edit.png",
         ).add_field(
             name="Channel",
             value=before.channel.mention
@@ -114,11 +114,15 @@ class EventLogPlugin(PluginBase):
             value=before.author.mention
         ).add_field(
             name="Before",
-            value=(before.clean_content[:900] + '...') if len(before.clean_content) > 900 else before.clean_content
+            value=(before.clean_content[:900] + '...') if len(before.clean_content) > 900 else before.clean_content,
+            inline=False,
         ).add_field(
             name="After",
-            value=(after.clean_content[:900] + '...') if len(after.clean_content) > 900 else after.clean_content
+            value=(after.clean_content[:900] + '...') if len(after.clean_content) > 900 else after.clean_content,
+            inline=False,
         )
+
+        embed.set_footer(text=f"Message {after.id}")
 
         await self.log(embed, before.guild, "message_edit")
 
@@ -140,7 +144,8 @@ class EventLogPlugin(PluginBase):
             value=message.author.mention
         ).add_field(
             name="Message",
-            value=(message.clean_content[:900] + '...') if len(message.clean_content) > 900 else message.clean_content
+            value=(message.clean_content[:900] + '...') if len(message.clean_content) > 900 else message.clean_content,
+            inline=False,
         )
 
         await self.log(embed, message.guild, "message_delete")
@@ -163,9 +168,8 @@ class EventLogPlugin(PluginBase):
         ).set_author(
             name=f"{member.display_name} has {'joined' if joining else 'left'}",
             icon_url=f"https://nepeat.github.io/assets/icons/{'check' if joining else 'x_circle'}.png",
-        ).add_field(
-            name="Mention",
-            value=member.mention
         )
+
+        embed.set_footer(text=f"User {member.id}")
 
         await self.log(embed, member.guild, "join" if joining else "leave")
