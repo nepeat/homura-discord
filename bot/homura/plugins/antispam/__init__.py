@@ -187,9 +187,9 @@ class AntispamPlugin(PluginBase):
 
 
         if user_mentions_total > 15:
-            raise AntispamBan("mentions")
-        elif user_mentions_total > 25:
             raise AntispamKick("mentions")
+        elif user_mentions_total > 25:
+            raise AntispamBan("mentions")
 
         if channel_mentions_total > 25:
             raise AntispamDelete("mentions")
