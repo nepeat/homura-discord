@@ -126,7 +126,7 @@ class AntispamPlugin(PluginBase):
             colour=colour
         ).set_author(
             name=title,
-            url=f"https://nepeat.github.io/assets/icons/{icon}.png",
+            icon_url=f"https://nepeat.github.io/assets/icons/{icon}.png",
         ).add_field(
             name="Channel",
             value=f"<#{message.channel.id}>"

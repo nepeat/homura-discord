@@ -202,7 +202,7 @@ def command(
                     color=discord.Colour.red()
                 ).set_author(
                     name="Command error",
-                    url="https://nepeat.github.io/assets/icons/error.png",
+                    icon_url="https://nepeat.github.io/assets/icons/error.png",
                 )
                 return await message.channel.send(embed=embed)
             except BackendError as e:
@@ -213,7 +213,7 @@ def command(
                     color=discord.Colour.red()
                 ).set_author(
                     title="Something happened",
-                    url="https://nepeat.github.io/assets/icons/error.png",
+                    icon_url="https://nepeat.github.io/assets/icons/error.png",
                 )
 
                 # Add the Sentry code if it can be obtained

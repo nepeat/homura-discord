@@ -63,7 +63,7 @@ class EventLogPlugin(PluginBase):
                 colour=discord.Colour.gold(),
             ).set_author(
                 name=f"Server has been renamed",
-                url="https://nepeat.github.io/assets/icons/edit.png",
+                icon_url="https://nepeat.github.io/assets/icons/edit.png",
             ).add_field(
                 name="Before",
                 value=sanitize(before.name)
@@ -84,7 +84,7 @@ class EventLogPlugin(PluginBase):
             colour=discord.Colour.blue(),
         ).set_author(
             name=f"User name change",
-            url="https://nepeat.github.io/assets/icons/edit.png",
+            icon_url="https://nepeat.github.io/assets/icons/edit.png",
         ).add_field(
             name="Before",
             value=sanitize(old),
@@ -131,7 +131,7 @@ class EventLogPlugin(PluginBase):
             colour=discord.Colour.red(),
         ).set_author(
             name=f"Deleted message",
-            url="https://nepeat.github.io/assets/icons/trash.png",
+            icon_url="https://nepeat.github.io/assets/icons/trash.png",
         ).add_field(
             name="Channel",
             value=f"<#{message.channel.id}>"
@@ -162,7 +162,7 @@ class EventLogPlugin(PluginBase):
             colour=discord.Colour.green() if joining else discord.Colour.red(),
         ).set_author(
             name=f"{member.display_name} has {'joined' if joining else 'left'}",
-            url=f"https://nepeat.github.io/assets/icons/{'check' if joining else 'x_circle'}.png",
+            icon_url=f"https://nepeat.github.io/assets/icons/{'check' if joining else 'x_circle'}.png",
         ).add_field(
             name="Mention",
             value=member.mention
