@@ -1,7 +1,7 @@
 version: '2.3'
 services:
   redis:
-    image: redis:4.0.2-alpine
+    image: redis:4.0.8-alpine
     volumes:
       - /mnt/nfs/discordbot/redis:/data
     restart: always
