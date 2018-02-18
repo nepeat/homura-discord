@@ -61,9 +61,9 @@ class EventLogPlugin(PluginBase):
         if before.name != after.name:
             embed = discord.Embed(
                 colour=discord.Colour.gold(),
-                title=f"Server has been renamed"
-            ).set_thumbnail(
-                url="https://nepeat.github.io/assets/icons/edit.png"
+            ).set_author(
+                name=f"Server has been renamed",
+                url="https://nepeat.github.io/assets/icons/edit.png",
             ).add_field(
                 name="Before",
                 value=sanitize(before.name)
@@ -82,9 +82,9 @@ class EventLogPlugin(PluginBase):
 
         embed = discord.Embed(
             colour=discord.Colour.blue(),
-            title=f"User name change"
-        ).set_thumbnail(
-            url="https://nepeat.github.io/assets/icons/edit.png"
+        ).set_author(
+            name=f"User name change",
+            url="https://nepeat.github.io/assets/icons/edit.png",
         ).add_field(
             name="Before",
             value=sanitize(old),
@@ -103,9 +103,9 @@ class EventLogPlugin(PluginBase):
 
         embed = discord.Embed(
             colour=discord.Colour.blue(),
-            title=f"Message has been edited"
-        ).set_thumbnail(
-            url="https://nepeat.github.io/assets/icons/edit.png"
+        ).set_author(
+            name=f"Message has been edited",
+            url="https://nepeat.github.io/assets/icons/edit.png",
         ).add_field(
             name="Channel",
             value=before.channel.mention
@@ -129,9 +129,9 @@ class EventLogPlugin(PluginBase):
 
         embed = discord.Embed(
             colour=discord.Colour.red(),
-            title=f"Deleted message"
-        ).set_thumbnail(
-            url="https://nepeat.github.io/assets/icons/trash.png"
+        ).set_author(
+            name=f"Deleted message",
+            url="https://nepeat.github.io/assets/icons/trash.png",
         ).add_field(
             name="Channel",
             value=f"<#{message.channel.id}>"
@@ -160,9 +160,9 @@ class EventLogPlugin(PluginBase):
     async def log_member(self, member, joining):
         embed = discord.Embed(
             colour=discord.Colour.green() if joining else discord.Colour.red(),
-            title=f"{member.display_name} has {'joined' if joining else 'left'}"
-        ).set_thumbnail(
-            url=f"https://nepeat.github.io/assets/icons/{'check' if joining else 'x_circle'}.png"
+        ).set_author(
+            name=f"{member.display_name} has {'joined' if joining else 'left'}",
+            url=f"https://nepeat.github.io/assets/icons/{'check' if joining else 'x_circle'}.png",
         ).add_field(
             name="Mention",
             value=member.mention

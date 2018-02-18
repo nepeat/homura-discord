@@ -198,22 +198,22 @@ def command(
                 response = await func(**handler_kwargs)
             except (CommandError, APIError) as e:
                 embed = discord.Embed(
-                    title="Command error",
                     description=str(e),
                     color=discord.Colour.red()
-                ).set_thumbnail(
-                    url="https://nepeat.github.io/assets/icons/error.png"
+                ).set_author(
+                    name="Command error",
+                    url="https://nepeat.github.io/assets/icons/error.png",
                 )
                 return await message.channel.send(embed=embed)
             except BackendError as e:
                 return await message.channel.send(str(e))
             except:
                 embed = discord.Embed(
-                    title="Something happened",
                     description="An error happened running this command",
                     color=discord.Colour.red()
-                ).set_thumbnail(
-                    url="https://nepeat.github.io/assets/icons/error.png"
+                ).set_author(
+                    title="Something happened",
+                    url="https://nepeat.github.io/assets/icons/error.png",
                 )
 
                 # Add the Sentry code if it can be obtained

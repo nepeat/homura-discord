@@ -123,10 +123,10 @@ class AntispamPlugin(PluginBase):
         title = f"Antispam - {event_type.capitalize()}"
 
         return discord.Embed(
-            colour=colour,
-            title=title
-        ).set_thumbnail(
-            url=f"https://nepeat.github.io/assets/icons/{icon}.png"
+            colour=colour
+        ).set_author(
+            name=title,
+            url=f"https://nepeat.github.io/assets/icons/{icon}.png",
         ).add_field(
             name="Channel",
             value=f"<#{message.channel.id}>"
