@@ -36,7 +36,7 @@ testbot:
   services:
     - redis
   script:
-    - pytest --cov=homura -v tests/
+    - pytest --cov=homura -v bot/tests/
 
 release-image:
   image: docker:latest
