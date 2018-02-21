@@ -21,10 +21,11 @@ variables:
   REDIS_PORT: 6379
 
 build:
-  image: docker/compose:latest
+  image: docker:latest
   stage: build
   script:
-    - docker-compose --force-rm --pull
+    - docker build --force-rm -t BOT_CONTAINER_TEST_IMAGE bot/
+    - docker build --force-rm -t WEB_CONTAINER_TEST_IMAGE backend/
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
     - docker push $BOT_CONTAINER_TEST_IMAGE
     - docker push $WEB_CONTAINER_TEST_IMAGE
@@ -35,7 +36,7 @@ testbot:
   services:
     - redis
   script:
-    - pytest --cov=homura -v tests/
+    - pytest --cov=homura -v bot/tests/
 
 release-image:
   image: docker:latest
@@ -52,7 +53,7 @@ release-image:
     - master
 
 deploy:
-  image: docker/compose:latest
+  image: docker/compose:1.19.0
   stage: deploy
   environment:
     name: production
