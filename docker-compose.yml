@@ -40,7 +40,6 @@ services:
         - /tmp
       volumes:
         - /mnt/nfs/discordbot/audio_cache:/audio_cache
-      env_file: .env
       depends_on:
         - redis
         - backend
@@ -70,7 +69,6 @@ services:
       tmpfs:
         - /run
         - /tmp
-      env_file: .env
       depends_on:
         - redis
       network_mode: bridge
