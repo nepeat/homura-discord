@@ -35,9 +35,9 @@ log = logging.getLogger(__name__)
 # Load opus libraries if not loaded already
 
 if not discord.opus.is_loaded():
-    for lib in OPUS_LIBS:
+    for opus_lib in OPUS_LIBS:
         try:
-            discord.opus.load_opus(lib)
+            discord.opus.load_opus(opus_lib)
             break
         except OSError:
             pass
