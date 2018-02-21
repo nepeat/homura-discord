@@ -60,7 +60,8 @@ deploy:
   environment:
     name: production
   script:
-    - docker-compose up -d --pull
+    - docker-compose pull
+    - docker-compose up -d
   only:
     - master
     
