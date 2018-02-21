@@ -11,4 +11,3 @@ pyyaml
 pytest
 pytest-runner
 pytest-asyncio
-pytest-catchlog

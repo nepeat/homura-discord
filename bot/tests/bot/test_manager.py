@@ -14,8 +14,6 @@ class DummyPlugin(PluginBase):
 
 @pytest.mark.asyncio
 async def test_manager_load_all(bot):
-    bot = await bot
-
     assert len(bot.plugins) == 0
     assert len(bot.all_permissions) == 0
     bot.plugins.load_all()
@@ -25,7 +23,6 @@ async def test_manager_load_all(bot):
 
 @pytest.mark.asyncio
 async def test_manager_get_plugins(bot, caplog):
-    bot = await bot
     bot.plugins.load_all()
 
     # Getting plugins with get() method.
@@ -49,7 +46,6 @@ async def test_manager_get_plugins(bot, caplog):
 
 @pytest.mark.asyncio
 async def test_manager_load_dummy(bot, caplog):
-    bot = await bot
     bot.plugins.load(DummyPlugin)
 
     dummy_init = bot.plugins.get("dummy")

@@ -11,7 +11,6 @@ from .. import slow
 @pytest.mark.asyncio
 @slow
 async def test_cached_get_plain_json(bot):
-    bot = await bot
     http = CachedHTTP(bot)
 
     text1 = await http.get("http://date.jsontest.com/?test=text", cache_time=1)
@@ -26,7 +25,6 @@ async def test_cached_get_plain_json(bot):
 @pytest.mark.asyncio
 @slow
 async def test_broken_cache_get_plain_json(bot):
-    bot = await bot
     http = CachedHTTP(bot)
 
     text1 = await http.get("http://date.jsontest.com/?test=expire", cache_time=1)
@@ -43,7 +41,6 @@ async def test_broken_cache_get_plain_json(bot):
 @pytest.mark.asyncio
 @slow
 async def test_cached_get_params_plain_json(bot):
-    bot = await bot
     http = CachedHTTP(bot)
 
     cached_text = f"cached_text:{time.time()}"

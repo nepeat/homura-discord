@@ -60,7 +60,6 @@ class DummyPlugin(PluginBase):
 
 @pytest.fixture
 async def dummy_plugin(bot):
-    bot = await bot
     bot.plugins.load(DummyPlugin)
 
     return bot.plugins.get("dummy")
@@ -118,8 +117,6 @@ async def run_normal_admin_owner(
 
 @pytest.mark.asyncio
 async def test_owner_only(dummy_plugin, message, caplog):
-    dummy_plugin = await dummy_plugin
-
     await run_normal_admin_owner("!owneronly", dummy_plugin, message)
 
     # Assert all possibilities happened.
@@ -129,7 +126,6 @@ async def test_owner_only(dummy_plugin, message, caplog):
 
 @pytest.mark.asyncio
 async def test_nonglobal_command(dummy_plugin, message, caplog):
-    dummy_plugin = await dummy_plugin
     message.content = "!nonglobal"
 
     await run_normal_admin_owner("!nonglobal", dummy_plugin, message, numusers=4)
@@ -145,7 +141,6 @@ async def test_granted_permissions(monkeypatch, dummy_plugin, message, caplog):
         return ["test.restricted"]
 
     monkeypatch.setattr("homura.lib.permissions.Permissions.get_perms", patched_perms)
-    dummy_plugin = await dummy_plugin
 
     await run_normal_admin_owner("!nonglobal", dummy_plugin, message, numusers=4)
 
@@ -160,7 +155,6 @@ async def test_denied_permissions(monkeypatch, dummy_plugin, message, caplog):
         return ["-test"]
 
     monkeypatch.setattr("homura.lib.permissions.Permissions.get_perms", patched_perms)
-    dummy_plugin = await dummy_plugin
 
     await run_normal_admin_owner("!kek", dummy_plugin, message, numusers=4)
 
@@ -180,8 +174,6 @@ Command trigger tests.
 
 @pytest.mark.asyncio
 async def test_multi_triggers_normal_and_mention(bot, dummy_plugin, message, caplog):
-    dummy_plugin = await dummy_plugin
-
     # Test for the normal ! prefix.
     message.content = "!test"
     await dummy_plugin._on_message(message)
@@ -202,8 +194,6 @@ async def test_multi_triggers_normal_and_mention(bot, dummy_plugin, message, cap
 
 @pytest.mark.asyncio
 async def test_single_triggers_normal_and_mention(bot, dummy_plugin, message, caplog):
-    dummy_plugin = await dummy_plugin
-
     # Test for the normal ! prefix.
     message.content = "!kek"
     await dummy_plugin._on_message(message)
