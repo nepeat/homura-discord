@@ -1,7 +1,3 @@
-services:
-  - postgres
-  - redis
-
 stages:
   - build
   - test
@@ -24,30 +20,24 @@ variables:
   REDIS_HOST: redis
   REDIS_PORT: 6379
 
-connect:
-  image: postgres
-  stage: build
-  script:
-  # official way to provide password to psql: http://www.postgresql.org/docs/9.3/static/libpq-envars.html
-  - export PGPASSWORD=$POSTGRES_PASSWORD
-  - psql -h "postgres" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT 'OK' AS status;"
-
 build:
   image: docker:latest
   stage: build
   script:
-  - docker build -t $BOT_CONTAINER_TEST_IMAGE --force-rm bot/
-  - docker build -t $WEB_CONTAINER_TEST_IMAGE --force-rm backend/
-  - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
-  - docker push $BOT_CONTAINER_TEST_IMAGE
-  - docker push $WEB_CONTAINER_TEST_IMAGE
+    - docker build -t $BOT_CONTAINER_TEST_IMAGE --force-rm bot/
+    - docker build -t $WEB_CONTAINER_TEST_IMAGE --force-rm backend/
+    - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
+    - docker push $BOT_CONTAINER_TEST_IMAGE
+    - docker push $WEB_CONTAINER_TEST_IMAGE
 
 testbot:
   image: docker:latest
   stage: test
+  services:
+    - redis
   script:
     - docker pull $BOT_CONTAINER_TEST_IMAGE
-    - docker run --rm -e POSTGRES_URL=$POSTGRES_URL -e REDIS_HOST=redis $BOT_CONTAINER_TEST_IMAGE pytest --cov=bot -v bot/tests
+    - docker run --rm -e REDIS_HOST=redis $BOT_CONTAINER_TEST_IMAGE pytest --cov=homura -v tests/
 
 release-image:
   image: docker:latest
