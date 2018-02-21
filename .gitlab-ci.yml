@@ -35,8 +35,8 @@ build:
   image: docker:latest
   stage: build
   script:
-  - docker build -t $BOT_CONTAINER_TEST_IMAGE --force-rm .
-  - docker build -t $WEB_CONTAINER_TEST_IMAGE --force-rm .
+  - docker build -t $BOT_CONTAINER_TEST_IMAGE --force-rm bot/
+  - docker build -t $WEB_CONTAINER_TEST_IMAGE --force-rm backend/
   - docker push $BOT_CONTAINER_TEST_IMAGE
   - docker push $WEB_CONTAINER_TEST_IMAGE
 
@@ -45,9 +45,10 @@ testbot:
   stage: test
   script:
     - docker pull $BOT_CONTAINER_TEST_IMAGE
-    - docker run $BOT_CONTAINER_TEST_IMAGE -e POSTGRES_URL=$POSTGRES_URL -e REDIS_HOST=redis pytest -v bot/tests
+    - docker run $BOT_CONTAINER_TEST_IMAGE -e POSTGRES_URL=$POSTGRES_URL -e REDIS_HOST=redis pytest --cov=bot -v bot/tests
 
 release-image:
+  image: docker:latest
   stage: release
   script:
     - docker pull $BOT_CONTAINER_TEST_IMAGE
@@ -60,9 +61,12 @@ release-image:
     - master
 
 deploy:
+  image: docker/compose:latest
   stage: deploy
+  environment:
+    name: production
   script:
-    - ./deploy.sh
+    - docker-compose up -d --pull
   only:
     - master
     

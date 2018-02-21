@@ -21,6 +21,19 @@ services:
         REDIS_PORT: 6379
         BOT_WEB: http://discordbot_backend.dev01.docker:5000
         AUDIO_CACHE_PATH: /audio_cache
+
+        # Shared app secrets.
+        DISCORD_TOKEN: ${PROD_DISCORD_TOKEN}
+        DISCORD_CLIENT_ID: ${PROD_DISCORD_CLIENT_ID}
+        DISCORD_CLIENT_SECRET: ${PROD_DISCORD_CLIENT_SECRET}
+        SENTRY_DSN: ${SENTRY_DSN}
+        POSTGRES_URL: ${PROD_POSTGRES_URL}
+        APP_SECRET: ${APP_SECRET}
+        INFLUX_HOST: ${INFLUX_HOST}
+        OSU_API: ${OSU_API}
+        IMGUR_ID: ${IMGUR_ID}
+        MASHAPE_KEY: ${MASHAPE_KEY}
+        
       read_only: true
       tmpfs:
         - /run
@@ -41,6 +54,18 @@ services:
         REDIS_HOST: discordbot_redis.dev01.docker
         REDIS_PORT: 6379
         SERVICE_NAME: discordbot_backend
+
+        # Shared app secrets.
+        DISCORD_TOKEN: ${PROD_DISCORD_TOKEN}
+        DISCORD_CLIENT_ID: ${PROD_DISCORD_CLIENT_ID}
+        DISCORD_CLIENT_SECRET: ${PROD_DISCORD_CLIENT_SECRET}
+        SENTRY_DSN: ${SENTRY_DSN}
+        POSTGRES_URL: ${PROD_POSTGRES_URL}
+        APP_SECRET: ${APP_SECRET}
+        INFLUX_HOST: ${INFLUX_HOST}
+        OSU_API: ${OSU_API}
+        IMGUR_ID: ${IMGUR_ID}
+        MASHAPE_KEY: ${MASHAPE_KEY}
       read_only: true
       tmpfs:
         - /run
