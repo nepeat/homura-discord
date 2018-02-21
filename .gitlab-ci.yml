@@ -4,6 +4,9 @@ stages:
   - release
   - deploy
 
+services:
+  - docker:dind
+
 variables:
   # GitLab
   DOCKER_DRIVER: overlay2
@@ -24,8 +27,8 @@ build:
   image: docker:latest
   stage: build
   script:
-    - docker build --force-rm -t $BOT_CONTAINER_TEST_IMAGE bot/
-    - docker build --force-rm -t $WEB_CONTAINER_TEST_IMAGE backend/
+    - docker build --pull --force-rm -t $BOT_CONTAINER_TEST_IMAGE bot/
+    - docker build --pull --force-rm -t $WEB_CONTAINER_TEST_IMAGE backend/
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
     - docker push $BOT_CONTAINER_TEST_IMAGE
     - docker push $WEB_CONTAINER_TEST_IMAGE
@@ -62,6 +65,8 @@ deploy:
   script:
     - docker-compose pull
     - docker-compose up -d
+  tags:
+    - deploy
   only:
     - master
     
