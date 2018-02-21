@@ -31,13 +31,12 @@ build:
     - docker push $WEB_CONTAINER_TEST_IMAGE
 
 testbot:
-  image: docker:latest
+  image: $BOT_CONTAINER_TEST_IMAGE
   stage: test
   services:
     - redis
   script:
-    - docker pull $BOT_CONTAINER_TEST_IMAGE
-    - docker run --rm -e REDIS_HOST=redis $BOT_CONTAINER_TEST_IMAGE pytest --cov=homura -v tests/
+    - pytest --cov=homura -v tests/
 
 release-image:
   image: docker:latest
