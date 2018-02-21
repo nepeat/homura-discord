@@ -46,7 +46,7 @@ testbot:
   stage: test
   script:
     - docker pull $BOT_CONTAINER_TEST_IMAGE
-    - docker run $BOT_CONTAINER_TEST_IMAGE -e POSTGRES_URL=$POSTGRES_URL -e REDIS_HOST=redis pytest --cov=bot -v bot/tests
+    - docker run --rm -e POSTGRES_URL=$POSTGRES_URL -e REDIS_HOST=redis $BOT_CONTAINER_TEST_IMAGE pytest --cov=bot -v bot/tests
 
 release-image:
   image: docker:latest
