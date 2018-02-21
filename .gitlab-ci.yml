@@ -1,0 +1,68 @@
+services:
+  - postgres
+  - redis
+
+stages:
+  - build
+  - test
+  - release
+  - deploy
+
+variables:
+  # GitLab
+  DOCKER_DRIVER: overlay2
+  BOT_CONTAINER_TEST_IMAGE: registry.gitlab.com/nepeat1/homura-discord/bot:$CI_COMMIT_REF_NAME
+  BOT_CONTAINER_RELEASE_IMAGE: registry.gitlab.com/nepeat1/homura-discord/bot:latest
+  WEB_CONTAINER_TEST_IMAGE: registry.gitlab.com/nepeat1/homura-discord/backend:$CI_COMMIT_REF_NAME
+  WEB_CONTAINER_RELEASE_IMAGE: registry.gitlab.com/nepeat1/homura-discord/backend:latest
+  # Configure postgres service (https://hub.docker.com/_/postgres/)
+  POSTGRES_DB: cidatabase
+  POSTGRES_USER: ciuser
+  POSTGRES_PASSWORD: citest
+  POSTGRES_URL: "postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@postgres/$POSTGRES_DB"
+  # App Redis
+  REDIS_HOST: redis
+  REDIS_PORT: 6379
+
+connect:
+  image: postgres
+  script:
+  # official way to provide password to psql: http://www.postgresql.org/docs/9.3/static/libpq-envars.html
+  - export PGPASSWORD=$POSTGRES_PASSWORD
+  - psql -h "postgres" -U "$POSTGRES_USER" -d "$POSTGRES_DB" -c "SELECT 'OK' AS status;"
+
+build:
+  image: docker:latest
+  stage: build
+  script:
+  - docker build -t $BOT_CONTAINER_TEST_IMAGE --force-rm .
+  - docker build -t $WEB_CONTAINER_TEST_IMAGE --force-rm .
+  - docker push $BOT_CONTAINER_TEST_IMAGE
+  - docker push $WEB_CONTAINER_TEST_IMAGE
+
+testbot:
+  image: docker:latest
+  stage: test
+  script:
+    - docker pull $BOT_CONTAINER_TEST_IMAGE
+    - docker run $BOT_CONTAINER_TEST_IMAGE -e POSTGRES_URL=$POSTGRES_URL -e REDIS_HOST=redis pytest -v bot/tests
+
+release-image:
+  stage: release
+  script:
+    - docker pull $BOT_CONTAINER_TEST_IMAGE
+    - docker tag $BOT_CONTAINER_TEST_IMAGE $BOT_CONTAINER_RELEASE_IMAGE
+    - docker push $BOT_CONTAINER_RELEASE_IMAGE
+    - docker pull $WEB_CONTAINER_TEST_IMAGE
+    - docker tag $WEB_CONTAINER_TEST_IMAGE $WEB_CONTAINER_RELEASE_IMAGE
+    - docker push $WEB_CONTAINER_RELEASE_IMAGE
+  only:
+    - master
+
+deploy:
+  stage: deploy
+  script:
+    - ./deploy.sh
+  only:
+    - master
+    
