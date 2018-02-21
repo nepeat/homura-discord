@@ -55,6 +55,7 @@ release-image:
 deploy:
   image: docker/compose:1.19.0
   stage: deploy
+  entrypoint: [""]
   environment:
     name: production
   script:
