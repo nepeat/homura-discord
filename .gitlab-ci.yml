@@ -26,8 +26,8 @@ build:
     - docker:dind
   stage: build
   script:
-    - docker build --pull --force-rm -t $BOT_CONTAINER_TEST_IMAGE bot/
-    - docker build --pull --force-rm -t $WEB_CONTAINER_TEST_IMAGE backend/
+    - docker build --pull --force-rm --cache-from $BOT_CONTAINER_RELEASE_IMAGE -t $BOT_CONTAINER_TEST_IMAGE bot/
+    - docker build --pull --force-rm --cache-from $WEB_CONTAINER_RELEASE_IMAGE -t $WEB_CONTAINER_TEST_IMAGE backend/
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
     - docker push $BOT_CONTAINER_TEST_IMAGE
     - docker push $WEB_CONTAINER_TEST_IMAGE
