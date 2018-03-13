@@ -122,12 +122,16 @@ class AntispamPlugin(PluginBase):
 
         title = f"Antispam - {event_type.capitalize()}"
 
-        return discord.Embed(
+        embed = discord.Embed(
             colour=colour
-        ).set_author(
+        )
+        
+        embed.set_author(
             name=title,
             icon_url=f"https://nepeat.github.io/assets/icons/{icon}.png",
-        ).add_field(
+        )
+        
+        embed.add_field(
             name="Channel",
             value=f"<#{message.channel.id}>"
         ).add_field(
@@ -135,8 +139,13 @@ class AntispamPlugin(PluginBase):
             value=message.author.mention
         ).add_field(
             name="Message",
-            value=(message.clean_content[:900] + '...') if len(message.clean_content) > 900 else message.clean_content
+            value=(message.clean_content[:900] + '...') if len(message.clean_content) > 900 else message.clean_content,
+            inline=False
         )
+
+        embed.set_footer(text=f"Message {after.id}")
+
+        return embed
 
     async def log_event(self, message, reason):
         # Do not log quiet deletes
