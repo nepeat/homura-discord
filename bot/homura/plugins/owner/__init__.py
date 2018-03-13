@@ -27,7 +27,7 @@ class OwnerPlugin(PluginBase):
     async def set_game(self, args):
         await self.redis.hset("bot:config", "game", args[0])
         await self.bot.change_presence(
-            game=Game(
+            activity=Game(
                 name=args[0]
             )
         )
@@ -122,7 +122,7 @@ class OwnerPlugin(PluginBase):
             return
 
         await self.bot.change_presence(
-            game=Game(
+            activity=Game(
                 name=status
             )
         )
