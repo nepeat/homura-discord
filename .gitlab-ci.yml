@@ -68,8 +68,7 @@ deploy:
   environment:
     name: production
   script:
-    - docker-compose pull
-    - docker-compose up -d
+    - docker run --rm --net=host --user 0 -v /etc/kubernetes/admin.conf:/config/.kube/config wernight/kubectl apply -f k8s-production.yml
   tags:
     - deploy
   only:

@@ -1,0 +1,110 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: homura-backend
+spec:
+  clusterIP: None
+  ports:
+  - name: homura-backend
+    port: 5000
+    targetPort: 5000
+  selector:
+    app: homura-backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: homura-redis
+spec:
+  clusterIP: None
+  ports:
+  - name: homura-redis
+    port: 6379
+    targetPort: 6379
+  selector:
+    app: homura-redis
+---
+apiVersion: v1
+kind: Deployment
+metadata:
+  labels:
+    app: homura-redis
+  name: homura-redis
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: homura-redis
+    spec:
+      containers:
+      - name: homura-redis
+        image: redis:4.0.8-alpine
+        command: "redis-server --appendonly yes"
+        volumeMounts:
+        - mountPath: /data
+          name: homura-redis-data
+        ports:
+        - containerPort: 6379
+      restartPolicy: Always
+      volumes:
+        - name: homura-redis-data
+          hostPath:
+            path: /mnt/nfs/discordbot/redis
+            type: DirectoryOrCreate
+---
+apiVersion: v1
+kind: Deployment
+metadata:
+  labels:
+    app: homura-backend
+  name: homura-backend
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: homura-backend
+    spec:
+      containers:
+      - name: homura-backend
+        image: registry.gitlab.com/nepeat1/homura-discord/backend:latest
+        env:
+        - name: REDIS_HOST
+          value: homura-redis
+        - name: REDIS_PORT
+          value: 6379
+        envFrom:
+        - secretRef:
+            name: homura-secrets
+        ports:
+        - containerPort: 6379
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Deployment
+metadata:
+  labels:
+    app: homura-bot
+  name: homura-bot
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: homura-bot
+    spec:
+      containers:
+      - name: homura-bot
+        image: registry.gitlab.com/nepeat1/homura-discord/bot:latest
+        env:
+        - name: REDIS_HOST
+          value: homura-redis
+        - name: REDIS_PORT
+          value: 6379
+        envFrom:
+        - secretRef:
+            name: homura-secrets
+        ports:
+        - containerPort: 6379
+      restartPolicy: Always
