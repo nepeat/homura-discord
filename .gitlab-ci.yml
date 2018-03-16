@@ -62,7 +62,7 @@ release-image:
 
 deploy:
   image:
-    name: docker/latest
+    name: docker:latest
     entrypoint: [""]
   stage: deploy
   environment:
