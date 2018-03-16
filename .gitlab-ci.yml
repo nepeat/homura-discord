@@ -62,13 +62,13 @@ release-image:
 
 deploy:
   image:
-    name: docker/compose:1.19.0
+    name: docker/latest
     entrypoint: [""]
   stage: deploy
   environment:
     name: production
   script:
-    - docker run --rm --net=host --user 0 -v /etc/kubernetes/admin.conf:/config/.kube/config wernight/kubectl apply -f k8s-production.yml
+    - docker run --rm --net=host --user 0 -v /etc/kubernetes/admin.conf:/config/.kube/config:ro -w /code -v "$PWD":/code:ro wernight/kubectl apply -f k8s-production.yml
   tags:
     - deploy
   only:
