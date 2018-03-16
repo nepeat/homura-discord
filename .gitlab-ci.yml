@@ -68,7 +68,7 @@ deploy:
   environment:
     name: production
   script:
-    - docker run --rm --net=host --user 0 -v /etc/kubernetes/admin.conf:/config/.kube/config:ro -w /code -v "$PWD":/code:ro wernight/kubectl apply -f k8s-production.yml
+    - cat k8s-production.yml | docker run -it --rm --net=host --user 0 -v /etc/kubernetes/admin.conf:/config/.kube/config:ro wernight/kubectl apply -f -
   tags:
     - deploy
   only:
