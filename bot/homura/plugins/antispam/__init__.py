@@ -143,7 +143,7 @@ class AntispamPlugin(PluginBase):
             inline=False
         )
 
-        embed.set_footer(text=f"Message {after.id}")
+        embed.set_footer(text=f"Message {message.id}")
 
         return embed
 
