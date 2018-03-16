@@ -81,12 +81,12 @@ spec:
         - name: REDIS_HOST
           value: redis
         - name: REDIS_PORT
-          value: 6379
+          value: "6379"
         envFrom:
         - secretRef:
             name: homura-secrets
         ports:
-        - containerPort: 6379
+        - containerPort: 5000
       restartPolicy: Always
 ---
 apiVersion: extensions/v1beta1
@@ -106,14 +106,26 @@ spec:
       containers:
       - name: bot
         image: registry.gitlab.com/nepeat1/homura-discord/bot:latest
+        volumeMounts:
+        - mountPath: /audio_cache
+          name: audio-cache
         env:
         - name: REDIS_HOST
           value: redis
         - name: REDIS_PORT
-          value: 6379
+          value: "6379"
+        - name: BOT_WEB
+          value: http://backend:5000
+        - name: AUDIO_CACHE_PATH
+          value: /audio_cache
         envFrom:
         - secretRef:
             name: homura-secrets
         ports:
         - containerPort: 6379
       restartPolicy: Always
+      volumes:
+        - name: audio_cache
+          hostPath:
+            path: /mnt/nfs/discordbot/audio_cache
+            type: DirectoryOrCreate
