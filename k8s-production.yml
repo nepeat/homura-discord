@@ -1,54 +1,62 @@
 apiVersion: v1
-kind: Service
+kind: Namespace
 metadata:
-  name: homura-backend
-spec:
-  clusterIP: None
-  ports:
-  - name: homura-backend
-    port: 5000
-    targetPort: 5000
-  selector:
-    app: homura-backend
+  name: homura-discord
 ---
 apiVersion: v1
 kind: Service
 metadata:
-  name: homura-redis
+  name: backend
+  namespace: homura-discord
 spec:
   clusterIP: None
   ports:
-  - name: homura-redis
+  - name: backend
+    port: 5000
+    targetPort: 5000
+  selector:
+    app: backend
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+  namespace: homura-discord
+spec:
+  clusterIP: None
+  ports:
+  - name: redis
     port: 6379
     targetPort: 6379
   selector:
-    app: homura-redis
+    app: redis
 ---
 apiVersion: v1
 kind: Deployment
 metadata:
   labels:
-    app: homura-redis
-  name: homura-redis
+    app: redis
+  name: redis
+  namespace: homura-discord
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: homura-redis
+        app: redis
     spec:
       containers:
-      - name: homura-redis
+      - name: redis
         image: redis:4.0.8-alpine
         command: "redis-server --appendonly yes"
         volumeMounts:
         - mountPath: /data
-          name: homura-redis-data
+          name: redis-data
         ports:
         - containerPort: 6379
       restartPolicy: Always
       volumes:
-        - name: homura-redis-data
+        - name: redis-data
           hostPath:
             path: /mnt/nfs/discordbot/redis
             type: DirectoryOrCreate
@@ -57,21 +65,21 @@ apiVersion: v1
 kind: Deployment
 metadata:
   labels:
-    app: homura-backend
-  name: homura-backend
+    app: backend
+  name: backend
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: homura-backend
+        app: backend
     spec:
       containers:
-      - name: homura-backend
+      - name: backend
         image: registry.gitlab.com/nepeat1/homura-discord/backend:latest
         env:
         - name: REDIS_HOST
-          value: homura-redis
+          value: redis
         - name: REDIS_PORT
           value: 6379
         envFrom:
@@ -85,21 +93,22 @@ apiVersion: v1
 kind: Deployment
 metadata:
   labels:
-    app: homura-bot
-  name: homura-bot
+    app: bot
+  name: bot
+  namespace: homura-discord
 spec:
   replicas: 1
   template:
     metadata:
       labels:
-        app: homura-bot
+        app: bot
     spec:
       containers:
-      - name: homura-bot
+      - name: bot
         image: registry.gitlab.com/nepeat1/homura-discord/bot:latest
         env:
         - name: REDIS_HOST
-          value: homura-redis
+          value: redis
         - name: REDIS_PORT
           value: 6379
         envFrom:
