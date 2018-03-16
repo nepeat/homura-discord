@@ -125,7 +125,7 @@ spec:
         - containerPort: 6379
       restartPolicy: Always
       volumes:
-        - name: audio_cache
+        - name: audio-cache
           hostPath:
             path: /mnt/nfs/discordbot/audio_cache
             type: DirectoryOrCreate
