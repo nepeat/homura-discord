@@ -212,7 +212,7 @@ def command(
                     description="An error happened running this command",
                     color=discord.Colour.red()
                 ).set_author(
-                    title="Something happened",
+                    name="Something happened",
                     icon_url="https://nepeat.github.io/assets/icons/error.png",
                 )
 
