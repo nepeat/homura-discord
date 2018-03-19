@@ -26,8 +26,8 @@ build:
     - docker:dind
   stage: build
   script:
-    - docker pull $BOT_CONTAINER_TEST_IMAGE
-    - docker pull $WEB_CONTAINER_TEST_IMAGE
+    - docker pull $BOT_CONTAINER_TEST_IMAGE || true
+    - docker pull $WEB_CONTAINER_TEST_IMAGE || true
     - docker build --pull --force-rm --cache-from $BOT_CONTAINER_TEST_IMAGE -t $BOT_CONTAINER_TEST_IMAGE bot/
     - docker build --pull --force-rm --cache-from $WEB_CONTAINER_TEST_IMAGE -t $WEB_CONTAINER_TEST_IMAGE backend/
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
