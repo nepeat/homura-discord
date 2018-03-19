@@ -8,9 +8,9 @@ variables:
   # GitLab
   DOCKER_DRIVER: overlay2
   BOT_CONTAINER_TEST_IMAGE: registry.gitlab.com/nepeat1/homura-discord/bot:$CI_COMMIT_REF_NAME
-  BOT_CONTAINER_RELEASE_IMAGE: registry.gitlab.com/nepeat1/homura-discord/bot:latest
+  BOT_CONTAINER_RELEASE_IMAGE: registry.gitlab.com/nepeat1/homura-discord/bot:$CI_COMMIT_SHA
   WEB_CONTAINER_TEST_IMAGE: registry.gitlab.com/nepeat1/homura-discord/backend:$CI_COMMIT_REF_NAME
-  WEB_CONTAINER_RELEASE_IMAGE: registry.gitlab.com/nepeat1/homura-discord/backend:latest
+  WEB_CONTAINER_RELEASE_IMAGE: registry.gitlab.com/nepeat1/homura-discord/backend:$CI_COMMIT_SHA
   # Configure postgres service (https://hub.docker.com/_/postgres/)
   POSTGRES_DB: cidatabase
   POSTGRES_USER: ciuser
@@ -26,10 +26,10 @@ build:
     - docker:dind
   stage: build
   script:
-    - docker pull $BOT_CONTAINER_RELEASE_IMAGE
-    - docker pull $WEB_CONTAINER_RELEASE_IMAGE
-    - docker build --pull --force-rm --cache-from $BOT_CONTAINER_RELEASE_IMAGE -t $BOT_CONTAINER_TEST_IMAGE bot/
-    - docker build --pull --force-rm --cache-from $WEB_CONTAINER_RELEASE_IMAGE -t $WEB_CONTAINER_TEST_IMAGE backend/
+    - docker pull $BOT_CONTAINER_TEST_IMAGE
+    - docker pull $WEB_CONTAINER_TEST_IMAGE
+    - docker build --pull --force-rm --cache-from $BOT_CONTAINER_TEST_IMAGE -t $BOT_CONTAINER_TEST_IMAGE bot/
+    - docker build --pull --force-rm --cache-from $WEB_CONTAINER_TEST_IMAGE -t $WEB_CONTAINER_TEST_IMAGE backend/
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
     - docker push $BOT_CONTAINER_TEST_IMAGE
     - docker push $WEB_CONTAINER_TEST_IMAGE
@@ -68,7 +68,7 @@ deploy:
   environment:
     name: production
   script:
-    - cat k8s-production.yml | docker run -i --rm --net=host --user 0 -v /etc/kubernetes/admin.conf:/config/.kube/config:ro wernight/kubectl apply -f -
+    - cat k8s-production.yml | sed "s/_IMAGE_HASH_/$CI_COMMIT_SHA/" | docker run -i --rm --net=host --user 0 -v /etc/kubernetes/admin.conf:/config/.kube/config:ro wernight/kubectl apply -f -
   tags:
     - deploy
   only:

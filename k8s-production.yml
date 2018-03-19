@@ -77,7 +77,7 @@ spec:
     spec:
       containers:
       - name: backend
-        image: registry.gitlab.com/nepeat1/homura-discord/backend:latest
+        image: registry.gitlab.com/nepeat1/homura-discord/backend:_IMAGE_HASH_
         env:
         - name: REDIS_HOST
           value: redis
@@ -106,7 +106,7 @@ spec:
     spec:
       containers:
       - name: bot
-        image: registry.gitlab.com/nepeat1/homura-discord/bot:latest
+        image: registry.gitlab.com/nepeat1/homura-discord/bot:_IMAGE_HASH_
         volumeMounts:
         - mountPath: /audio_cache
           name: audio-cache
