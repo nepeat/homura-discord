@@ -3,6 +3,8 @@ import json
 
 from flask import g, request
 from flask_restplus import Resource, abort
+
+from sqlalchemy.dialects.postgresql import insert
 from sqlalchemy.orm.exc import NoResultFound
 
 from disquotes.model import Channel, Server
@@ -42,11 +44,12 @@ class ResourceBase(Resource):
         except NoResultFound:
             server = None
             if create:
-                server = Server(
+                new_statement = insert(Server).values(
                     server_id=server_id
-                )
-                g.db.add(server)
+                ).on_conflict_do_nothing(index_elements=["server_id"])
+                g.db.execute(new_statement)
                 g.db.commit()
+                server = g.db.query(Server).filter(Server.server_id == server_id).one()
             else:
                 abort(400, "A server object could not be found.")
 
@@ -62,11 +65,16 @@ class ResourceBase(Resource):
         except NoResultFound:
             channel = None
             if create:
-                channel = Channel(
+                new_statement = insert(Channel).values(
                     server_id=server.id,
                     channel_id=channel_id
-                )
-                g.db.add(channel)
+                ).on_conflict_do_nothing(index_elements=["channel_id"])
+                g.db.execute(new_statement)
                 g.db.commit()
+                channel = g.db.query(Channel).filter(
+                    Channel.server_id == server.id
+                ).filter(
+                    Channel.channel_id == channel_id
+                ).one()
 
         return server, channel

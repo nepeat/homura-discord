@@ -34,7 +34,7 @@ def now():
 class Server(Base):
     __tablename__ = "servers"
     id = Column(Integer, primary_key=True)
-    server_id = Column(BigInteger, nullable=False)
+    server_id = Column(BigInteger, nullable=False, unique=True)
 
     name = Column(Unicode(100))
 
@@ -44,7 +44,7 @@ class Server(Base):
 class Channel(Base):
     __tablename__ = "channels"
     id = Column(Integer, primary_key=True)
-    channel_id = Column(BigInteger, nullable=False)
+    channel_id = Column(BigInteger, nullable=False, unique=True)
     server_id = Column(ForeignKey("servers.id"), nullable=False)
     name = Column(Unicode(100))
     server = relationship("Server")
