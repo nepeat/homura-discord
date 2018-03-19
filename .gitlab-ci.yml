@@ -20,7 +20,7 @@ variables:
   REDIS_HOST: redis
   REDIS_PORT: 6379
 
-build_bot:
+build-bot:
   image: docker:latest
   services:
     - docker:dind
@@ -31,7 +31,7 @@ build_bot:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
     - docker push $BOT_CONTAINER_TEST_IMAGE
 
-build_web:
+build-web:
   image: docker:latest
   services:
     - docker:dind
@@ -42,7 +42,7 @@ build_web:
     - docker login -u gitlab-ci-token -p $CI_JOB_TOKEN registry.gitlab.com
     - docker push $WEB_CONTAINER_TEST_IMAGE
 
-testbot:
+test-bot:
   image: $BOT_CONTAINER_TEST_IMAGE
   services:
     - docker:dind
