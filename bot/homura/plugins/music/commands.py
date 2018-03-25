@@ -311,9 +311,12 @@ class MusicCommands(MusicBase):
 
         num_skips, added = player.skip_state.toggle_skip(message.author.id)
 
+        # XXX: hack
+        skip_ratio_required = 0.5
+
         skips_remaining = min(
             MIN_SKIPS,
-            math.ceil(self.config.skip_ratio_required / (1 / num_voice)) # Number of skips from config ratio
+            math.ceil(skip_ratio_required / (1 / num_voice)) # Number of skips from config ratio
         ) - num_skips
 
         if skips_remaining <= 0:
