@@ -76,7 +76,7 @@ deploy:
   environment:
     name: production
   script:
-    - cat k8s-production.yml | sed "s/_IMAGE_HASH_/$CI_COMMIT_SHA/" | docker run -i --rm --net=host --user 0 -v /etc/kubernetes/admin.conf:/config/.kube/config:ro wernight/kubectl apply -f -
+    - cat swarm-compose-prod.yml | sed "s/_IMAGE_HASH_/$CI_COMMIT_SHA/" | docker stack deploy --compose-file - homura-discord
   tags:
     - deploy
   only:

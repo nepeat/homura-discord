@@ -1,3 +1,4 @@
+# Local dev Compose
 version: '2.3'
 services:
   redis:
@@ -58,9 +59,9 @@ services:
         DISCORD_TOKEN: ${PROD_DISCORD_TOKEN}
         DISCORD_CLIENT_ID: ${PROD_DISCORD_CLIENT_ID}
         DISCORD_CLIENT_SECRET: ${PROD_DISCORD_CLIENT_SECRET}
+        APP_SECRET: ${APP_SECRET}
         SENTRY_DSN: ${SENTRY_DSN}
         POSTGRES_URL: ${PROD_POSTGRES_URL}
-        APP_SECRET: ${APP_SECRET}
         INFLUX_HOST: ${INFLUX_HOST}
         OSU_API: ${OSU_API}
         IMGUR_ID: ${IMGUR_ID}

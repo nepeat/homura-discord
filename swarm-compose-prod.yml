@@ -1,0 +1,53 @@
+# Production Compose
+version: "3.6"
+services:
+  redis:
+    image: redis:4.0.11-alpine
+    volumes:
+      - /srv/discordbot/redis:/data
+    command: 'redis-server --appendonly yes'
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  backend:
+    image: registry.gitlab.com/nepeat1/homura-discord/backend:_IMAGE_HASH_
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      DISCORD_TOKEN: ${PROD_DISCORD_TOKEN}
+      DISCORD_CLIENT_ID: ${PROD_DISCORD_CLIENT_ID}
+      DISCORD_CLIENT_SECRET: ${PROD_DISCORD_CLIENT_SECRET}
+      APP_SECRET: ${APP_SECRET}
+      SENTRY_DSN: ${SENTRY_DSN}
+      POSTGRES_URL: ${PROD_POSTGRES_URL}
+      INFLUX_HOST: ${INFLUX_HOST}
+      OSU_API: ${OSU_API}
+      IMGUR_ID: ${IMGUR_ID}
+      MASHAPE_KEY: ${MASHAPE_KEY}
+    deploy:
+      restart_policy:
+        condition: on-failure
+
+  bot:
+    image: registry.gitlab.com/nepeat1/homura-discord/bot:_IMAGE_HASH_
+    volumes:
+      - /srv/discordbot/audio_cache:/audio_cache
+    environment:
+      REDIS_HOST: redis
+      REDIS_PORT: 6379
+      BOT_WEB: http://backend:5000
+      AUDIO_CACHE_PATH: /audio_cache
+      DISCORD_TOKEN: ${PROD_DISCORD_TOKEN}
+      DISCORD_CLIENT_ID: ${PROD_DISCORD_CLIENT_ID}
+      DISCORD_CLIENT_SECRET: ${PROD_DISCORD_CLIENT_SECRET}
+      APP_SECRET: ${APP_SECRET}
+      SENTRY_DSN: ${SENTRY_DSN}
+      POSTGRES_URL: ${PROD_POSTGRES_URL}
+      INFLUX_HOST: ${INFLUX_HOST}
+      OSU_API: ${OSU_API}
+      IMGUR_ID: ${IMGUR_ID}
+      MASHAPE_KEY: ${MASHAPE_KEY}
+    deploy:
+      restart_policy:
+        condition: on-failure
