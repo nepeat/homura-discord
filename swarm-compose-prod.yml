@@ -8,7 +8,7 @@ services:
     command: 'redis-server --appendonly yes'
     deploy:
       restart_policy:
-        condition: on-failure
+        condition: any
 
   backend:
     image: registry.gitlab.com/nepeat1/homura-discord/backend:_IMAGE_HASH_
@@ -27,7 +27,7 @@ services:
       MASHAPE_KEY: ${MASHAPE_KEY}
     deploy:
       restart_policy:
-        condition: on-failure
+        condition: any
 
   bot:
     image: registry.gitlab.com/nepeat1/homura-discord/bot:_IMAGE_HASH_
@@ -50,4 +50,4 @@ services:
       MASHAPE_KEY: ${MASHAPE_KEY}
     deploy:
       restart_policy:
-        condition: on-failure
+        condition: any
