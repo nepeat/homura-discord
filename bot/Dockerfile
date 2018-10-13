@@ -1,4 +1,4 @@
-FROM python:3.6.5-alpine
+FROM python:3.7-alpine
 
 # Edge repos
 RUN echo http://dl-cdn.alpinelinux.org/alpine/edge/main > /etc/apk/repositories && \
