@@ -11,7 +11,7 @@ services:
         condition: any
 
   backend:
-    image: registry.gitlab.com/nepeat1/homura-discord/backend:_IMAGE_HASH_
+    image: registry.gitlab.com/holyshit/homura-discord/backend:_IMAGE_HASH_
     environment:
       REDIS_HOST: redis
       REDIS_PORT: 6379
@@ -30,7 +30,7 @@ services:
         condition: any
 
   bot:
-    image: registry.gitlab.com/nepeat1/homura-discord/bot:_IMAGE_HASH_
+    image: registry.gitlab.com/holyshit/homura-discord/bot:_IMAGE_HASH_
     volumes:
       - /srv/discordbot/audio_cache:/audio_cache
     environment:

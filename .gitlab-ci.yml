@@ -7,10 +7,10 @@ stages:
 variables:
   # GitLab
   DOCKER_DRIVER: overlay2
-  BOT_CONTAINER_TEST_IMAGE: registry.gitlab.com/nepeat1/homura-discord/bot:$CI_COMMIT_REF_NAME
-  BOT_CONTAINER_RELEASE_IMAGE: registry.gitlab.com/nepeat1/homura-discord/bot:$CI_COMMIT_SHA
-  WEB_CONTAINER_TEST_IMAGE: registry.gitlab.com/nepeat1/homura-discord/backend:$CI_COMMIT_REF_NAME
-  WEB_CONTAINER_RELEASE_IMAGE: registry.gitlab.com/nepeat1/homura-discord/backend:$CI_COMMIT_SHA
+  BOT_CONTAINER_TEST_IMAGE: registry.gitlab.com/holyshit/homura-discord/bot:$CI_COMMIT_REF_NAME
+  BOT_CONTAINER_RELEASE_IMAGE: registry.gitlab.com/holyshit/homura-discord/bot:$CI_COMMIT_SHA
+  WEB_CONTAINER_TEST_IMAGE: registry.gitlab.com/holyshit/homura-discord/backend:$CI_COMMIT_REF_NAME
+  WEB_CONTAINER_RELEASE_IMAGE: registry.gitlab.com/holyshit/homura-discord/backend:$CI_COMMIT_SHA
   # Configure postgres service (https://hub.docker.com/_/postgres/)
   POSTGRES_DB: cidatabase
   POSTGRES_USER: ciuser

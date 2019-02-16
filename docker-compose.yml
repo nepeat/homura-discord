@@ -15,7 +15,7 @@ services:
     dns: "172.17.0.1"
 
   bot:
-      image: registry.gitlab.com/nepeat1/homura-discord/bot:latest
+      image: registry.gitlab.com/holyshit/homura-discord/bot:latest
       restart: always
       environment:
         REDIS_HOST: discordbot_redis.dev01.docker
@@ -48,7 +48,7 @@ services:
       dns: "172.17.0.1"
 
   backend:
-      image: registry.gitlab.com/nepeat1/homura-discord/backend:latest
+      image: registry.gitlab.com/holyshit/homura-discord/backend:latest
       restart: always
       environment:
         REDIS_HOST: discordbot_redis.dev01.docker
