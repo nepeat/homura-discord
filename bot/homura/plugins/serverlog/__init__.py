@@ -84,8 +84,11 @@ class ServerLogPlugin(PluginBase):
                 "author_id": message.author.id,
                 "server_id": message.guild.id,
                 "channel_id": message.channel.id,
+                "tts": message.tts,
                 "pinned": message.pinned,
                 "attachments": self.dump_attachments(message),
+                "reactions": self.dump_reactions(message),
+                "embeds": self.dump_embeds(message),
                 "message": message.content
             })
 
@@ -179,8 +182,11 @@ class ServerLogPlugin(PluginBase):
             "author_id": message.author.id,
             "server_id": message.guild.id,
             "channel_id": message.channel.id,
+            "tts": message.tts,
             "pinned": message.pinned,
             "attachments": self.dump_attachments(message),
+            "reactions": self.dump_reactions(message),
+            "embeds": self.dump_embeds(message),
             "message": message.content
         })
         await self.push_event("bulk_channel", data=payload)
@@ -317,3 +323,26 @@ class ServerLogPlugin(PluginBase):
             })
 
         return attachments
+
+    def dump_embeds(self, message: discord.Message):
+        if not message.embeds:
+            return []
+
+        embeds = []
+        for embed in message.embeds:
+            embeds.append(embed.to_dict())
+
+        return embeds
+
+    def dump_reactions(self, message: discord.Message):
+        if not message.reactions:
+            return []
+
+        reactions = []
+        for reaction in message.reactions:
+            reactions.append({
+                "emoji": str(reaction.emoji),
+                "cont": reaction.count or 0
+            })
+
+        return reactions

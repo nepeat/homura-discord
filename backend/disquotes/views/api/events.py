@@ -65,8 +65,11 @@ class BulkChannelResource(ResourceBase):
                 server_id=server.id,
                 channel_id=channel.id,
                 author_id=message["author_id"],
+                tts=message.get("tts", False),
                 pinned=message["pinned"],
                 attachments=message["attachments"],
+                reactions=message.get("reactions", []),
+                embeds=message.get("embeds", []),
                 message=message["message"]
             ).on_conflict_do_nothing(index_elements=["message_id"])
             g.db.execute(new_statement)

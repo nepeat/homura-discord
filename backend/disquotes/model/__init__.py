@@ -83,7 +83,10 @@ class Message(Base):
     channel_id = Column(ForeignKey("channels.id"), nullable=False)
     author_id = Column(BigInteger, nullable=False)
     pinned = Column(Boolean, default=False, server_default='f')
+    tts = Column(Boolean, default=False, server_default='f')
     attachments = Column(JSONB, default=[])
+    reactions = Column(JSONB, default=[])
+    embeds = Column(JSONB, default=[])
 
     message = Column(Unicode, nullable=False)
 
