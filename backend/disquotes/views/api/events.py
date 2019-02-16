@@ -35,6 +35,7 @@ class BulkEventsResource(ResourceBase):
 
             for channel_id, channel_name in server_data["channels"].items():
                 _, channel = self.get_server_channel(create=True, server=server_id, channel=channel_id)
+                channel.name = channel_name
 
             g.db.flush()
 
