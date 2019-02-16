@@ -88,8 +88,8 @@ class Message(Base):
     reactions = Column(JSONB, default=[])
     embeds = Column(JSONB, default=[])
 
-    created = Column(DateTime(), nullable=False, default=now)
-    edited = Column(DateTime(), nullable=False, default=now)
+    created = Column(DateTime)
+    edited = Column(DateTime)
     message = Column(Unicode, nullable=False)
 
     server = relationship("Server")
