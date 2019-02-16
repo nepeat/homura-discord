@@ -53,6 +53,9 @@ class BulkChannelResource(ResourceBase):
             server_id = message["server_id"]
             channel_id = message["channel_id"]
 
+            created_time = message.get("created")
+            edited_time = message.get("edited")
+
             if server_id not in server_cache or channel_id not in channel_cache:
                 server, channel = self.get_server_channel(create=True, server=server_id, channel=channel_id)
                 server_cache[server_id] = server
@@ -61,7 +64,7 @@ class BulkChannelResource(ResourceBase):
                 server = server_cache[server_id]
                 channel = channel_cache[channel_id]
 
-            new_statement = insert(Message).values(
+            data = dict(
                 message_id=message["id"],
                 server_id=server.id,
                 channel_id=channel.id,
@@ -72,7 +75,15 @@ class BulkChannelResource(ResourceBase):
                 reactions=message.get("reactions", []),
                 embeds=message.get("embeds", []),
                 message=message["message"]
-            ).on_conflict_do_nothing(index_elements=["message_id"])
+            )
+
+            if created:
+                data["created"] = datetime.datetime.utcfromtimestamp(created)
+
+            if edited:
+                data["edited"] = datetime.datetime.utcfromtimestamp(edited)
+
+            new_statement = insert(Message).values(**data).on_conflict_do_update(index_elements=["message_id"], set_=data)
             g.db.execute(new_statement)
 
 

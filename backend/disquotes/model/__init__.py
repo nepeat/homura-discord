@@ -88,11 +88,28 @@ class Message(Base):
     reactions = Column(JSONB, default=[])
     embeds = Column(JSONB, default=[])
 
+    created = Column(DateTime(), nullable=False, default=now)
+    edited = Column(DateTime(), nullable=False, default=now)
     message = Column(Unicode, nullable=False)
 
     server = relationship("Server")
     channel = relationship("Channel")
 
+    def to_dict(self):
+        return dict(
+            message_id=self.message_id,
+            author_id=self.author_id,
+            server_id=self.server_id,
+            channel_id=self.channel_id,
+            pinned=self.pinned or False,
+            tts=self.tts or False,
+            attachments=self.attachments or [],
+            reactions=self.reactions or [],
+            embeds=self.embeds or [],
+            created=self.created,
+            edited=self.edited,
+            message=message
+        )
 
 class Permission(Base):
     __tablename__ = "permissions"
