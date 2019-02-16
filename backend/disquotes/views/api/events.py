@@ -78,10 +78,10 @@ class BulkChannelResource(ResourceBase):
             )
 
             if created:
-                data["created"] = datetime.datetime.utcfromtimestamp(created)
+                data["created"] = datetime.datetime.utcfromtimestamp(created_time)
 
             if edited:
-                data["edited"] = datetime.datetime.utcfromtimestamp(edited)
+                data["edited"] = datetime.datetime.utcfromtimestamp(edited_time)
 
             new_statement = insert(Message).values(**data).on_conflict_do_update(index_elements=["message_id"], set_=data)
             g.db.execute(new_statement)

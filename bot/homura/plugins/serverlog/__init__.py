@@ -89,8 +89,8 @@ class ServerLogPlugin(PluginBase):
                 "attachments": self.dump_attachments(message),
                 "reactions": self.dump_reactions(message),
                 "embeds": self.dump_embeds(message),
-                "created": message.created_at.timestamp(),
-                "edited": message.edited_at.timestamp() if message.created_at else None,
+                "created": message.created_at.timestamp() if message.created_at else None,
+                "edited": message.edited_at.timestamp() if message.edited_at else None,
                 "message": message.content
             })
 
@@ -189,8 +189,8 @@ class ServerLogPlugin(PluginBase):
             "attachments": self.dump_attachments(message),
             "reactions": self.dump_reactions(message),
             "embeds": self.dump_embeds(message),
-            "created": message.created_at.timestamp(),
-            "edited": message.edited_at.timestamp() if message.created_at else None,
+            "created": message.created_at.timestamp() if message.created_at else None,
+            "edited": message.edited_at.timestamp() if message.edited_at else None,
             "message": message.content
         })
         await self.push_event("bulk_channel", data=payload)
